@@ -1,0 +1,9 @@
+un 
+Adresse 
+Monsieur Jean LOCATAIRE 
+18 des locataires 
+34000 MONTPELLIER 
+Adresse de facturation 
+Monsieur Lionel TEST 
+Rue de la Paix 
+34000 MONTPELLIER 
