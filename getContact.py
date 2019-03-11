@@ -26,7 +26,7 @@ print("Will use tool '%s'" % (tool.get_name()))
 langs = tool.get_available_languages()
 print("Available languages: %s" % ", ".join(langs))
 lang = langs[2]
-print("Will use lang '%s'" % (lang))
+print("Will use lang '%s'" % lang)
 
 ####### END INIT
 
@@ -77,7 +77,6 @@ def checkZipCode(conn, zipCode):
         else:
             return False
 
-
 ####### END functions definitions
 
 if __name__ == '__main__':
@@ -87,17 +86,16 @@ if __name__ == '__main__':
                     help="path to folder containing pdf")
     args = vars(ap.parse_args())
     conn = db.connect()
-
+    fileName = "images/tmp.jpg"
 
     for file in os.listdir(args['pdf']):
-        print(file)
         # Open the pdf and convert it to JPG
-        with Img(filename=args['pdf'] + file, resolution=300) as pic:
+        with Img(filename=args['pdf'] + file + '[0]', resolution=300) as pic:
             pic.compression_quality = 100
-            pic.save(filename='images/test.jpg')
+            pic.save(filename=fileName)
 
         # Open the picture to resize it and save it as is
-        img = cv2.imread('images/test-0.jpg')
+        img = cv2.imread(fileName)
         height, width, channels = img.shape # Use the height and width to crop the wanted zone
 
         # Vars used to select the zone we want to analyze (top of the document by default)
@@ -107,10 +105,10 @@ if __name__ == '__main__':
         h = int(height * 0.30)
         crop_image = img[y:y+h, x:x+w]
         cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0)) # Display on the image the zone we capture (cv2.imshow("Output", gray); cv2.waitKey(0) pour afficher l'image lors de l'exec du script)
-        cv2.imwrite('images/test-0.jpg', crop_image)
+        cv2.imwrite(fileName, crop_image)
 
         # Read the image and create boxes of content
-        img = Image.open('images/test-0.jpg')
+        img = Image.open(fileName)
 
         line_and_word_boxes = tool.image_to_string(
             img,
