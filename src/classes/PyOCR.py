@@ -22,9 +22,10 @@ class PyOCR:
         self.lang = langs[2]
         print("Will use lang '%s'" % self.lang)
 
-    def line_and_word_boxes(self, img):
+    def word_box_builder(self, img):
         self.text = self.tool.image_to_string(
             img,
-            lang="fra",
+            lang=self.lang,
             builder=pyocr.builders.WordBoxBuilder()
         )
+

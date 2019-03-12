@@ -3,16 +3,15 @@ import argparse
 import sys
 import os
 import re
-import classes.db as dbClass
-import classes.pyOCR as ocrClass
-import classes.images as imagesClass
+import classes.Database as dbClass
+import classes.PyOCR as ocrClass
+import classes.Images as imagesClass
 
 ####### Functions definitions
 
 def getNearWords(arrayOfLine, zipCode, rangeX=20, rangeY=15, maxRangeX=200, maxRangeY=350):
     nearWord    = {}
     currentyTL  = zipCode['yTL']
-    currentxTL  = zipCode['xTL']
     nearWord[currentyTL] = []
     for line in arrayOfLine:
         # Check words on the same column and keep the coordonnates to check the word in the same line
@@ -63,21 +62,23 @@ if __name__ == '__main__':
     ap.add_argument("-p", "--pdf", required=True,
                     help="path to folder containing pdf")
     args                = vars(ap.parse_args())
-    Database            = dbClass.Database('db/zipcode.db')
+
+    # Init all the necessary classes
+    Database            = dbClass.Database('./data/sqlite/zipcode.db')
     Ocr                 = ocrClass.PyOCR()
-    fileName            = "images/tmp.jpg"
+    fileName            = "/tmp/tmp.jpg"
     resolution          = 300
     compressionQuality  = 100
     Image = imagesClass.Images(fileName, resolution, compressionQuality)
 
+    # Start the process
     for file in os.listdir(args['pdf']):
-        print(file)
         # Open the pdf and convert it to JPG
         # Then resize the picture
         Image.pdf_to_jpg(args['pdf'] + file + '[0]')
 
         # Get all the content we just ocr'ed
-        Ocr.line_and_word_boxes(Image.img)
+        Ocr.word_box_builder(Image.img)
 
         # xTL stands for x Top Left (the position of X on the top left of the word)
         # yTL stands for y Top Left
@@ -109,10 +110,5 @@ if __name__ == '__main__':
             print (res + '\n')
             '''with open(args['pdf'] + file + '.txt', 'a') as the_file:
                 the_file.write(res)'''
-
         #os.remove(fileName)
     sys.exit()
-
-    '''cv2.imshow('img', crop_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()'''

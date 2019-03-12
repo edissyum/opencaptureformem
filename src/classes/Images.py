@@ -25,8 +25,8 @@ class Images:
         y = 0
         w = width
         h = int(height * 0.35)
-        crop_image = img[y:y + h, x:x + w]
-        cv2.imwrite(self.jpgName, crop_image)
+        #crop_image = img[y:y + h, x:x + w]
+        #cv2.imwrite(self.jpgName, crop_image)
 
         # Read the image before we get the text content
         self.img = Image.open(self.jpgName)
