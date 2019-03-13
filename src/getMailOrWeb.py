@@ -3,6 +3,7 @@ import argparse
 import sys
 import os
 import re
+import base64
 import classes.Database as dbClass
 import classes.PyOCR as ocrClass
 import classes.Images as imagesClass
@@ -35,6 +36,7 @@ if __name__ == '__main__':
 
     # Start process
     for file in os.listdir(args['pdf']):
+        print(file)
         # Open the pdf and convert it to JPG
         # Then resize the picture
         Image.pdf_to_jpg(args['pdf'] + file + '[0]')
@@ -44,6 +46,27 @@ if __name__ == '__main__':
 
         for box in Ocr.text:
             if re.match(r"[^@]+@[^@]+\.[^@]+", box.content):
-                mail = box.content
-                WebService.retrieveContactByMail('jeanlouis.ercolani@maarch.org')
-                print(mail)
+                mail = box.content.lower()
+                contact = WebService.retrieveContactByMail(mail)
+                if contact:
+                    data  = {
+                        'encodedFile'       : base64.b64encode(open(args['pdf'] + file,'rb').read()).decode("utf-8"),
+                        'priority'          : Config.cfg['RESOURCES']['priority'],
+                        'status'            : Config.cfg['RESOURCES']['status'],
+                        'type_id'           : Config.cfg['RESOURCES']['type_id'],
+                        'format'            : Config.cfg['RESOURCES']['format'],
+                        'category_id'       : Config.cfg['RESOURCES']['category_id'],
+                        'address_id'        : contact['id'],
+                        'exp_contact_id'    : contact['contact_id']
+                    }
+                    res = WebService.insert(data)
+                    if res:
+                        print ('Insert OK : ' + res)
+                        break
+                    else:
+                        print ('Insert error : ' + res)
+            elif re.match(r"((http|https)://)?(www\.)?[a-zA-Z0-9+_\.\-]+\.(" + Config.cfg['REGEX']['urlpattern'] + ")$", box.content):
+                url = box.content.lower()
+                contact = WebService.retrieveContactByUrl('http://www.maarch.com')
+                print(contact)
+                sys.exit()
