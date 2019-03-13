@@ -6,6 +6,7 @@ import re
 import classes.Database as dbClass
 import classes.PyOCR as ocrClass
 import classes.Images as imagesClass
+import classes.Config as configClass
 
 ####### Functions definitions
 
@@ -59,17 +60,20 @@ def checkZipCode(zipCode):
 if __name__ == '__main__':
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--pdf", required=True,
-                    help="path to folder containing pdf")
+    ap.add_argument("-p", "--pdf", required=True, help="path to folder containing pdf")
+    ap.add_argument("-c", "--config", required=True, help="path to config.xml")
     args                = vars(ap.parse_args())
 
     # Init all the necessary classes
-    Database            = dbClass.Database('./data/sqlite/zipcode.db')
-    Ocr                 = ocrClass.PyOCR()
-    fileName            = "/tmp/tmp.jpg"
-    resolution          = 300
-    compressionQuality  = 100
-    Image = imagesClass.Images(fileName, resolution, compressionQuality)
+    Config      = configClass.Config(args['config'])
+    Database    = dbClass.Database(Config.cfg['SQLITE']['path'])
+    Ocr         = ocrClass.PyOCR()
+    fileName    = Config.cfg['GLOBAL']['tmpfilename']
+    Image       = imagesClass.Images(
+        fileName,
+        int(Config.cfg['GLOBAL']['resolution']),
+        int(Config.cfg['GLOBAL']['compressionquality'])
+    )
 
     # Start the process
     for file in os.listdir(args['pdf']):
