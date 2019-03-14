@@ -3,13 +3,11 @@ import argparse
 import sys
 import os
 import re
-import base64
 import classes.Database as dbClass
 import classes.PyOCR as ocrClass
 import classes.Images as imagesClass
 import classes.Config as configClass
 import classes.WebServices as webserviceClass
-
 
 if __name__ == '__main__':
     # construct the argument parse and parse the arguments
@@ -47,26 +45,22 @@ if __name__ == '__main__':
         for box in Ocr.text:
             if re.match(r"[^@]+@[^@]+\.[^@]+", box.content):
                 mail = box.content.lower()
-                contact = WebService.retrieveContactByMail(mail)
+                contact = WebService.retrieve_contact_by_mail(mail)
                 if contact:
-                    data  = {
-                        'encodedFile'       : base64.b64encode(open(args['pdf'] + file,'rb').read()).decode("utf-8"),
-                        'priority'          : Config.cfg['RESOURCES']['priority'],
-                        'status'            : Config.cfg['RESOURCES']['status'],
-                        'type_id'           : Config.cfg['RESOURCES']['type_id'],
-                        'format'            : Config.cfg['RESOURCES']['format'],
-                        'category_id'       : Config.cfg['RESOURCES']['category_id'],
-                        'address_id'        : contact['id'],
-                        'exp_contact_id'    : contact['contact_id']
-                    }
-                    res = WebService.insert(data)
+                    res = WebService.insert_with_contact_info(args['pdf'] + file, Config, contact)
                     if res:
                         print ('Insert OK : ' + res)
                         break
                     else:
                         print ('Insert error : ' + res)
-            elif re.match(r"((http|https)://)?(www\.)?[a-zA-Z0-9+_\.\-]+\.(" + Config.cfg['REGEX']['urlpattern'] + ")$", box.content):
+            elif re.match(r"((http|https)://)?(www\.)?[a-zA-Z0-9+_.\-]+\.(" + Config.cfg['REGEX']['urlpattern'] + ")$", box.content):
                 url = box.content.lower()
-                contact = WebService.retrieveContactByUrl('http://www.maarch.com')
-                print(contact)
-                sys.exit()
+                contact = WebService.retrieve_contact_by_url('http://www.maarch.com')
+                if contact:
+                    res = WebService.insert_with_contact_info(args['pdf'] + file, Config, contact)
+                    if res:
+                        print ('Insert OK : ' + res)
+                        break
+                    else:
+                        print ('Insert error : ' + res)
+
