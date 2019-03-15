@@ -3,8 +3,11 @@ import argparse
 import sys
 import os
 import re
-import classes.Database as dbClass
+from _datetime import datetime
+import dateutil.parser as dparser
+import classes.Log as logClass
 import classes.PyOCR as ocrClass
+import classes.Database as dbClass
 import classes.Images as imagesClass
 import classes.Config as configClass
 import classes.WebServices as webserviceClass
@@ -18,10 +21,12 @@ if __name__ == '__main__':
 
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
+    Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
     WebService  = webserviceClass.WebServices(
         Config.cfg['WS']['host'],
         Config.cfg['WS']['user'],
-        Config.cfg['WS']['password']
+        Config.cfg['WS']['password'],
+        Log
     )
     Database    = dbClass.Database(Config.cfg['SQLITE']['path'])
     Ocr         = ocrClass.PyOCR()
@@ -34,33 +39,47 @@ if __name__ == '__main__':
 
     # Start process
     for file in os.listdir(args['pdf']):
-        print(file)
+        Log.info('Processing file : ' + args['pdf'] + file)
         # Open the pdf and convert it to JPG
         # Then resize the picture
         Image.pdf_to_jpg(args['pdf'] + file + '[0]')
 
-        # Get all the content we just ocr'ed
-        Ocr.word_box_builder(Image.img)
+        Ocr.text_builder(Image.img)
 
-        for box in Ocr.text:
-            if re.match(r"[^@]+@[^@]+\.[^@]+", box.content):
-                mail = box.content.lower()
-                contact = WebService.retrieve_contact_by_mail(mail)
+        # Find subject of document
+        subject = None
+        for findSubject in re.finditer(r"[o,O]bje[c]?t\s*(:)?\s*.*", Ocr.text):
+            subject = re.sub(r"[o,O]bje[c]?t\s*(:)?\s*", '', findSubject.group())
+            break
+
+        # Find date of document
+        foundDate = False
+        print(file)
+        for findDate in re.finditer(r"([\d]{1,2}|[\d]{1}\w{2})\s?([JFMASONDjfmasond][a-zA-Z_À-ÿ]*|[/,-]\d{2}[/,-])\s?[\d]{4}", Ocr.text):
+            #date = datetime.datetime.strptime(findDate.group(), '%d-%m-%Y').date()
+            print(datetime.strptime(findDate.group(), '%d-%m-%Y'))
+            foundDate = True
+
+
+        # Find mail in document and check if the contact exist in Maarch
+        foundContact    = False
+        for mail in re.finditer(r"[^@\s]+@[^@\s]+\.[^@\s]+", Ocr.text):
+            Log.info('Find E-MAIL : ' + mail.group())
+            contact = WebService.retrieve_contact_by_mail(mail.group())
+            if contact:
+                foundContact = True
+                break
+
+        # If not contact were found, search for URL
+        if not foundContact:
+            for url in re.finditer(r"((http|https)://)?(www\.)?[a-zA-Z0-9+_.\-]+\.(" + Config.cfg['REGEX']['urlpattern'] + ")", Ocr.text):
+                Log.info('Find URL : ' + url.group())
+                contact = WebService.retrieve_contact_by_url(url.group())
                 if contact:
-                    res = WebService.insert_with_contact_info(args['pdf'] + file, Config, contact)
-                    if res:
-                        print ('Insert OK : ' + res)
-                        break
-                    else:
-                        print ('Insert error : ' + res)
-            elif re.match(r"((http|https)://)?(www\.)?[a-zA-Z0-9+_.\-]+\.(" + Config.cfg['REGEX']['urlpattern'] + ")$", box.content):
-                url = box.content.lower()
-                contact = WebService.retrieve_contact_by_url('http://www.maarch.com')
-                if contact:
-                    res = WebService.insert_with_contact_info(args['pdf'] + file, Config, contact)
-                    if res:
-                        print ('Insert OK : ' + res)
-                        break
-                    else:
-                        print ('Insert error : ' + res)
+                    foundContact = True
+                    break
+
+        res = WebService.insert_with_args(args['pdf'] + file, Config, contact, subject)
+        if res:
+            Log.info("Insert OK : " + res)
 

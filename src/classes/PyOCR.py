@@ -29,3 +29,9 @@ class PyOCR:
             builder=pyocr.builders.WordBoxBuilder()
         )
 
+    def text_builder(self, img):
+        self.text = self.tool.image_to_string(
+            img,
+            lang=self.lang,
+            builder=pyocr.builders.TextBuilder()
+        )
