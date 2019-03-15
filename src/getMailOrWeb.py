@@ -57,7 +57,11 @@ if __name__ == '__main__':
         print(file)
         for findDate in re.finditer(r"([\d]{1,2}|[\d]{1}\w{2})\s?([JFMASONDjfmasond][a-zA-Z_À-ÿ]*|[/,-]\d{2}[/,-])\s?[\d]{4}", Ocr.text):
             #date = datetime.datetime.strptime(findDate.group(), '%d-%m-%Y').date()
-            print(datetime.strptime(findDate.group(), '%d-%m-%Y'))
+            date = findDate.group().replace('1er', '01')
+            try:
+                print(dparser.parse(date, dayfirst=True))
+            except ValueError as e:
+                print(e)
             foundDate = True
 
 
