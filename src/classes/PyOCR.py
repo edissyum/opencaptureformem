@@ -2,10 +2,10 @@ import pyocr.builders
 import sys
 
 class PyOCR:
-    def __init__(self):
+    def __init__(self, locale):
         self.text = ''
         self.tool = ''
-        self.lang = ''
+        self.lang = locale
         self.info()
 
     def info(self):
@@ -19,7 +19,11 @@ class PyOCR:
 
         langs = self.tool.get_available_languages()
         print("Available languages: %s" % ", ".join(langs))
-        self.lang = langs[2]
+        for l in langs:
+            if l == self.lang:
+                self.lang = l
+            else:
+                self.lang = langs[2]
         print("Will use lang '%s'" % self.lang)
 
     def word_box_builder(self, img):

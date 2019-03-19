@@ -3,11 +3,11 @@ import argparse
 import sys
 import os
 import re
-from _datetime import datetime
-import dateutil.parser as dparser
+from datetime import datetime
 import classes.Log as logClass
 import classes.PyOCR as ocrClass
 import classes.Database as dbClass
+import classes.Locale as localeClass
 import classes.Images as imagesClass
 import classes.Config as configClass
 import classes.WebServices as webserviceClass
@@ -29,20 +29,21 @@ if __name__ == '__main__':
         Log
     )
     Database    = dbClass.Database(Config.cfg['SQLITE']['path'])
-    Ocr         = ocrClass.PyOCR()
     fileName    = Config.cfg['GLOBAL']['tmpfilename']
     Image       = imagesClass.Images(
         fileName,
         int(Config.cfg['GLOBAL']['resolution']),
         int(Config.cfg['GLOBAL']['compressionquality'])
     )
+    Locale      = localeClass.Locale(Config)
+    Ocr         = ocrClass.PyOCR(Locale.localeOCR)
 
     # Start process
     for file in os.listdir(args['pdf']):
         Log.info('Processing file : ' + args['pdf'] + file)
         # Open the pdf and convert it to JPG
         # Then resize the picture
-        Image.pdf_to_jpg(args['pdf'] + file + '[0]')
+        Image.pdf_to_jpg_without_resize(args['pdf'] + file + '[0]')
 
         Ocr.text_builder(Image.img)
 
@@ -53,13 +54,20 @@ if __name__ == '__main__':
             break
 
         # Find date of document
-        foundDate = False
+        foundDate   = False
+        date        = ''
         print(file)
-        for findDate in re.finditer(r"([\d]{1,2}|[\d]{1}\w{2})\s?([JFMASONDjfmasond][a-zA-Z_À-ÿ]*|[/,-]\d{2}[/,-])\s?[\d]{4}", Ocr.text):
-            #date = datetime.datetime.strptime(findDate.group(), '%d-%m-%Y').date()
-            date = findDate.group().replace('1er', '01')
+        for findDate in re.finditer(r"" + Locale.regexDate + "", Ocr.text):
+            date        = findDate.group().replace('1er', '01') # Replace some possible inconvenient char
+            dateConvert = Locale.arrayDate
+            for key in dateConvert:
+                for month in dateConvert[key]:
+                    if month.lower() in date:
+                        date = (date.lower().replace(month.lower(), key))
+                        break
+
             try:
-                print(dparser.parse(date, dayfirst=True))
+                date = datetime.strptime(date, '%d %m %Y')
             except ValueError as e:
                 print(e)
             foundDate = True
@@ -83,7 +91,7 @@ if __name__ == '__main__':
                     foundContact = True
                     break
 
-        res = WebService.insert_with_args(args['pdf'] + file, Config, contact, subject)
+        res = WebService.insert_with_args(args['pdf'] + file, Config, contact, subject, date)
         if res:
             Log.info("Insert OK : " + res)
 

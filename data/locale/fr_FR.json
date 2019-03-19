@@ -1,0 +1,70 @@
+{
+    "dateConvert"   : {
+        "01": [
+            "Janvier",
+            "Janv",
+            "Janv."
+        ],
+        "02": [
+            "Février",
+            "Févr",
+            "Fév",
+            "Fevr",
+            "Fev",
+            "Févr.",
+            "Fév.",
+            "Fevr.",
+            "Fev."
+        ],
+        "03": [
+            "Mars"
+        ],
+        "04": [
+            "Avril",
+            "Avr",
+            "Avr."
+        ],
+        "05": [
+            "Mai"
+        ],
+        "06": [
+            "Juin"
+        ],
+        "07": [
+            "Juillet",
+            "Juil",
+            "Juil."
+        ],
+        "08": [
+            "Aout",
+            "Août"
+        ],
+        "09": [
+            "Septembre",
+            "Sept",
+            "Sep",
+            "Sept.",
+            "Sep."
+        ],
+        "10": [
+            "Octobre",
+            "Oct",
+            "Oct."
+        ],
+        "11": [
+            "Novembre",
+            "Nov",
+            "Nov."
+        ],
+        "12": [
+            "Décembre",
+            "Decembre",
+            "Déc",
+            "Déc.",
+            "Dec",
+            "Dec."
+        ]
+    },
+    "dateRegex"     : "([\\d]{1,2}|[\\d]{1}\\w{2})\\s?([JFMASONDjfmasond][a-zA-Z_À-ÿ]*|[/,-]\\d{2}[/,-])\\s?[\\d]{4}",
+    "dateFormat"    : "%d-%m-%Y"
+}

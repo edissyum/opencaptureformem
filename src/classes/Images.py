@@ -15,6 +15,12 @@ class Images:
             pic.save(filename=self.jpgName)
         self.resize()
 
+    def pdf_to_jpg_without_resize(self, pdfName):
+        with Img(filename=pdfName, resolution=self.resolution) as pic:
+            pic.compression_quality = self.compressionQuality
+            pic.save(filename=self.jpgName)
+        self.img = Image.open(self.jpgName)
+
     def resize(self):
         # Open the picture to resize it and save it as is
         img = cv2.imread(self.jpgName)
@@ -25,8 +31,8 @@ class Images:
         y = 0
         w = width
         h = int(height * 0.35)
-        #crop_image = img[y:y + h, x:x + w]
-        #cv2.imwrite(self.jpgName, crop_image)
+        crop_image = img[y:y + h, x:x + w]
+        cv2.imwrite(self.jpgName, crop_image)
 
         # Read the image before we get the text content
         self.img = Image.open(self.jpgName)

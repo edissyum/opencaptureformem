@@ -11,7 +11,7 @@ class Database:
             print('Error connecting to database : ' + str(e))
 
     def create(self):
-        self.cursor.execute("""
+        '''self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS zipCode(
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
                 zip INTEGER
@@ -24,7 +24,13 @@ class Database:
                     zip INTEGER
                 )
             """)
-
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS fr_FR(
+                id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+                txt VARCHAR,
+                digit VARCHAR
+            )
+        """)'''
         self.conn.commit()
 
     def insert(self):
@@ -37,7 +43,7 @@ class Database:
                 cnt += 1
             self.conn.commit()
 
-    def select(self, table, where):
-        self.cursor.execute("SELECT * FROM " + table + " WHERE " + where)
-        res = self.cursor.fetchone()
+    def select(self, select, table, where):
+        self.cursor.execute("SELECT " + select + " FROM " + table + " WHERE " + where)
+        res = self.cursor.fetchall()
         return res

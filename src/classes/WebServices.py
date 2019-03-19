@@ -3,8 +3,6 @@ import requests
 import json
 import base64
 import sys
-import classes.Log as logClass
-import classes.Config as configClass
 
 class WebServices:
     def __init__(self, host, user, pwd, Log):
@@ -30,7 +28,7 @@ class WebServices:
         else:
             return json.loads(res.text)
 
-    def insert_with_args(self, file, Config, contact, subject):
+    def insert_with_args(self, file, Config, contact, subject, date):
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
@@ -42,7 +40,8 @@ class WebServices:
             'category_id'   : Config.cfg['RESOURCES']['category_id'],
             'subject'       : subject,
             'address_id'    : contact['id'],
-            'exp_contact_id': contact['contact_id']
+            'exp_contact_id': contact['contact_id'],
+            'doc_date'      : date
         }
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data)
         if res.status_code != 200:
