@@ -21,6 +21,9 @@ class Images:
             pic.save(filename=self.jpgName)
         self.img = Image.open(self.jpgName)
 
+    def open_img(self, img):
+        self.img = Image.open(img)
+
     def resize(self):
         # Open the picture to resize it and save it as is
         img = cv2.imread(self.jpgName)

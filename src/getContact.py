@@ -3,10 +3,13 @@ import argparse
 import sys
 import os
 import re
-import classes.Database as dbClass
+import classes.Log as logClass
 import classes.PyOCR as ocrClass
+import classes.Database as dbClass
+import classes.Locale as localeClass
 import classes.Images as imagesClass
 import classes.Config as configClass
+import classes.WebServices as webserviceClass
 
 ####### Functions definitions
 
@@ -60,26 +63,39 @@ def checkZipCode(zipCode):
 if __name__ == '__main__':
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--pdf", required=True, help="path to folder containing pdf")
+    ap.add_argument("-p", "--path", required=True, help="path to folder containing pdf")
     ap.add_argument("-c", "--config", required=True, help="path to config.xml")
     args                = vars(ap.parse_args())
 
     # Init all the necessary classes
-    Config      = configClass.Config(args['config'])
-    Database    = dbClass.Database(Config.cfg['SQLITE']['path'])
-    Ocr         = ocrClass.PyOCR()
-    fileName    = Config.cfg['GLOBAL']['tmpfilename']
-    Image       = imagesClass.Images(
+    Config = configClass.Config(args['config'])
+    Log = logClass.Log(Config.cfg['GLOBAL']['logfile'])
+    WebService = webserviceClass.WebServices(
+        Config.cfg['OCForMaarch']['host'],
+        Config.cfg['OCForMaarch']['user'],
+        Config.cfg['OCForMaarch']['password'],
+        Log
+    )
+    Database = dbClass.Database(Config.cfg['REFERENTIALS']['zipcode'])
+    fileName = Config.cfg['GLOBAL']['tmpfilename']
+    Image = imagesClass.Images(
         fileName,
         int(Config.cfg['GLOBAL']['resolution']),
         int(Config.cfg['GLOBAL']['compressionquality'])
     )
+    Locale = localeClass.Locale(Config)
+    Ocr = ocrClass.PyOCR(Locale.localeOCR)
 
     # Start the process
-    for file in os.listdir(args['pdf']):
+    for file in os.listdir(args['path']):
+        print (file)
+        Log.info('Processing file : ' + args['path'] + file)
         # Open the pdf and convert it to JPG
         # Then resize the picture
-        Image.pdf_to_jpg(args['pdf'] + file + '[0]')
+        if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
+            Image.pdf_to_jpg(args['path'] + file + '[0]')
+        else:  # Open the picture
+            Image.open_img(args['path'] + file)
 
         # Get all the content we just ocr'ed
         Ocr.word_box_builder(Image.img)
@@ -112,7 +128,7 @@ if __name__ == '__main__':
         for zipCode in arrayOfZipCode:
             res = getNearWords(arrayOfLine, zipCode)
             print (res + '\n')
-            '''with open(args['pdf'] + file + '.txt', 'a') as the_file:
+            '''with open(args['path'] + file + '.txt', 'a') as the_file:
                 the_file.write(res)'''
         #os.remove(fileName)
     sys.exit()

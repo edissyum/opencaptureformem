@@ -28,16 +28,17 @@ class WebServices:
         else:
             return json.loads(res.text)
 
-    def insert_with_args(self, file, Config, contact, subject, date):
+    def insert_with_args(self, fileContent, Config, contact, subject, date):
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
-            'encodedFile'   : base64.b64encode(open(file, 'rb').read()).decode("utf-8"),
-            'priority'      : Config.cfg['RESOURCES']['priority'],
-            'status'        : Config.cfg['RESOURCES']['status'],
-            'type_id'       : Config.cfg['RESOURCES']['type_id'],
-            'format'        : Config.cfg['RESOURCES']['format'],
-            'category_id'   : Config.cfg['RESOURCES']['category_id'],
+            #'encodedFile'   : base64.b64encode(open(file, 'rb').read()).decode("utf-8"),
+            'encodedFile'   : base64.b64encode(fileContent).decode("utf-8"),
+            'priority'      : Config.cfg['OCForMaarch']['priority'],
+            'status'        : Config.cfg['OCForMaarch']['status'],
+            'type_id'       : Config.cfg['OCForMaarch']['type_id'],
+            'format'        : Config.cfg['OCForMaarch']['format'],
+            'category_id'   : Config.cfg['OCForMaarch']['category_id'],
             'subject'       : subject,
             'address_id'    : contact['id'],
             'exp_contact_id': contact['contact_id'],

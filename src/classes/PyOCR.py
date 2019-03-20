@@ -1,11 +1,13 @@
 import pyocr.builders
+import pytesseract
 import sys
 
 class PyOCR:
     def __init__(self, locale):
-        self.text = ''
-        self.tool = ''
-        self.lang = locale
+        self.text               = ''
+        self.tool               = ''
+        self.lang               = locale
+        self.searchablePdf      = ''
         self.info()
 
     def info(self):
@@ -32,10 +34,19 @@ class PyOCR:
             lang=self.lang,
             builder=pyocr.builders.WordBoxBuilder()
         )
+        '''self.text = pytesseract.image_to_data(
+            img,
+            lang=self.lang
+        )'''
 
     def text_builder(self, img):
-        self.text = self.tool.image_to_string(
+        self.text = pytesseract.image_to_string(
             img,
-            lang=self.lang,
-            builder=pyocr.builders.TextBuilder()
+            lang=self.lang
+        )
+
+    def generate_searchable_pdf(self, img):
+        self.searchablePdf =  pytesseract.image_to_pdf_or_hocr(
+            img,
+            extension='pdf'
         )
