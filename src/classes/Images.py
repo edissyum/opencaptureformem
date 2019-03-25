@@ -53,11 +53,15 @@ class Images:
         for file in os.listdir(path):
             if file.endswith("." + extension):
                 filename    = os.path.splitext(file)[0]
-                cpt         = filename.split('-')[1]
-                if len(cpt) == 1:
-                    tmpCpt = '0' + str(cpt)
-                    cpt = tmpCpt
-                file_json.append((cpt, path + file))
+                isCountable = filename.split('-')
+                if len(isCountable) > 1 :
+                    cpt = isCountable[1]
+                    if len(cpt) == 1:
+                        tmpCpt = '0' + str(cpt)
+                        cpt = tmpCpt
+                    file_json.append((cpt, path + file))
+                else:
+                    file_json.append(('00', path + file))
         sorted_file = sorted(file_json, key=lambda fileCPT: fileCPT[0])
         return sorted_file
 
@@ -66,6 +70,7 @@ class Images:
         merger = PdfFileMerger()
         for pdf in fileSorted:
             merger.append(pdf[1])
+            os.remove(pdf[1])
         merger.write('/tmp/' + 'result.pdf')
 
         return open('/tmp/' + 'result.pdf', 'rb').read()

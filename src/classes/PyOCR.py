@@ -48,7 +48,7 @@ class PyOCR:
 
     def generate_searchable_pdf(self, pdf, Image, Config):
         tmpPath = Config.cfg['GLOBAL']['tmppath']
-        '''Image.open_img_with_wand(pdf, tmpPath + 'tmp.jpg')
+        Image.open_img_with_wand(pdf, tmpPath + 'tmp.jpg')
         i = 0
         sortedImgList = Image.sorted_file(tmpPath, 'jpg')
         for img in sortedImgList:
@@ -60,7 +60,7 @@ class PyOCR:
             f.write(bytearray(tmpSearchablePdf))
             f.close()
             i = i + 1
-            os.remove(img[1])'''
+            os.remove(img[1])
 
         sortedPdfList       = Image.sorted_file(tmpPath, 'pdf')
         self.searchablePdf  = Image.merge_pdf(sortedPdfList, tmpPath)

@@ -66,9 +66,12 @@ if __name__ == '__main__':
         path = args['file']
         if Separator.enabled == 'True':
             Separator.process(path)
-            path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
-            for file in os.listdir(path):
-                process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService)
+            if Separator.error: # in case the file is not a pdf, process as an Image
+                process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
+            else:
+                path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
+                for file in os.listdir(path):
+                    process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService)
         else:
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)

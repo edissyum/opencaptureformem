@@ -34,7 +34,6 @@ class WebServices:
         data = {
             #'encodedFile'   : base64.b64encode(open(file, 'rb').read()).decode("utf-8"),
             'encodedFile'   : base64.b64encode(fileContent),
-            #'encodedFile'   : "dGVzdA==",
             'priority'      : Config.cfg['OCForMaarch']['priority'],
             'status'        : Config.cfg['OCForMaarch']['status'],
             'type_id'       : Config.cfg['OCForMaarch']['type_id'],
@@ -48,7 +47,6 @@ class WebServices:
         }
 
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data)
-        print(res, res.text, res.content)
         if res.status_code != 200:
             self.Log.error('InsertIntoMaarch : ' + str(res.status_code) + ' : ' + str(res.text))
             return False

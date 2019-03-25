@@ -94,4 +94,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
     res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination)
     if res:
         Log.info("Insert OK : " + res)
-        os.remove(file)
+        try:
+            os.remove(file)
+        except FileNotFoundError as e:
+            Log.error('Unable to delete ' + file + ' : ' + str(e))

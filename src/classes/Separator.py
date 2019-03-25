@@ -19,6 +19,7 @@ class Separator:
         self.tmp_dir            = Config.cfg['SEPARATOR_QR']['tmppath']
         self.convert_to_pdfa    = Config.cfg['SEPARATOR_QR']['exportpdfa']
         self.divider            = Config.cfg['SEPARATOR_QR']['divider']
+        self.error              = False
 
     def process(self, file):
         self.pages  =   []
@@ -26,14 +27,15 @@ class Separator:
         try:
             pdf = PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
+            self.get_xml_qr_code(file)
+            self.parse_xml()
+            self.check_empty_docs()
+            self.set_doc_ends()
+            self.extract_and_convert_docs(file)
         except Exception as e:
+            self.error = True
             self.Log.error("INIT: " + str(e))
 
-        self.get_xml_qr_code(file)
-        self.parse_xml()
-        self.check_empty_docs()
-        self.set_doc_ends()
-        self.extract_and_convert_docs(file)
 
     def get_xml_qr_code(self, file):
         try:
@@ -63,8 +65,8 @@ class Separator:
                 page['index_start'] = page['index_sep'] + 2
 
             page['uuid']            = str(uuid.uuid4())    # Generate random number for pdf filename
-            page['pdf_filename']    = self.output_dir + page['service'] + '_' + page['uuid'] + '.pdf'
-            page['pdfa_filename']   = self.output_dir_pdfa + page['service'] + '_' + page['uuid'] + '.pdf'
+            page['pdf_filename']    = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
+            page['pdfa_filename']   = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
             self.pages.append(page)
 
         self.nb_doc = len(self.pages)
