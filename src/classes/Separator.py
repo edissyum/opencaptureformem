@@ -13,10 +13,12 @@ class Separator:
         self.pages              = []
         self.nb_pages           = 0
         self.nb_doc             = 0
+        self.enabled            = Config.cfg['SEPARATOR_QR']['enabled']
         self.output_dir         = Config.cfg['SEPARATOR_QR']['outputpdfpath']
         self.output_dir_pdfa    = Config.cfg['SEPARATOR_QR']['outputpdfapath']
         self.tmp_dir            = Config.cfg['SEPARATOR_QR']['tmppath']
         self.convert_to_pdfa    = Config.cfg['SEPARATOR_QR']['exportpdfa']
+        self.divider            = Config.cfg['SEPARATOR_QR']['divider']
 
     def process(self, file):
         self.pages  =   []
@@ -55,7 +57,7 @@ class Separator:
             page['index_sep']   = int(index.attrib['num'])
 
             if page['index_sep'] + 1 >= self.nb_pages: # If last page is a separator
-                page['is_empty'] = True
+                page['is_empty']    = True
             else:
                 page['is_empty']    = False
                 page['index_start'] = page['index_sep'] + 2
@@ -90,7 +92,6 @@ class Separator:
             return
         try:
             for page in self.pages:
-                print(page['pdf_filename'])
                 if page['is_empty']:
                     continue
                 pdftk_args = ['pdftk']

@@ -1,6 +1,7 @@
 import pyocr.builders
 import pytesseract
 import sys
+import os
 
 class PyOCR:
     def __init__(self, locale):
@@ -45,8 +46,21 @@ class PyOCR:
             lang=self.lang
         )
 
-    def generate_searchable_pdf(self, img):
-        self.searchablePdf =  pytesseract.image_to_pdf_or_hocr(
-            img,
-            extension='pdf'
-        )
+    def generate_searchable_pdf(self, pdf, Image, Config):
+        tmpPath = Config.cfg['GLOBAL']['tmppath']
+        '''Image.open_img_with_wand(pdf, tmpPath + 'tmp.jpg')
+        i = 0
+        sortedImgList = Image.sorted_file(tmpPath, 'jpg')
+        for img in sortedImgList:
+            tmpSearchablePdf =  pytesseract.image_to_pdf_or_hocr(
+                img[1],
+                extension='pdf'
+            )
+            f = open(tmpPath + 'test-'+ str(i) +'.pdf', 'wb')
+            f.write(bytearray(tmpSearchablePdf))
+            f.close()
+            i = i + 1
+            os.remove(img[1])'''
+
+        sortedPdfList       = Image.sorted_file(tmpPath, 'pdf')
+        self.searchablePdf  = Image.merge_pdf(sortedPdfList, tmpPath)
