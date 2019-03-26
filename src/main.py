@@ -18,7 +18,7 @@ import os
 import sys
 import argparse
 import classes.Log as logClass
-import classes.PyOCR as ocrClass
+import classes.PyTesseract as ocrClass
 import classes.Locale as localeClass
 import classes.Images as imagesClass
 import classes.Config as configClass
