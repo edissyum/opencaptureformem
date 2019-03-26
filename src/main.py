@@ -14,11 +14,9 @@
 # along with OpenCapture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-
-import argparse
-import sys
 import os
-from process.OCForMaarch import process
+import sys
+import argparse
 import classes.Log as logClass
 import classes.PyOCR as ocrClass
 import classes.Locale as localeClass
@@ -26,7 +24,7 @@ import classes.Images as imagesClass
 import classes.Config as configClass
 import classes.Separator as separatorClass
 import classes.WebServices as webserviceClass
-
+from process.OCForMaarch import process
 
 if __name__ == '__main__':
     # construct the argument parse and parse the arguments

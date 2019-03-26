@@ -15,10 +15,10 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-from requests.auth import HTTPBasicAuth
-import requests
 import json
 import base64
+import requests
+from requests.auth import HTTPBasicAuth
 
 class WebServices:
     def __init__(self, host, user, pwd, Log):

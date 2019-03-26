@@ -15,10 +15,10 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-import pyocr.builders
-import pytesseract
-import sys
 import os
+import sys
+import pytesseract
+import pyocr.builders
 
 class PyOCR:
     def __init__(self, locale):

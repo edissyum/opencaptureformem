@@ -15,11 +15,12 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-from wand.image import Image as Img
-from PyPDF2 import PdfFileMerger
-from PIL import Image
-import cv2
 import os
+import cv2
+from PIL import Image
+from PyPDF2 import PdfFileMerger
+from wand.image import Image as Img
+
 
 class Images:
     def __init__(self, jpgName, res, quality):

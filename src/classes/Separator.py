@@ -20,8 +20,8 @@ import sys
 import uuid
 import shutil
 import subprocess
-from PyPDF2 import PdfFileReader
 import xml.etree.ElementTree as ET
+from PyPDF2 import PdfFileReader
 
 class Separator:
     def __init__(self, Log, Config):
