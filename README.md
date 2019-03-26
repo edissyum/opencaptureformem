@@ -51,7 +51,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
 > /etc/php/7.X/apache2/php.ini
 
-By default I recommend to replace **8M** by **20M**
+By default it is recommended to replace **8M** by **20M**
 
 # LICENSE
 
