@@ -44,21 +44,21 @@ if __name__ == '__main__':
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
+    fileName    = Config.cfg['GLOBAL']['tmpfilename']
+    Locale      = localeClass.Locale(Config)
+    Ocr         = ocrClass.PyOCR(Locale.localeOCR)
+    Separator   = separatorClass.Separator(Log, Config)
     WebService  = webserviceClass.WebServices(
         Config.cfg['OCForMaarch']['host'],
         Config.cfg['OCForMaarch']['user'],
         Config.cfg['OCForMaarch']['password'],
         Log
     )
-    fileName    = Config.cfg['GLOBAL']['tmpfilename']
-    Image       = imagesClass.Images(
+    Image = imagesClass.Images(
         fileName,
         int(Config.cfg['GLOBAL']['resolution']),
         int(Config.cfg['GLOBAL']['compressionquality'])
     )
-    Locale      = localeClass.Locale(Config)
-    Ocr         = ocrClass.PyOCR(Locale.localeOCR)
-    Separator   = separatorClass.Separator(Log, Config)
 
     # Start process
     if args['path'] is not None:
