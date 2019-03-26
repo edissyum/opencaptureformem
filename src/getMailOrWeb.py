@@ -5,7 +5,6 @@ import os
 from process.OCForMaarch import process
 import classes.Log as logClass
 import classes.PyOCR as ocrClass
-import classes.Database as dbClass
 import classes.Locale as localeClass
 import classes.Images as imagesClass
 import classes.Config as configClass
@@ -37,7 +36,6 @@ if __name__ == '__main__':
         Config.cfg['OCForMaarch']['password'],
         Log
     )
-    Database    = dbClass.Database(Config.cfg['REFERENTIALS']['zipcode'])
     fileName    = Config.cfg['GLOBAL']['tmpfilename']
     Image       = imagesClass.Images(
         fileName,
