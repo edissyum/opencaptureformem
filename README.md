@@ -36,19 +36,24 @@ The functionnalities of OC for Maarch are :
     sudo pip3 install pyPdf2 
     sudo pip3 install pytesseract 
     sudo pip3 install pillow
+    sudo pip3 install configparser
 
-  
 
-If you want to generate PDF/A instead of PDF, you have to do the following :  
-  
-> cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/  
-> nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps  
-> Replace : %/ICCProfile (srgb.icc) % Customise  
-> By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize  
-  
-## Apache modifications  
-  
-In case some big files will be send, you have to increase the **post_max_size** parameter on the following file  
-> /etc/php/7.X/apache2/php.ini  
-  
+
+If you want to generate PDF/A instead of PDF, you have to do the following :
+
+> cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/
+> nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps
+> Replace : %/ICCProfile (srgb.icc) % Customise
+> By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
+
+## Apache modifications
+
+In case some big files will be send, you have to increase the **post_max_size** parameter on the following file
+> /etc/php/7.X/apache2/php.ini
+
 By default I recommend to replace **8M** by **20M**
+
+# LICENSE
+
+OpenCapture for Maarch is released under the GPL v3.

@@ -1,0 +1,5 @@
+requests
+pyPdf2
+pytesseract
+pillow
+configparser
