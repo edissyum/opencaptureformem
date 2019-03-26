@@ -16,7 +16,6 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import sys
 import pytesseract
 
 class PyTesseract:
