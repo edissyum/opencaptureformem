@@ -2,8 +2,6 @@
 import argparse
 import sys
 import os
-import re
-from datetime import datetime
 from process.OCForMaarch import process
 import classes.Log as logClass
 import classes.PyOCR as ocrClass

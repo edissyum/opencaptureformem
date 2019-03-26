@@ -56,7 +56,7 @@ class PyOCR:
                 img[1],
                 extension='pdf'
             )
-            f = open(tmpPath + 'test-'+ str(i) +'.pdf', 'wb')
+            f = open(tmpPath + 'tmp-'+ str(i) +'.pdf', 'wb')
             f.write(bytearray(tmpSearchablePdf))
             f.close()
             i = i + 1
