@@ -3,3 +3,4 @@ pyPdf2
 pytesseract
 pillow
 configparser
+wand

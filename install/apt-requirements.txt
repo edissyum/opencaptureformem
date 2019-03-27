@@ -1,3 +1,7 @@
+pdftk
 python3
 python3-pip
-pdftk
+poppler-utils
+tesseract-ocr
+tesseract-ocr-fra
+libmagickwand-dev
