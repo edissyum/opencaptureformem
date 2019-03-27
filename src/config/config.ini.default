@@ -1,15 +1,15 @@
 [GLOBAL]
 # Use ${GLOBAL:projectPath} to specify once for all the path of the project
-projectPath         = /opt/maarch/
+projectPath         = /opt/maarch/OpenCapture
 tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 resolution          = 300
 compressionQuality  = 100
 logFile             = ${GLOBAL:projectPath}/data/log/OCforMaarch.log
 
 [LOCALE]
-# fr_FR or en_EN
+# fr_FR or en_EN by default
 locale              = fr_FR
-# fra, eng or osd
+# fra or eng by default
 localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/data/locale/
 

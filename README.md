@@ -1,5 +1,5 @@
 
-# OpenCapture for Maarch
+# OpenCapture for Maarch  18.10
 
 OpenCapture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
@@ -31,7 +31,7 @@ A server running the latest version of Debian. As Tesseract 4.0 is currently not
 
 Nothing as simple as that :
 
-    $ git clone https://gitlab.com/edissyum/opencapture/
+    $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd opencapture/install
     $ sudo ./Makefile
 
@@ -41,19 +41,93 @@ Nothing as simple as that :
 
   It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
-
     $ sudo apt install tesseract-ocr-langcode
 
-  Here is a list of all available languages : https://www.macports.org/ports.php?by=name&substr=tesseract-
+  Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
+
+## WebServices for Maarch 18.10
+
+In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
+First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
+Then add the new route to the end of **rest/index.php**, juste before the line <code>$app->run();</code>
+
+> $app->get('/getContactByMail', \Contact\controllers\ContactController::class . ':getByMail');
+> $app->get('/getContactByUrl', \Contact\controllers\ContactController::class . ':getByUrl');
+
+Then, go to **src/app/contact/controllers/ContactController.php** and at the end of the file, juste before the last <code>}</code>, put :
+
+    public function getByMail(Request $request, Response $response)
+    {
+      $data = $request->getParams();
+      $contact = ContactModel::getByMail([
+      'mail' => $data['mail'],
+      ]);
+
+     return $response->withJson($contact);
+    }
+
+    public function getByUrl(Request $request, Response $response)
+    {
+      $data = $request->getParams();
+      $contact = ContactModel::getByUrl([
+      'url' => $data['url'],
+      ]);
+
+     return $response->withJson($contact);
+    }
 
 
 
+## Various
 If you want to generate PDF/A instead of PDF, you have to do the following :
 
 > cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/
 > nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps
 > Replace : %/ICCProfile (srgb.icc) % Customise
 > By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
+
+
+# Informations
+## QRCode separation
+
+Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
+
+## Configuration
+
+The file <code>src/config/config.ini</code> is splitted in different categories
+
+ - Global
+	 - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
+	 - tmpPath, no need to modify
+	 - Resolution and compressionQuality when PDF are converted to JPG
+	 - Path to the logFile, no need to modify
+ - Locale
+	 - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
+	 - Choose the locale of OCR (see the langcodes of Tesseract)
+	 - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
+ - OCForMaarch
+	 - Link to **/rest** API of Maarch with User and Password
+	 - Default metadata to insert documents (type_id, status, priority, format, category_id and destination)
+ - Regex
+	 - Add extensions to detect URL during text detection
+ - Separator_QR
+	 - Enable or disable
+	 - Choose to export PDF or PDF/A
+	 - Path to export PDF or PDF/A, no need to modify
+	 - Tmp path, no need to modify
+	 - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
+
+# Utilisations
+Here is some examples of possible usages :
+
+    $ python3 src/main.py -c src/config/config.ini -f file.pdf
+    $ python3 src/main.py -c src/config/config.ini -p /path/to/folder/
+    $ python3 src/main.py -c src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+
+--read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
+-f stands for unique file
+-p stands for path containing PDF/JPG/PNG files and process them as batch
+
 
 ## Apache modifications
 
