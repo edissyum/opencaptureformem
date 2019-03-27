@@ -33,6 +33,7 @@ A server running the latest version of Debian. As Tesseract 4.0 is currently not
 
 Nothing as simple as that :
 
+    sudo apt install git
     git clone https://gitlab.com/edissyum/opencapture/
     cd opencapture/install
     ./Makefile

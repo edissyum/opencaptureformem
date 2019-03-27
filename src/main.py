@@ -41,6 +41,9 @@ if __name__ == '__main__':
     elif args['path'] is not None and args['file'] is not None:
         sys.exit('Chose between path or file')
 
+    if not os.path.exists(args['config']):
+        sys.exit('Config file couldn\'t be found')
+
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])

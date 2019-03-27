@@ -33,7 +33,7 @@ class PyTesseract:
 
     def generate_searchable_pdf(self, pdf, Image, Config):
         tmpPath = Config.cfg['GLOBAL']['tmppath']
-        Image.open_img_with_wand(pdf, tmpPath + 'tmp.jpg')
+        Image.save_img_with_wand(pdf, tmpPath + 'tmp.jpg')
         i = 0
         sortedImgList = Image.sorted_file(tmpPath, 'jpg')
         for img in sortedImgList:

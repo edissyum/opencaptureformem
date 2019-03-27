@@ -28,16 +28,19 @@ class Images:
         self.compressionQuality     = quality
         self.img                    = None
 
+    # Convert the first page of PDF to JPG and open the image
     def pdf_to_jpg(self, pdfName):
         with Img(filename=pdfName, resolution=self.resolution) as pic:
             pic.compression_quality = self.compressionQuality
             pic.save(filename=self.jpgName)
         self.img = Image.open(self.jpgName)
 
-    def open_img_with_PIL(self, img):
+    # Simply open an image
+    def open_img(self, img):
         self.img = Image.open(img)
 
-    def open_img_with_wand(self, pdfName, output):
+    # Save pdf with one or more pages into JPG file
+    def save_img_with_wand(self, pdfName, output):
         with Img(filename=pdfName, resolution=self.resolution) as pic:
             pic.compression_quality = self.compressionQuality
             pic.save(filename=output)

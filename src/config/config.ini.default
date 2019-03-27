@@ -1,6 +1,6 @@
 [GLOBAL]
 # Use ${GLOBAL:projectPath} to specify once for all the path of the project
-projectPath         = //home/nathan/PycharmProjects/OpenCapture for Maarch
+projectPath         = /opt/maarch/
 tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 resolution          = 300
 compressionQuality  = 100
@@ -14,9 +14,9 @@ localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/data/locale/
 
 [OCForMaarch]
-host                = http://localhost/maarch1810/cs_maarch1810/rest/
-user                = bblier
-password            = maarch
+host                = http://localhost/cs_maarch/rest/
+user                = edissyumws
+password            = A1B2C3edissyum
 
 status              = NEW
 type_id             = 1202

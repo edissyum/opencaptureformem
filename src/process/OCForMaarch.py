@@ -39,9 +39,9 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
         Image.pdf_to_jpg(file + '[0]')
 
         # Check if pdf is already OCR and searchable
-        checkOcr = os.popen('pdffonts ' + file, 'r')
-        tmp = ''
-        isOcr = True
+        checkOcr    = os.popen('pdffonts ' + file, 'r')
+        tmp         = ''
+        isOcr       = True
         for line in checkOcr:
             tmp += line
 
@@ -50,7 +50,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
         else:
             isOcr = False
     else:  # Open the picture
-        Image.open_img_with_PIL(file)
+        Image.open_img(file)
         isOcr = False
 
     # Get the OCR of the file as a string content
