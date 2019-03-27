@@ -1,41 +1,52 @@
-# OpenCapture for Maarch  
-  
-OpenCapture is a **free and Open Source** software under **GNU General Public License v3.0**.  
 
-The functionnalities of OC for Maarch are : 
+# OpenCapture for Maarch
+
+OpenCapture is a **free and Open Source** software under **GNU General Public License v3.0**.
+
+The functionnalities of OC for Maarch are :
 
  - Process files by batch (in a given folder)
- - Process unique file 
+ - Process unique file
  - Output searchable PDF, one or multiple pages
  - Split PDF using QRCode and rename splitted PDF file using QRCode ID
  - Process PDF or image file as input
- - OCR and text recognition : 
+ - OCR and text recognition :
 	 - Find a date and use it as metadata
 	 - Find a mail or URL to reconciliate with an existing contact in Maarch
 	 - Find an object and use it as metadata
- - Insert documents in Maarch with pre-qualified metadata : 
+ - Insert documents in Maarch with pre-qualified metadata :
 	 - Destination with QRCode
 	 - Date, contact, object with text recognition
  - Output PDF or PDF/A file
  - Works with **fr_FR** and **en_EN** locales
  - Fully logged, infos and errors
- 
-  
-  
-# Installation  
-  
-## Necessary package  
-  
 
-    sudo apt install python3 
-    sudo apt install python3-pip
-    sudo apt install pdftk 
 
-    sudo pip3 install requests 
-    sudo pip3 install pyPdf2 
-    sudo pip3 install pytesseract 
-    sudo pip3 install pillow
-    sudo pip3 install configparser
+
+# Installation
+
+## Pre-requisite
+
+A server running the latest version of Debian. As Tesseract 4.0 is currently not available from strech package, it's needed to compile it. Don't worry.
+
+## Install OpenCapture for Maarch
+
+Nothing as simple as that :
+
+    git clone https://gitlab.com/edissyum/opencapture/
+    cd opencapture/install
+    ./Makefile
+
+    export LD_LIBRARY_PATH=/usr/local/lib
+    export TESSDATA_PREFIX=/usr/share/tesseract-ocr/tessdata/
+
+
+  It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
+
+
+    sudo apt install tesseract-ocr-langcode
+
+  Here is a list of all available languages : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
 
 
