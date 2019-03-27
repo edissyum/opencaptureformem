@@ -128,7 +128,7 @@ class Separator:
                     gs_args = gs_commandLine.split('#')
                     subprocess.check_call(gs_args)
                     os.remove(page['pdf_filename'])
-            #os.remove(file)
+            os.remove(file)
         except subprocess.CalledProcessError as cpe:
             self.Log.error("EACD:\ncmd: %s\noutput: %s" % (cpe.cmd, cpe.output))
         except Exception as e:
