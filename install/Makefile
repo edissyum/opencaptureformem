@@ -7,3 +7,6 @@ cd tesseract
 mkdir build && cd build
 cmake .. && make
 make install
+cd ../../
+rm -rf tesseract
+find -name ".gitkeep" -delete

@@ -51,7 +51,7 @@ class Separator:
             self.extract_and_convert_docs(file)
         except Exception as e:
             self.error = True
-            self.Log.error("INIT: " + str(e))
+            self.Log.error("INIT : " + str(e))
 
 
     def get_xml_qr_code(self, file):
@@ -60,9 +60,9 @@ class Separator:
             self.qrList = ET.fromstring(xml)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
-                self.Log.error("GZX:\nreturn code: %s\ncmd: %s\noutput: %s" % (cpe.returncode, cpe.cmd, cpe.output))
+                self.Log.error("GZX : \nreturn code: %s\ncmd: %s\noutput: %s" % (cpe.returncode, cpe.cmd, cpe.output))
         except:
-            self.Log.error("GZX2:Unexpected error:", sys.exc_info()[0])
+            self.Log.error("GZX2 : Unexpected error : " + str(sys.exc_info()[0]))
 
     def parse_xml(self):
         if self.qrList is None:
@@ -107,7 +107,7 @@ class Separator:
             try:
                 shutil.move(file, self.output_dir)
             except shutil.Error as e:
-                self.Log.error(file + ' already exist in the destination path')
+                self.Log.error('Moving file ' + file + ' error : ' + str(e))
             return
         try:
             for page in self.pages:
