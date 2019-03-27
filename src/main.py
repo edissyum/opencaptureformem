@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
-    fileName    = Config.cfg['GLOBAL']['tmpfilename']
+    fileName    = Config.cfg['GLOBAL']['tmppath'] + 'temp.jpg'
     Locale      = localeClass.Locale(Config)
     Ocr         = ocrClass.PyTesseract(Locale.localeOCR)
     Separator   = separatorClass.Separator(Log, Config)
