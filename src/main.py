@@ -46,7 +46,7 @@ if __name__ == '__main__':
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
     fileName    = Config.cfg['GLOBAL']['tmpfilename']
     Locale      = localeClass.Locale(Config)
-    Ocr         = ocrClass.PyOCR(Locale.localeOCR)
+    Ocr         = ocrClass.PyTesseract(Locale.localeOCR)
     Separator   = separatorClass.Separator(Log, Config)
     WebService  = webserviceClass.WebServices(
         Config.cfg['OCForMaarch']['host'],

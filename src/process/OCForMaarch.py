@@ -36,7 +36,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
         destination = Config.cfg['OCForMaarch']['destination']
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
-        Image.pdf_to_jpg_without_resize(file + '[0]')
+        Image.pdf_to_jpg(file + '[0]')
 
         # Check if pdf is already OCR and searchable
         checkOcr = os.popen('pdffonts ' + file, 'r')
