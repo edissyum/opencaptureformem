@@ -15,39 +15,33 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 import os
-import sys
-import argparse
-import classes.Log as logClass
-import classes.PyTesseract as ocrClass
-import classes.Locale as localeClass
-import classes.Images as imagesClass
-import classes.Config as configClass
-import classes.Separator as separatorClass
-import classes.WebServices as webserviceClass
-from process.OCForMaarch import process
+from kuyruk import Kuyruk
+from kuyruk_manager import Manager
+import src.classes.Log as logClass
+import src.classes.Locale as localeClass
+import src.classes.Images as imagesClass
+import src.classes.Config as configClass
+import src.classes.PyTesseract as ocrClass
+from src.process.OCForMaarch import process
+import src.classes.Separator as separatorClass
+import src.classes.WebServices as webserviceClass
 
-if __name__ == '__main__':
-    # construct the argument parse and parse the arguments
-    ap      = argparse.ArgumentParser()
-    ap.add_argument("-f", "--file", required=False, help="path to file")
-    ap.add_argument("-c", "--config", required=True, help="path to config.xml")
-    ap.add_argument("-d", '--destination', required=False, help="Default destination")
-    ap.add_argument("-p", "--path", required=False, help="path to folder containing documents")
-    ap.add_argument("--read-destination-from-filename", '--RDFF', dest='RDFF', action="store_true", required=False, help="Read destination from filename")
-    args    = vars(ap.parse_args())
+OCforMaarch = Kuyruk()
 
-    if args['path'] is None and args['file'] is None:
-        sys.exit('No file or path were given')
-    elif args['path'] is not None and args['file'] is not None:
-        sys.exit('Chose between path or file')
+OCforMaarch.config.MANAGER_HOST = "127.0.0.1"
+OCforMaarch.config.MANAGER_PORT = 16501
+OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
-    if not os.path.exists(args['config']):
-        sys.exit('Config file couldn\'t be found')
+m = Manager(OCforMaarch)
+# If needed just run kuyruk --app src.main.OCforMaarch manager to have web dashboard of current running worker
+# Before, do : pip3 install kuyruk-manager
 
+@OCforMaarch.task()
+def launch(args):
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
-    fileName    = Config.cfg['GLOBAL']['tmppath'] + 'temp.jpg'
+    fileName    = Config.cfg['GLOBAL']['tmppath'] + 'tmp.jpg'
     Locale      = localeClass.Locale(Config)
     Ocr         = ocrClass.PyTesseract(Locale.localeOCR)
     Separator   = separatorClass.Separator(Log, Config)
@@ -57,7 +51,7 @@ if __name__ == '__main__':
         Config.cfg['OCForMaarch']['password'],
         Log
     )
-    Image = imagesClass.Images(
+    Image       = imagesClass.Images(
         fileName,
         int(Config.cfg['GLOBAL']['resolution']),
         int(Config.cfg['GLOBAL']['compressionquality'])

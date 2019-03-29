@@ -123,11 +123,7 @@ class Separator:
                 subprocess.check_call(pdftk_args)
 
                 if self.convert_to_pdfa == 'True':
-                    gs_commandLine = 'gs#-dPDFA#-dNOOUTERSAVE#-sProcessColorModel=DeviceCMYK#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=1#PDFA_def.ps#%s' \
-                                     % (page['pdfa_filename'], page['pdf_filename'])
-                    gs_args = gs_commandLine.split('#')
-                    subprocess.check_call(gs_args)
-                    os.remove(page['pdf_filename'])
+                    self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
             os.remove(file)
         except subprocess.CalledProcessError as cpe:
             self.Log.error("EACD:\ncmd: %s\noutput: %s" % (cpe.cmd, cpe.output))
@@ -135,4 +131,9 @@ class Separator:
             self.Log.error("EACD: " + str(e))
 
 
-
+    def convert_to_pdfa(self, pdfa_filename, pdf_filename):
+        gs_commandLine = 'gs#-dPDFA#-dNOOUTERSAVE#-sProcessColorModel=DeviceCMYK#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=1#PDFA_def.ps#%s' \
+                         % (pdfa_filename, pdf_filename)
+        gs_args = gs_commandLine.split('#')
+        subprocess.check_call(gs_args)
+        os.remove(pdf_filename)

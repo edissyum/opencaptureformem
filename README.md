@@ -32,7 +32,7 @@ A server running the latest version of Debian. As Tesseract 4.0 is currently not
 Nothing as simple as that :
 
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
-    $ cd opencapture/install
+    $ cd /opt/maarch/OpenCapture/install/
     $ sudo ./Makefile
 
     $ export LD_LIBRARY_PATH=/usr/local/lib
@@ -118,15 +118,17 @@ The file <code>src/config/config.ini</code> is splitted in different categories
 	 - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
 
 # Utilisations
+We use worker and jobs to enqueue process.
 Here is some examples of possible usages :
 
-    $ python3 src/main.py -c src/config/config.ini -f file.pdf
-    $ python3 src/main.py -c src/config/config.ini -p /path/to/folder/
-    $ python3 src/main.py -c src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
 -p stands for path containing PDF/JPG/PNG files and process them as batch
+
 
 
 ## Apache modifications

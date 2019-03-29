@@ -39,6 +39,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
         Image.pdf_to_jpg(file + '[0]')
 
         # Check if pdf is already OCR and searchable
+
         checkOcr    = os.popen('pdffonts ' + file, 'r')
         tmp         = ''
         isOcr       = True
@@ -104,7 +105,6 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
             Log.info('Find URL : ' + url.group())
             contact = WebService.retrieve_contact_by_url(url.group())
             if contact:
-                foundContact = True
                 break
 
     res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination)

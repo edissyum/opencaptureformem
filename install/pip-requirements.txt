@@ -1,6 +1,7 @@
-requests
-pyPdf2
-pytesseract
-pillow
-configparser
 wand
+pyPdf2
+pillow
+kuyruk
+requests
+pytesseract
+configparser

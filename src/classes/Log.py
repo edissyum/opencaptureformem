@@ -19,8 +19,10 @@ import logging
 
 class Log:
     def __init__(self, path):
+        self.LOGGER = logging.getLogger('OpenCapture')
+        if self.LOGGER.hasHandlers():
+            self.LOGGER.handlers.clear() # Clear the handlers to avoid double logs
         self.path   = path
-        self.LOGGER = logging.getLogger('ContestBot')
         logFile = logging.FileHandler(path)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         logFile.setFormatter(formatter)
