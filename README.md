@@ -45,6 +45,35 @@ Nothing as simple as that :
 
   Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
+## Create service
+
+> sudo nano /etc/systemd/system/oc-worker.service
+> Put into it :
+> [Unit]
+>
+> Description=Daemon for OpenCapture for Maarch
+>
+> [Service] Type=simple
+>
+> User=nathan
+> Group=nathan
+> UMask=755
+>
+> WorkingDirectory=/opt/maarch/OpenCapture/
+> ExecStart=/usr/local/bin/kuyruk --app src.main.OCforMaarch worker
+>
+> Restart=on-failure
+
+Then launch :
+
+> sudo systemctl daemon-reload && sudo systemctl start oc-worker.service
+
+# Configures the time to wait before service is stopped forcefully.
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target
+
 ## WebServices for Maarch 18.10
 
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
@@ -128,7 +157,6 @@ Here is some examples of possible usages :
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
 -p stands for path containing PDF/JPG/PNG files and process them as batch
-
 
 
 ## Apache modifications
