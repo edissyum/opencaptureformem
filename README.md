@@ -19,7 +19,7 @@ The functionnalities of OC for Maarch are :
  - Output PDF or PDF/A file
  - Works with **fr_FR** and **en_EN** locales
  - Fully logged, infos and errors
-
+ - For now it deals only with **PDF** or **JPG** files
 
 # Installation
 
@@ -47,32 +47,20 @@ Nothing as simple as that :
 
 ## Create service
 
-> sudo nano /etc/systemd/system/oc-worker.service
-> Put into it :
-> [Unit]
->
-> Description=Daemon for OpenCapture for Maarch
->
-> [Service] Type=simple
->
-> User=nathan
-> Group=nathan
-> UMask=755
->
-> WorkingDirectory=/opt/maarch/OpenCapture/
-> ExecStart=/usr/local/bin/kuyruk --app src.main.OCforMaarch worker
->
-> Restart=on-failure
+The ./Makefile command create the service, but you may want to change the User and Group so just open the ./MakfFile and change lines **22** and **23**
 
-Then launch :
+## Set up the incron
 
-> sudo systemctl daemon-reload && sudo systemctl start oc-worker.service
+We want to automatise the capture of document. For that, we'll use incrontab.
+First, add your user into the following file :
 
-# Configures the time to wait before service is stopped forcefully.
-TimeoutStopSec=300
+> /etc/incron.allow
 
-[Install]
-WantedBy=multi-user.target
+Then use <code>incrontab -e</code> and put the following line :
+
+    /path/to/capture/ IN_CLOSE,IN_MOVED_TO,IN_NO_LOOP /opt/maarch/OpenCapture/scripts/IN.sh $@/$#
+
+
 
 ## WebServices for Maarch 18.10
 
@@ -156,7 +144,7 @@ Here is some examples of possible usages :
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
--p stands for path containing PDF/JPG/PNG files and process them as batch
+-p stands for path containing PDF/JPG files and process them as batch
 
 
 ## Apache modifications
@@ -169,3 +157,4 @@ By default it is recommended to replace **8M** by **20M**
 # LICENSE
 
 OpenCapture for Maarch is released under the GPL v3.
+

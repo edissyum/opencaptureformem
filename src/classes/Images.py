@@ -16,8 +16,10 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import time
+import shutil
+import PyPDF2
 from PIL import Image
-from PyPDF2 import PdfFileMerger
 from wand.image import Image as Img
 
 
@@ -65,10 +67,37 @@ class Images:
 
     @staticmethod
     def merge_pdf(fileSorted, tmpPath):
-        merger = PdfFileMerger()
+        merger = PyPDF2.PdfFileMerger()
         for pdf in fileSorted:
             merger.append(pdf[1])
             os.remove(pdf[1])
         merger.write('/tmp/' + 'result.pdf')
 
         return open('/tmp/' + 'result.pdf', 'rb').read()
+
+    @staticmethod
+    def check_file_integrity(file, Config):
+        isFull = False
+        while not isFull:
+            with open(file, 'rb') as doc:
+                size = os.path.getsize(file)
+                time.sleep(1)
+                size2 = os.path.getsize(file)
+                if size2 == size:
+                    if file.endswith(".pdf"):
+                        try:
+                            PyPDF2.PdfFileReader(doc)
+                        except PyPDF2.utils.PdfReadError:
+                            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
+                            return False
+                        else:
+                            return True
+                    elif file.endswith('.jpg'):
+                        try:
+                            Image.open(file)
+                        except OSError:
+                            return False
+                        else:
+                            return True
+                else:
+                    continue

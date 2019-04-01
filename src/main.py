@@ -66,6 +66,9 @@ def launch(args):
         path = args['path']
         if Separator.enabled == 'True':
             for fileToSep in os.listdir(path):
+                if not Image.check_file_integrity(path + fileToSep, Config):
+                    Log.error('The integrity of file could\'nt be verified')
+                    sys.exit()
                 Separator.process(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
@@ -75,6 +78,10 @@ def launch(args):
 
     elif args['file'] is not None:
         path = args['file']
+        if not Image.check_file_integrity(path, Config):
+            Log.error('The integrity of file could\'nt be verified')
+            sys.exit()
+
         if Separator.enabled == 'True':
             Separator.process(path)
             if Separator.error: # in case the file is not a pdf, process as an Image
@@ -84,6 +91,10 @@ def launch(args):
                 for file in os.listdir(path):
                     process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService)
         else:
+            if not Image.check_file_integrity(path, Config):
+                Log.error('The integrity of file could\'nt be verified')
+                sys.exit()
+
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
 

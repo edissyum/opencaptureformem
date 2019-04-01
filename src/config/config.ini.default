@@ -5,6 +5,7 @@ tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 resolution          = 300
 compressionQuality  = 100
 logFile             = ${GLOBAL:projectPath}/data/log/OCforMaarch.log
+errorPath           = ${GLOBAL:projectPath}/data/error/
 
 [LOCALE]
 # fr_FR or en_EN by default

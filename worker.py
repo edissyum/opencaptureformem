@@ -1,7 +1,8 @@
 import os
 import sys
-from src.main import launch
 import argparse
+from src.main import launch
+
 
 
 # construct the argument parse and parse the arguments

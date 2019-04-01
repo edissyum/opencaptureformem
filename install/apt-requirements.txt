@@ -1,6 +1,7 @@
 g++
 cmake
 pdftk
+incron
 python3
 zbar-tools
 pkg-config
