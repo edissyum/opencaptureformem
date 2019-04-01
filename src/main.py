@@ -14,7 +14,11 @@
 # along with OpenCapture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+import sys
+
 import os
+# useful to use the worker and avoid ModuleNotFoundError
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
 from kuyruk_manager import Manager
 import src.classes.Log as logClass

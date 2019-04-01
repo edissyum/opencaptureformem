@@ -40,7 +40,6 @@ class Separator:
 
     def process(self, file):
         self.pages  =   []
-
         try:
             pdf = PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
@@ -60,7 +59,7 @@ class Separator:
             self.qrList = ET.fromstring(xml)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
-                self.Log.error("GZX : \nreturn code: %s\ncmd: %s\noutput: %s" % (cpe.returncode, cpe.cmd, cpe.output))
+                self.Log.error("GZX : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
         except:
             self.Log.error("GZX2 : Unexpected error : " + str(sys.exc_info()[0]))
 
