@@ -48,7 +48,6 @@ class WebServices:
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
-            #'encodedFile'   : base64.b64encode(open(file, 'rb').read()).decode("utf-8"),
             'encodedFile'   : base64.b64encode(fileContent),
             'priority'      : Config.cfg['OCForMaarch']['priority'],
             'status'        : Config.cfg['OCForMaarch']['status'],

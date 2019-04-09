@@ -15,7 +15,6 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 import sys
-
 import os
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -37,7 +36,7 @@ OCforMaarch.config.MANAGER_PORT = 16501
 OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
 m = Manager(OCforMaarch)
-# If needed just run kuyruk --app src.main.OCforMaarch manager to have web dashboard of current running worker
+# If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 # Before, do : pip3 install kuyruk-manager
 
 @OCforMaarch.task()
@@ -75,7 +74,6 @@ def launch(args):
         # Find file in the wanted folder (default or exported pdf after qrcode separation)
         for file in os.listdir(path):
             process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService)
-
     elif args['file'] is not None:
         path = args['file']
         if not Image.check_file_integrity(path, Config):
@@ -97,6 +95,4 @@ def launch(args):
 
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
-
-
 

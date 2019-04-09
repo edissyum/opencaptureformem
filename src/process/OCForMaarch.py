@@ -114,3 +114,6 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
             os.remove(file)
         except FileNotFoundError as e:
             Log.error('Unable to delete ' + file + ' : ' + str(e))
+        return True
+    else:
+        return False
