@@ -20,6 +20,7 @@ The functionnalities of OC for Maarch are :
  - Works with **fr_FR** and **en_EN** locales
  - Fully logged, infos and errors
  - For now it deals only with **PDF** or **JPG** files
+ - Check integrity of a file to avoid processing incomplete files
 
 # Installation
 

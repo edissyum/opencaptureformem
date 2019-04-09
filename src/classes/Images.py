@@ -71,9 +71,9 @@ class Images:
         for pdf in fileSorted:
             merger.append(pdf[1])
             os.remove(pdf[1])
-        merger.write('/tmp/' + 'result.pdf')
+        merger.write(tmpPath + '/result.pdf')
 
-        return open('/tmp/' + 'result.pdf', 'rb').read()
+        return open(tmpPath + '/result.pdf', 'rb').read()
 
     @staticmethod
     def check_file_integrity(file, Config):
