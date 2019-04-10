@@ -72,8 +72,10 @@ class Images:
             merger.append(pdf[1])
             os.remove(pdf[1])
         merger.write(tmpPath + '/result.pdf')
+        fileToReturn = open(tmpPath + '/result.pdf', 'rb').read()
+        os.remove(tmpPath + '/result.pdf')
 
-        return open(tmpPath + '/result.pdf', 'rb').read()
+        return fileToReturn
 
     @staticmethod
     def check_file_integrity(file, Config):

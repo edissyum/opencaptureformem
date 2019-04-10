@@ -61,7 +61,8 @@ class WebServices:
             'doc_date'      : date
         }
 
-        res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data)
+        res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data, headers={'Connection':'close'})
+
         if res.status_code != 200:
             self.Log.error('InsertIntoMaarch : ' + str(res.status_code) + ' : ' + str(res.text))
             return False

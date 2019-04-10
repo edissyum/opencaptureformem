@@ -3,8 +3,6 @@ import sys
 import argparse
 from src.main import launch
 
-
-
 # construct the argument parse and parse the arguments
 ap      = argparse.ArgumentParser()
 ap.add_argument("-f", "--file", required=False, help="path to file")
