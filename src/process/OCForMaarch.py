@@ -16,8 +16,10 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import re
-from datetime import datetime
+import shutil
+from .findDate import findDate
+from .findSubject import findSubject
+from .findContact import findContact
 
 def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
     Log.info('Processing file : ' + file)
@@ -42,7 +44,6 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
 
         checkOcr    = os.popen('pdffonts ' + file, 'r')
         tmp         = ''
-        isOcr       = True
         for line in checkOcr:
             tmp += line
 
@@ -59,54 +60,35 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
 
     # Create the searchable PDF if necessary
     if isOcr is False:
+        os.remove(Image.jpgName)
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
     else:
         fileToSend = open(file, 'rb').read()
 
     # Find subject of document
-    subject = None
-    for findSubject in re.finditer(r"[o,O]bje[c]?t\s*(:)?\s*.*", Ocr.text):
-        subject = re.sub(r"[o,O]bje[c]?t\s*(:)?\s*", '', findSubject.group())
-        break
+    subjectThread   = findSubject(Ocr.text)
 
     # Find date of document
-    date = ''
-    for findDate in re.finditer(r"" + Locale.regexDate + "", Ocr.text):
-        date = findDate.group().replace('1er', '01')  # Replace some possible inconvenient char
-        dateConvert = Locale.arrayDate
-        for key in dateConvert:
-            for month in dateConvert[key]:
-                if month.lower() in date:
-                    date = (date.lower().replace(month.lower(), key))
-                    break
-        try:
-            date = datetime.strptime(date, Locale.dateTimeFomat).strftime(Locale.formatDate)
-            break
-        except ValueError as e:
-            print(e)
+    dateThread      = findDate(Ocr.text, Log, Locale, Config, WebService)
 
     # Find mail in document and check if the contact exist in Maarch
-    foundContact = False
-    contact = ''
-    for mail in re.finditer(r"[^@\s]+@[^@\s]+\.[^@\s]+", Ocr.text):
-        Log.info('Find E-MAIL : ' + mail.group())
-        contact = WebService.retrieve_contact_by_mail(mail.group())
-        if contact:
-            foundContact = True
-            break
+    contactThread   = findContact(Ocr.text, Log, Config, WebService)
 
-    # If not contact were found, search for URL
-    if not foundContact:
-        for url in re.finditer(
-                r"((http|https)://)?(www\.)?[a-zA-Z0-9+_.\-]+\.(" + Config.cfg['REGEX']['urlpattern'] + ")",
-                Ocr.text
-        ):
-            Log.info('Find URL : ' + url.group())
-            contact = WebService.retrieve_contact_by_url(url.group())
-            if contact:
-                break
+    # Launch all threads
+    subjectThread.start()
+    dateThread.start()
+    contactThread.start()
 
+    # Wait for end of threads
+    subjectThread.join()
+    dateThread.join()
+    contactThread.join()
+
+    # Get the returned values
+    subject = subjectThread.subject
+    date    = dateThread.date
+    contact = contactThread.contact
     res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination)
     if res:
         Log.info("Insert OK : " + res)
@@ -116,4 +98,5 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
             Log.error('Unable to delete ' + file + ' : ' + str(e))
         return True
     else:
+        shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
         return False
