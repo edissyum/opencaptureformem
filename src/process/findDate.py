@@ -1,10 +1,10 @@
 import re
 from datetime import datetime
-from threading import Thread, currentThread
+from threading import Thread
 
 class findDate(Thread):
     def __init__(self, text, Log, Locale, Config, WebService):
-        Thread.__init__(self)
+        Thread.__init__(self, name='dateThread')
         self.text       = text
         self.Log        = Log
         self.Locale     = Locale
@@ -13,7 +13,6 @@ class findDate(Thread):
         self.date       = ''
 
     def run(self):
-        print(currentThread().getName() + ' Starting Date')
         for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text):
             self.date = _date.group().replace('1er', '01')  # Replace some possible inconvenient char
             dateConvert = self.Locale.arrayDate
@@ -27,5 +26,3 @@ class findDate(Thread):
                 break
             except ValueError as e:
                 print(e)
-
-        print(currentThread().getName() + ' Exiting Date')

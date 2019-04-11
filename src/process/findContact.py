@@ -1,9 +1,9 @@
 import re
-from threading import Thread, currentThread
+from threading import Thread
 
 class findContact(Thread):
     def __init__(self, text, Log, Config, WebService):
-        Thread.__init__(self)
+        Thread.__init__(self, name='contactThread')
         self.text       = text
         self.Log        = Log
         self.Config     = Config
@@ -11,7 +11,6 @@ class findContact(Thread):
         self.contact    = ''
 
     def run(self):
-        print(currentThread().getName() + ' Starting Contact')
         foundContact = False
         for mail in re.finditer(r"[^@\s]+@[^@\s]+\.[^@\s]+", self.text):
             self.Log.info('Find E-MAIL : ' + mail.group())
@@ -31,5 +30,3 @@ class findContact(Thread):
                 if contact:
                     self.contact = contact
                     break
-
-        print(currentThread().getName() + ' Exiting Contact')
