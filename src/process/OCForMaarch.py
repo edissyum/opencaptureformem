@@ -58,14 +58,6 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
     # Get the OCR of the file as a string content
     Ocr.text_builder(Image.img)
 
-    # Create the searchable PDF if necessary
-    if isOcr is False:
-        os.remove(Image.jpgName)
-        Ocr.generate_searchable_pdf(file, Image, Config)
-        fileToSend = Ocr.searchablePdf
-    else:
-        fileToSend = open(file, 'rb').read()
-
     # Find subject of document
     subjectThread   = findSubject(Ocr.text)
 
@@ -76,19 +68,29 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
     contactThread   = findContact(Ocr.text, Log, Config, WebService)
 
     # Launch all threads
-    subjectThread.start()
     dateThread.start()
+    subjectThread.start()
     contactThread.start()
 
     # Wait for end of threads
-    subjectThread.join()
     dateThread.join()
+    subjectThread.join()
     contactThread.join()
 
     # Get the returned values
-    subject = subjectThread.subject
     date    = dateThread.date
+    subject = subjectThread.subject
     contact = contactThread.contact
+
+    # Create the searchable PDF if necessary
+    if isOcr is False:
+        os.remove(Image.jpgName)
+        Ocr.generate_searchable_pdf(file, Image, Config)
+        fileToSend = Ocr.searchablePdf
+    else:
+        fileToSend = open(file, 'rb').read()
+
+    # Send to Maarch
     res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination)
     if res:
         Log.info("Insert OK : " + res)
