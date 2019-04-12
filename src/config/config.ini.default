@@ -20,6 +20,7 @@ host                = http://localhost/cs_maarch/rest/
 user                = edissyumws
 password            = A1B2C3edissyum
 processAvailable    = incoming,outgoing
+defaultProcess      = incoming
 
 [OCForMaarch_incoming]
 status              = NEW

@@ -54,6 +54,7 @@ class WebServices:
             'type_id'       : Config.cfg[_process]['type_id'],
             'format'        : Config.cfg[_process]['format'],
             'category_id'   : Config.cfg[_process]['category_id'],
+            'typist'        : Config.cfg[_process]['typist'],
             'subject'       : subject,
             'destination'   : destination,
             'address_id'    : contact['id'],
