@@ -26,6 +26,7 @@ ap.add_argument("-f", "--file", required=False, help="path to file")
 ap.add_argument("-c", "--config", required=True, help="path to config.xml")
 ap.add_argument("-d", '--destination', required=False, help="Default destination")
 ap.add_argument("-p", "--path", required=False, help="path to folder containing documents")
+ap.add_argument('-process', "--process", required=False, default='incoming')
 ap.add_argument("--read-destination-from-filename", '--RDFF', dest='RDFF', action="store_true", required=False, help="Read destination from filename")
 args    = vars(ap.parse_args())
 

@@ -44,23 +44,24 @@ class WebServices:
         else:
             return json.loads(res.text)
 
-    def insert_with_args(self, fileContent, Config, contact, subject, date, destination):
+    def insert_with_args(self, fileContent, Config, contact, subject, date, destination, _process):
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
-            'encodedFile'   : base64.b64encode(fileContent),
-            'priority'      : Config.cfg['OCForMaarch']['priority'],
-            'status'        : Config.cfg['OCForMaarch']['status'],
-            'type_id'       : Config.cfg['OCForMaarch']['type_id'],
-            'format'        : Config.cfg['OCForMaarch']['format'],
-            'category_id'   : Config.cfg['OCForMaarch']['category_id'],
+            #'encodedFile'   : base64.b64encode(fileContent),
+            'priority'      : Config.cfg[_process]['priority'],
+            'status'        : Config.cfg[_process]['status'],
+            'type_id'       : Config.cfg[_process]['type_id'],
+            'format'        : Config.cfg[_process]['format'],
+            'category_id'   : Config.cfg[_process]['category_id'],
             'subject'       : subject,
             'destination'   : destination,
             'address_id'    : contact['id'],
             'exp_contact_id': contact['contact_id'],
             'doc_date'      : date
         }
-
+        print(data)
+        exit()
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data, headers={'Connection':'close'})
 
         if res.status_code != 200:

@@ -23,18 +23,24 @@ from .FindContact import FindContact
 def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, q):
     Log.info('Processing file : ' + file)
 
+    # Check if the choosen process mode if available. If not take the default one
+    if args['process'] in Config.cfg['OCForMaarch']['processavailable'].split(','):
+        _process = 'OCForMaarch_' + args['process'].lower()
+    else:
+        _process = 'OCForMaarch_' + Config.cfg['OCForMaarch']['defaultprocess'].lower()
+
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
     if args['RDFF']:
         fileName = os.path.basename(file)
         if Separator.divider not in fileName:
-            destination = Config.cfg['OCForMaarch']['destination']
+            destination = Config.cfg[_process]['destination']
         else:
             destination = fileName.split(Separator.divider)[0]
     # Or from the destination arguments
     elif args['destination']:
         destination = args['destination']
     else:
-        destination = Config.cfg['OCForMaarch']['destination']
+        destination = Config.cfg[_process]['destination']
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
         Image.pdf_to_jpg(file + '[0]')
@@ -95,30 +101,10 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         'date'          : date,
         'subject'       : subject,
         'contact'       : contact,
-        'destination'   : destination
+        'destination'   : destination,
+        'process'       : _process
     }
 
     q.put(fileToStore)
 
     return q
-
-    # Create the searchable PDF if necessary
-    '''if isOcr is False:
-        os.remove(Image.jpgName) # Delete the temp file used to OCR'ed the first PDF page
-        Ocr.generate_searchable_pdf(file, Image, Config)
-        fileToSend = Ocr.searchablePdf
-    else:
-        fileToSend = open(file, 'rb').read()
-
-    # Send to Maarch
-    res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination)
-    if res:
-        Log.info("Insert OK : " + res)
-        try:
-            os.remove(file)
-        except FileNotFoundError as e:
-            Log.error('Unable to delete ' + file + ' : ' + str(e))
-        return True
-    else:
-        shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
-        return False'''

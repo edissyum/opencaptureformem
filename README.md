@@ -146,6 +146,7 @@ Here is some examples of possible usages :
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
 -p stands for path containing PDF/JPG files and process them as batch
+-process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
 ## Apache modifications

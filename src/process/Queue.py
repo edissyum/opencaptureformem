@@ -49,9 +49,10 @@ class ProcessQueue(Thread):
             contact     = queueInfo['contact']
             fileToSend  = queueInfo['fileToSend']
             destination = queueInfo['destination']
+            _process    = queueInfo['process']
 
             # Send to Maarch
-            res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination)
+            res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process)
             if res:
                 self.Log.info("Insert OK : " + res)
                 try:

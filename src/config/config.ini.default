@@ -19,12 +19,24 @@ localeDatePath      = ${GLOBAL:projectPath}/data/locale/
 host                = http://localhost/cs_maarch/rest/
 user                = edissyumws
 password            = A1B2C3edissyum
+processAvailable    = incoming,outgoing
 
+[OCForMaarch_incoming]
 status              = NEW
 type_id             = 1202
+typist              = scan
 priority            = poiuytre1357nbvc
 format              = pdf
 category_id         = incoming
+destination         = COU
+
+[OCForMaarch_outgoing]
+status              = NEW
+type_id             = 1202
+typist              = scan
+priority            = poiuytre1357nbvc
+format              = pdf
+category_id         = outgoing
 destination         = COU
 
 [REGEX]
