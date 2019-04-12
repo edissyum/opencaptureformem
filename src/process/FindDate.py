@@ -19,7 +19,7 @@ import re
 from datetime import datetime
 from threading import Thread
 
-class findDate(Thread):
+class FindDate(Thread):
     def __init__(self, text, Log, Locale, Config, WebService):
         Thread.__init__(self, name='dateThread')
         self.text       = text
@@ -41,5 +41,5 @@ class findDate(Thread):
             try:
                 self.date = datetime.strptime(self.date, self.Locale.dateTimeFomat).strftime(self.Locale.formatDate)
                 break
-            except ValueError as e:
-                print(e)
+            except ValueError:
+                continue

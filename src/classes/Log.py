@@ -24,7 +24,7 @@ class Log:
             self.LOGGER.handlers.clear() # Clear the handlers to avoid double logs
         self.path   = path
         logFile = logging.FileHandler(path)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        formatter = logging.Formatter('[%(threadName)-13s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S',)
         logFile.setFormatter(formatter)
         self.LOGGER.addHandler(logFile)
         self.LOGGER.setLevel(logging.DEBUG)

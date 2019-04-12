@@ -16,12 +16,11 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import shutil
-from .findDate import findDate
-from .findSubject import findSubject
-from .findContact import findContact
+from .FindDate import FindDate
+from .FindSubject import FindSubject
+from .FindContact import FindContact
 
-def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
+def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, q):
     Log.info('Processing file : ' + file)
 
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
@@ -59,13 +58,13 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
     Ocr.text_builder(Image.img)
 
     # Find subject of document
-    subjectThread   = findSubject(Ocr.text)
+    subjectThread   = FindSubject(Ocr.text)
 
     # Find date of document
-    dateThread      = findDate(Ocr.text, Log, Locale, Config, WebService)
+    dateThread      = FindDate(Ocr.text, Log, Locale, Config, WebService)
 
     # Find mail in document and check if the contact exist in Maarch
-    contactThread   = findContact(Ocr.text, Log, Config, WebService)
+    contactThread   = FindContact(Ocr.text, Log, Config, WebService)
 
     # Launch all threads
     dateThread.start()
@@ -84,7 +83,28 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
 
     # Create the searchable PDF if necessary
     if isOcr is False:
-        os.remove(Image.jpgName)
+        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+        Ocr.generate_searchable_pdf(file, Image, Config)
+        fileToSend = Ocr.searchablePdf
+    else:
+        fileToSend = open(file, 'rb').read()
+
+    fileToStore = {
+        'fileToSend'    : fileToSend,
+        'file'          : file,
+        'date'          : date,
+        'subject'       : subject,
+        'contact'       : contact,
+        'destination'   : destination
+    }
+
+    q.put(fileToStore)
+
+    return q
+
+    # Create the searchable PDF if necessary
+    '''if isOcr is False:
+        os.remove(Image.jpgName) # Delete the temp file used to OCR'ed the first PDF page
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
     else:
@@ -101,4 +121,4 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService):
         return True
     else:
         shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
-        return False
+        return False'''

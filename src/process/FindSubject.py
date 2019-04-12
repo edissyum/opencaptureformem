@@ -18,7 +18,7 @@
 import re
 from threading import Thread
 
-class findSubject(Thread):
+class FindSubject(Thread):
     def __init__(self, text):
         Thread.__init__(self, name='subjectThread')
         self.text       = text

@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 import sys
 import os
+import queue
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
@@ -26,6 +27,7 @@ import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
 from src.process.OCForMaarch import process
+from src.process.Queue import runQueue
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
 
@@ -39,7 +41,7 @@ m = Manager(OCforMaarch)
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 # Before, do : pip3 install kuyruk-manager
 
-@OCforMaarch.task()
+#@OCforMaarch.task()
 def launch(args):
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
@@ -72,8 +74,14 @@ def launch(args):
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
         # Find file in the wanted folder (default or exported pdf after qrcode separation)
+        # Create the Queue to store files
+        q = queue.Queue()
         for file in os.listdir(path):
-            process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService)
+            q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, q)
+
+        while not q.empty():
+            runQueue(q, Config, Image, Log, WebService, Ocr)
+
     elif args['file'] is not None:
         path = args['file']
         if not Image.check_file_integrity(path, Config):

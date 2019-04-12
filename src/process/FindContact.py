@@ -18,7 +18,7 @@
 import re
 from threading import Thread
 
-class findContact(Thread):
+class FindContact(Thread):
     def __init__(self, text, Log, Config, WebService):
         Thread.__init__(self, name='contactThread')
         self.text       = text
