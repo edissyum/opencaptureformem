@@ -22,12 +22,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
 from kuyruk_manager import Manager
 import src.classes.Log as logClass
+from src.process.Queue import runQueue
 import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
 from src.process.OCForMaarch import process
-from src.process.Queue import runQueue
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
 
