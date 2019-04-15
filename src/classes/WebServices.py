@@ -48,7 +48,7 @@ class WebServices:
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
-            #'encodedFile'   : base64.b64encode(fileContent),
+            'encodedFile'   : base64.b64encode(fileContent),
             'priority'      : Config.cfg[_process]['priority'],
             'status'        : Config.cfg[_process]['status'],
             'type_id'       : Config.cfg[_process]['type_id'],
