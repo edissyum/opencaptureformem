@@ -59,8 +59,20 @@ First, add your user into the following file :
 
 Then use <code>incrontab -e</code> and put the following line :
 
-    /path/to/capture/ IN_CLOSE,IN_MOVED_TO,IN_NO_LOOP /opt/maarch/OpenCapture/scripts/IN.sh $@/$#
+    /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO python3 /opt/maarch/OpenCapture/launch.sh $@/$#
 
+### Utilisations
+We use worker and jobs to enqueue process.
+Here is some examples of possible usages in the launch.sh script:
+
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+
+--read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
+-f stands for unique file
+-p stands for path containing PDF/JPG files and process them as batch
+-process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
 ## WebServices for Maarch 18.10
@@ -134,19 +146,6 @@ The file <code>src/config/config.ini</code> is splitted in different categories
 	 - Path to export PDF or PDF/A, no need to modify
 	 - Tmp path, no need to modify
 	 - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
-
-# Utilisations
-We use worker and jobs to enqueue process.
-Here is some examples of possible usages :
-
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
-
---read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
--f stands for unique file
--p stands for path containing PDF/JPG files and process them as batch
--process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
 ## Apache modifications

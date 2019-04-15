@@ -32,7 +32,7 @@ def runQueue(q, Config, Image, Log, WebService, Ocr):
 
 class ProcessQueue(Thread):
     def __init__(self, q, Config, Image, Log, WebService, Ocr, cpt):
-        Thread.__init__(self, name='processQueue' + str(cpt))
+        Thread.__init__(self, name='processQueue ' + str(cpt))
         self.queue      = q
         self.Log        = Log
         self.Ocr        = Ocr
@@ -47,9 +47,9 @@ class ProcessQueue(Thread):
             date        = queueInfo['date']
             subject     = queueInfo['subject']
             contact     = queueInfo['contact']
+            _process    = queueInfo['process']
             fileToSend  = queueInfo['fileToSend']
             destination = queueInfo['destination']
-            _process    = queueInfo['process']
 
             # Send to Maarch
             res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process)
