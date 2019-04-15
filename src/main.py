@@ -41,7 +41,7 @@ m = Manager(OCforMaarch)
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 # Before, do : pip3 install kuyruk-manager
 
-#@OCforMaarch.task()
+@OCforMaarch.task()
 def launch(args):
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
@@ -73,9 +73,9 @@ def launch(args):
                 Separator.process(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
-        # Find file in the wanted folder (default or exported pdf after qrcode separation)
         # Create the Queue to store files
         q = queue.Queue()
+        # Find file in the wanted folder (default or exported pdf after qrcode separation)
         for file in os.listdir(path):
             q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, q)
 
@@ -95,7 +95,9 @@ def launch(args):
             else:
                 path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
+                # Create the Queue to store files
                 q = queue.Queue()
+                # Find file in the wanted folder (default or exported pdf after qrcode separation)
                 for file in os.listdir(path):
                     q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, q)
 
