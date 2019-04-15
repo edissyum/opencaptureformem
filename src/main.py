@@ -68,7 +68,7 @@ def launch(args):
         if Separator.enabled == 'True':
             for fileToSep in os.listdir(path):
                 if not Image.check_file_integrity(path + fileToSep, Config):
-                    Log.error('The integrity of file could\'nt be verified')
+                    Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep))
                     sys.exit()
                 Separator.process(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
@@ -85,7 +85,7 @@ def launch(args):
     elif args['file'] is not None:
         path = args['file']
         if not Image.check_file_integrity(path, Config):
-            Log.error('The integrity of file could\'nt be verified')
+            Log.error('The integrity of file could\'nt be verified' + str(path))
             sys.exit()
 
         if Separator.enabled == 'True':
@@ -94,8 +94,13 @@ def launch(args):
                 process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
             else:
                 path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
+
+                q = queue.Queue()
                 for file in os.listdir(path):
-                    process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService)
+                    q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, q)
+
+                while not q.empty():
+                    runQueue(q, Config, Image, Log, WebService, Ocr)
         else:
             if not Image.check_file_integrity(path, Config):
                 Log.error('The integrity of file could\'nt be verified')

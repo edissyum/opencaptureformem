@@ -61,8 +61,7 @@ class WebServices:
             'exp_contact_id': contact['contact_id'],
             'doc_date'      : date
         }
-        print(data)
-        exit()
+
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data, headers={'Connection':'close'})
 
         if res.status_code != 200:

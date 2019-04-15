@@ -16,11 +16,12 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import shutil
 from .FindDate import FindDate
 from .FindSubject import FindSubject
 from .FindContact import FindContact
 
-def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, q):
+def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, q = None):
     Log.info('Processing file : ' + file)
 
     # Check if the choosen process mode if available. If not take the default one
@@ -94,17 +95,29 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         fileToSend = Ocr.searchablePdf
     else:
         fileToSend = open(file, 'rb').read()
+    if q is not None:
+        fileToStore = {
+            'fileToSend'    : fileToSend,
+            'file'          : file,
+            'date'          : date,
+            'subject'       : subject,
+            'contact'       : contact,
+            'destination'   : destination,
+            'process'       : _process
+        }
 
-    fileToStore = {
-        'fileToSend'    : fileToSend,
-        'file'          : file,
-        'date'          : date,
-        'subject'       : subject,
-        'contact'       : contact,
-        'destination'   : destination,
-        'process'       : _process
-    }
+        q.put(fileToStore)
 
-    q.put(fileToStore)
-
-    return q
+        return q
+    else:
+        res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process)
+        if res:
+            Log.info("Insert OK : " + res)
+            try:
+                os.remove(file)
+            except FileNotFoundError as e:
+                Log.error('Unable to delete ' + file + ' : ' + str(e))
+            return True
+        else:
+            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
+            return False
