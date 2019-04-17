@@ -32,6 +32,9 @@ A server running the latest version of Debian. As Tesseract 4.0 is currently not
 
 Nothing as simple as that :
 
+    $ sudo mkdir /opt/maarch/
+    $ sudo chmod -R 775 /opt/maarch/
+    $ sudo chown -R www-data:www-data /opt/maarch/
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
     $ sudo ./Makefile
