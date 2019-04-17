@@ -28,6 +28,8 @@ The functionnalities of OC for Maarch are :
 
 A server running the latest version of Debian. As Tesseract 4.0 is currently not available from strech package, it's needed to compile it. Don't worry and read the following.
 
+Tested for now under Ubuntu 18.04 with Python 3.7.1 and Debian 9.8 with Python 3.5.3
+
 ## Install OpenCapture for Maarch
 
 Nothing as simple as that :
@@ -157,4 +159,5 @@ By default it is recommended to replace **8M** by **0**
 # LICENSE
 
 OpenCapture for Maarch is released under the GPL v3.
+
 
