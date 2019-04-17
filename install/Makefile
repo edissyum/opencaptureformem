@@ -12,8 +12,8 @@ rm -rf tesseract
 find -name ".gitkeep" -delete
 
 sudo touch /etc/systemd/system/oc-worker.service
-sudo cat > sudo /etc/systemd/system/oc-worker.service << EOF
-"[Unit]
+sudo su -c 'cat > /etc/systemd/system/oc-worker.service << EOF
+[Unit]
 Description=Daemon for OpenCapture for Maarch
 
 [Service]
@@ -32,7 +32,8 @@ Restart=on-failure
 TimeoutStopSec=300
 
 [Install]
-WantedBy=multi-user.target"
+WantedBy=multi-user.target
 EOF
+
 
 sudo systemctl daemon-reload && sudo systemctl start oc-worker.service
