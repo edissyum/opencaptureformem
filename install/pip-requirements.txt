@@ -5,3 +5,4 @@ kuyruk
 requests
 pytesseract
 configparser
+kuyruk_manager

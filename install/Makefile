@@ -9,6 +9,7 @@ cmake .. && make
 make install
 cd ../../
 rm -rf tesseract
+cd ../
 find -name ".gitkeep" -delete
 
 sudo touch /etc/systemd/system/oc-worker.service
