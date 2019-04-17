@@ -38,7 +38,7 @@ class Separator:
         self.divider            = Config.cfg['SEPARATOR_QR']['divider']
         self.error              = False
 
-    def process(self, file):
+    def run(self, file):
         self.pages  =   []
         try:
             pdf = PdfFileReader(open(file, 'rb'))

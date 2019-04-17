@@ -34,13 +34,21 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/
     $ sudo chmod -R 775 /opt/maarch/
-    $ sudo chown -R www-data:www-data /opt/maarch/
+    sudo chown -R www-data:www-data /opt/maarch/
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
     $ sudo ./Makefile
 
-    $ export LD_LIBRARY_PATH=/usr/local/lib
-    $ export TESSDATA_PREFIX=/usr/share/tesseract-ocr/tessdata/
+    $ nano ~/.profile
+   Add the following line at the end of the file :
+
+    export LD_LIBRARY_PATH=/usr/local/lib
+    export TESSDATA_PREFIX=/usr/share/tesseract-ocr/tessdata/
+    export PATH="$PATH:$LD_LIBRARY_PATH:$TESSDATA_PREFIX"
+Then
+
+    $ source ~/.profile
+
 
 
   It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
@@ -161,4 +169,5 @@ By default it is recommended to replace **8M** by **0**
 # LICENSE
 
 OpenCapture for Maarch is released under the GPL v3.
+
 

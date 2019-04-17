@@ -19,17 +19,21 @@ import os
 import pytesseract
 
 class PyTesseract:
-    def __init__(self, locale):
+    def __init__(self, locale, Log):
+        self.Log                = Log
         self.text               = ''
         self.tool               = ''
         self.lang               = locale
         self.searchablePdf      = ''
 
     def text_builder(self, img):
-        self.text = pytesseract.image_to_string(
-            img,
-            lang=self.lang
-        )
+        try:
+            self.text = pytesseract.image_to_string(
+                img,
+                lang=self.lang
+            )
+        except pytesseract.pytesseract.TesseractError as t:
+            self.Log.error('Tesseract ERROR : ' + t)
 
     def generate_searchable_pdf(self, pdf, Image, Config):
         tmpPath = Config.cfg['GLOBAL']['tmppath']

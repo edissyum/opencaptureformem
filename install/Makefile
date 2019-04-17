@@ -24,8 +24,7 @@ User=edissyum
 Group=edissyum
 UMask=0022
 
-WorkingDirectory=/opt/maarch/OpenCapture/
-ExecStart=/usr/local/bin/kuyruk --app src.main.OCforMaarch worker
+ExecStart=/opt/maarch/OpenCapture/launch_service.sh
 
 Restart=on-failure
 

@@ -48,7 +48,7 @@ def launch(args):
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
     fileName    = Config.cfg['GLOBAL']['tmppath'] + 'tmp.jpg'
     Locale      = localeClass.Locale(Config)
-    Ocr         = ocrClass.PyTesseract(Locale.localeOCR)
+    Ocr         = ocrClass.PyTesseract(Locale.localeOCR, Log)
     Separator   = separatorClass.Separator(Log, Config)
     WebService  = webserviceClass.WebServices(
         Config.cfg['OCForMaarch']['host'],
@@ -70,7 +70,7 @@ def launch(args):
                 if not Image.check_file_integrity(path + fileToSep, Config):
                     Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep))
                     sys.exit()
-                Separator.process(path + fileToSep)
+                Separator.run(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
         # Create the Queue to store files
@@ -89,7 +89,7 @@ def launch(args):
             sys.exit()
 
         if Separator.enabled == 'True':
-            Separator.process(path)
+            Separator.run(path)
             if Separator.error: # in case the file is not a pdf, process as an Image
                 process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
             else:
