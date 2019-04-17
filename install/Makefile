@@ -33,7 +33,7 @@ TimeoutStopSec=300
 
 [Install]
 WantedBy=multi-user.target
-EOF
+EOF'
 
 
 sudo systemctl daemon-reload && sudo systemctl start oc-worker.service
