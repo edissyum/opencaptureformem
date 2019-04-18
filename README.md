@@ -24,17 +24,17 @@ The functionnalities of OC for Maarch are :
 
 # Installation
 
-## Pre-requisite
+## Linux Distributions
 
-A server running the latest version of Debian. As Tesseract 4.0 is currently not available from strech package, it's needed to compile it. Don't worry and read the following.
-
-Tested for now under Ubuntu 18.04 with Python 3.7.1 and Debian 9.8 with Python 3.5.3
+Tested with :
+- Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0
+- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01
 
 ## Install OpenCapture for Maarch
 
 Nothing as simple as that :
 
-    $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R www-data:www-data /opt/maarch/
+    $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
@@ -50,7 +50,7 @@ Nothing as simple as that :
 
 The ./Makefile command create the service, but you may want to change the User and Group so just open the ./MakfFile and change lines **22** and **23**
 
-## Set up the incron
+## Set up the incron & the cron to start the service
 
 We want to automatise the capture of document. For that, we'll use incrontab.
 First, add your user into the following file :
@@ -61,8 +61,17 @@ Then use <code>incrontab -e</code> and put the following line :
 
     /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO python3 /opt/maarch/OpenCapture/launch.sh $@/$#
 
+We use worker and jobs to enqueue process. The worker is encapsulated into a service who needs to be started in order to run the process. It's needed to cron the boot of the service at every restart, by the root user :
+
+    $ sudo crontab -e
+
+   And add
+
+    @reboot systemctl start oc-worker.service
+
+
+
 ### Utilisations
-We use worker and jobs to enqueue process.
 Here is some examples of possible usages in the launch.sh script:
 
     $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
@@ -158,4 +167,3 @@ By default it is recommended to replace **8M** by **0**
 # LICENSE
 
 OpenCapture for Maarch is released under the GPL v3.
-

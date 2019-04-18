@@ -6,7 +6,7 @@ OS=$(lsb_release -si)
 
 if [[ "$OS" = 'Debian' ]]
 then
-    export TESSDATA_PREFIX=/usr/share/tesseract-ocr/tessdata
+    export TESSDATA_PREFIX=/usr/share/tesseract-ocr/tessdata/
 elif [[ "$OS" = 'Ubuntu' ]]
 then
     export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
