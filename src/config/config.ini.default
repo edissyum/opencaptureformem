@@ -17,8 +17,8 @@ localeDatePath      = ${GLOBAL:projectPath}/data/locale/
 
 [OCForMaarch]
 host                = http://localhost/cs_maarch/rest/
-user                = edissyumws
-password            = A1B2C3edissyum
+user                =
+password            =
 processAvailable    = incoming,outgoing
 defaultProcess      = incoming
 

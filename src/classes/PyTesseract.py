@@ -33,7 +33,7 @@ class PyTesseract:
                 lang=self.lang
             )
         except pytesseract.pytesseract.TesseractError as t:
-            self.Log.error('Tesseract ERROR : ' + t)
+            self.Log.error('Tesseract ERROR : ' + str(t))
 
     def generate_searchable_pdf(self, pdf, Image, Config):
         tmpPath = Config.cfg['GLOBAL']['tmppath']
