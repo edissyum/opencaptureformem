@@ -39,6 +39,7 @@ Nothing as simple as that :
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
     $ sudo ./Makefile
+    $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
 
   It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
