@@ -17,6 +17,7 @@
 import os
 import sys
 import queue
+
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
@@ -38,6 +39,7 @@ OCforMaarch.config.MANAGER_PORT = 16501
 OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
 m = Manager(OCforMaarch)
+
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 
 @OCforMaarch.task()
