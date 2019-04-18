@@ -39,7 +39,6 @@ OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
 m = Manager(OCforMaarch)
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
-# Before, do : pip3 install kuyruk-manager
 
 @OCforMaarch.task()
 def launch(args):
