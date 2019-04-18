@@ -34,9 +34,8 @@ Tested for now under Ubuntu 18.04 with Python 3.7.1 and Debian 9.8 with Python 3
 
 Nothing as simple as that :
 
-    $ sudo mkdir /opt/maarch/
-    $ sudo chmod -R 775 /opt/maarch/
-    $ sudo chown -R www-data:www-data /opt/maarch/
+    $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R www-data:www-data /opt/maarch/
+    $ sudo apt install git
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
     $ sudo ./Makefile
@@ -159,5 +158,4 @@ By default it is recommended to replace **8M** by **0**
 # LICENSE
 
 OpenCapture for Maarch is released under the GPL v3.
-
 

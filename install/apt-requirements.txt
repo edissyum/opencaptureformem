@@ -7,6 +7,7 @@ zbar-tools
 pkg-config
 python3-pip
 poppler-utils
+tesseract-ocr
 rabbitmq-server
 libtesseract-dev
 libleptonica-dev
