@@ -69,4 +69,3 @@ class WebServices:
             return False
         else:
             return res.text
-

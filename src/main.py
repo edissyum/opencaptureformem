@@ -111,4 +111,3 @@ def launch(args):
 
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
-
