@@ -40,7 +40,7 @@ User=edissyum
 Group=edissyum
 UMask=0022
 
-ExecStart=/opt/maarch/OpenCapture/launch_service.sh
+ExecStart=/opt/maarch/OpenCapture/scripts/service.sh
 
 Restart=on-failure
 
