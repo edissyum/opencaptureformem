@@ -21,6 +21,7 @@ import shutil
 import PyPDF2
 from PIL import Image
 from wand.image import Image as Img
+from wand.color import Color
 
 
 class Images:
@@ -32,9 +33,7 @@ class Images:
 
     # Convert the first page of PDF to JPG and open the image
     def pdf_to_jpg(self, pdfName):
-        with Img(filename=pdfName, resolution=self.resolution) as pic:
-            pic.compression_quality = self.compressionQuality
-            pic.save(filename=self.jpgName)
+        self.save_img_with_wand(pdfName, self.jpgName)
         self.img = Image.open(self.jpgName)
 
     # Simply open an image
@@ -45,6 +44,8 @@ class Images:
     def save_img_with_wand(self, pdfName, output):
         with Img(filename=pdfName, resolution=self.resolution) as pic:
             pic.compression_quality = self.compressionQuality
+            pic.background_color = Color("white")
+            pic.alpha_channel = 'remove'
             pic.save(filename=output)
 
     @staticmethod

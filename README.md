@@ -62,7 +62,7 @@ First, add your user into the following file :
 
 Then use <code>incrontab -e</code> and put the following line :
 
-    /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO python3 /opt/maarch/OpenCapture/launch.sh $@/$#
+    /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO /opt/maarch/OpenCapture/launch.sh $@/$#
 
 We use worker and jobs to enqueue process. The worker is encapsulated into a service who needs to be started in order to run the process. It's needed to cron the boot of the service at every restart, by the root user :
 

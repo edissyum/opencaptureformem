@@ -90,11 +90,13 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
 
     # Create the searchable PDF if necessary
     if isOcr is False:
-        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
     else:
         fileToSend = open(file, 'rb').read()
+
+    os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+
     if q is not None:
         fileToStore = {
             'fileToSend'    : fileToSend,

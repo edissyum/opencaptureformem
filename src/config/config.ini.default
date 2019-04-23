@@ -13,7 +13,7 @@ nbThreads           = 5
 locale              = fr_FR
 # fra or eng by default
 localeOcr           = fra
-localeDatePath      = ${GLOBAL:projectPath}/data/locale/
+localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
 [OCForMaarch]
 host                = http://localhost/cs_maarch/rest/
