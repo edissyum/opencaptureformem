@@ -23,7 +23,7 @@ processAvailable    = incoming,outgoing
 defaultProcess      = incoming
 
 [OCForMaarch_incoming]
-status              = NEW
+status              = INIT
 type_id             = 1202
 typist              = scan
 priority            = poiuytre1357nbvc
@@ -32,7 +32,7 @@ category_id         = incoming
 destination         = COU
 
 [OCForMaarch_outgoing]
-status              = NEW
+status              = INIT
 type_id             = 1202
 typist              = scan
 priority            = poiuytre1357nbvc
