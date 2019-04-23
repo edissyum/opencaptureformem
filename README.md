@@ -27,8 +27,10 @@ The functionnalities of OC for Maarch are :
 ## Linux Distributions
 
 Tested with :
+- Ubuntu 18.10 with Python 3.7.1 & Tesseract v4.0.0
 - Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0
 - Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01
+- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01
 
 ## Install OpenCapture for Maarch
 
@@ -49,7 +51,7 @@ Nothing as simple as that :
 
 ## Create service
 
-The ./Makefile command create the service, but you may want to change the User and Group so just open the ./MakfFile and change lines **22** and **23**
+The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **16** and **17**
 
 ## Set up the incron & the cron to start the service
 
