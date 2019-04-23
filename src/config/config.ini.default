@@ -15,6 +15,18 @@ locale              = fr_FR
 localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
+[REGEX]
+urlPattern          = fr|com|net|org|gouv
+
+[SEPARATOR_QR]
+enabled             = True
+exportPdfa          = False
+outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
+outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
+tmpPath             = /tmp/
+# _ or - for exemple
+divider             = _
+
 [OCForMaarch]
 host                = http://localhost/cs_maarch/rest/
 user                =
@@ -59,15 +71,3 @@ priority            =
 format              =
 category_id         =
 destination         =
-
-[REGEX]
-urlPattern          = fr|com|net|org|gouv
-
-[SEPARATOR_QR]
-enabled             = True
-exportPdfa          = False
-outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
-outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
-tmpPath             = /tmp/
-# _ or - for exemple
-divider             = _
