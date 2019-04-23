@@ -29,7 +29,7 @@ class FindContact(Thread):
 
     def run(self):
         foundContact = False
-        for mail in re.finditer(r"[^@\s]+@[^@\s]+\.[^@\s]+", self.text):
+        for mail in re.finditer(r"[^@\s<>[]+@[^@\s]+\.[^@\s\]>]+", self.text):
             self.Log.info('Find E-MAIL : ' + mail.group())
             contact = self.WebService.retrieve_contact_by_mail(mail.group())
             if contact:

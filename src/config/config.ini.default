@@ -1,12 +1,12 @@
 [GLOBAL]
 # Use ${GLOBAL:projectPath} to specify once for all the path of the project
-projectPath         = /opt/maarch/OpenCapture
-tmpPath             = ${GLOBAL:projectPath}/data/tmp/
+nbThreads           = 5
 resolution          = 300
 compressionQuality  = 100
-logFile             = ${GLOBAL:projectPath}/data/log/OCforMaarch.log
+projectPath         = /opt/maarch/OpenCapture
+tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 errorPath           = ${GLOBAL:projectPath}/data/error/
-nbThreads           = 5
+logFile             = ${GLOBAL:projectPath}/data/log/OCforMaarch.log
 
 [LOCALE]
 # fr_FR or en_EN by default
@@ -19,7 +19,7 @@ localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 host                = http://localhost/cs_maarch/rest/
 user                =
 password            =
-processAvailable    = incoming,outgoing
+processAvailable    = incoming,outgoing,reconciliation
 defaultProcess      = incoming
 
 [OCForMaarch_incoming]

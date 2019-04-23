@@ -1,4 +1,5 @@
 
+
 # OpenCapture for Maarch  18.10
 
 OpenCapture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -10,12 +11,12 @@ The functionnalities of OC for Maarch are :
  - Output searchable PDF, one or multi pages
  - Split PDF using QRCode and rename splitted PDF file using QRCode content
  - OCR and text recognition :
-	 - Find a date and use it as metadata
-	 - Find a mail or URL to reconciliate with an existing contact in Maarch
-	 - Find an object and use it as metadata
+    - Find a date and use it as metadata
+    - Find a mail or URL to reconciliate with an existing contact in Maarch
+    - Find an object and use it as metadata
  - Insert documents in Maarch with pre-qualified metadata :
-	 - Destination with QRCode
-	 - Date, contact, object with text recognition
+    - Destination with QRCode
+    - Date, contact, object with text recognition
  - Output PDF or PDF/A file
  - Works with **fr_FR** and **en_EN** locales
  - Fully logged, infos and errors
@@ -118,6 +119,48 @@ Then, go to **src/app/contact/controllers/ContactController.php** and at the end
      return $response->withJson($contact);
     }
 
+  Then, go to **src/app/contact/models/ContactModelAbstract.php** and at the end of the file, juste before the last <code>}</code>, put :
+
+
+    public static function getByMail(array $aArgs)
+    {
+        ValidatorModel::notEmpty($aArgs, ['mail']);
+        ValidatorModel::stringType($aArgs, ['mail']);
+
+        $aContact = DatabaseModel::select([
+            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'     => ['contact_addresses'],
+            'where'     => ['LOWER(email) = ?'],
+            'data'      => [$aArgs['mail']],
+            'limit'     => 1
+        ]);
+
+        if (empty($aContact[0])) {
+            return [];
+        }
+
+        return $aContact[0];
+    }
+
+    public static function getByUrl(array $aArgs)
+    {
+        ValidatorModel::notEmpty($aArgs, ['url']);
+        ValidatorModel::stringType($aArgs, ['url']);
+
+        $aContact = DatabaseModel::select([
+            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'     => ['contact_addresses'],
+            'where'     => ["REGEXP_REPLACE(LOWER(website), '(http|https)://?(www\.)?', '', 'g') = ?"],
+            'data'      => [$aArgs['url']],
+            'limit'     => 1
+        ]);
+
+        if (empty($aContact[0])) {
+            return [];
+        }
+
+        return $aContact[0];
+    }
 
 
 ## Various
@@ -139,25 +182,25 @@ Maarch permit the creation of separator, with QRCODE containing the ID of an ent
 The file <code>src/config/config.ini</code> is splitted in different categories
 
  - Global
-	 - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
-	 - tmpPath, no need to modify
-	 - Resolution and compressionQuality when PDF are converted to JPG
-	 - Path to the logFile, no need to modify
+    - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
+    - tmpPath, no need to modify
+    - Resolution and compressionQuality when PDF are converted to JPG
+    - Path to the logFile, no need to modify
  - Locale
-	 - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
-	 - Choose the locale of OCR (see the langcodes of Tesseract)
-	 - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
+    - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
+    - Choose the locale of OCR (see the langcodes of Tesseract)
+    - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
  - OCForMaarch
-	 - Link to **/rest** API of Maarch with User and Password
-	 - Default metadata to insert documents (type_id, status, priority, format, category_id and destination)
+    - Link to **/rest** API of Maarch with User and Password
+    - Default metadata to insert documents (type_id, status, priority, format, category_id and destination)
  - Regex
-	 - Add extensions to detect URL during text detection
+    - Add extensions to detect URL during text detection
  - Separator_QR
-	 - Enable or disable
-	 - Choose to export PDF or PDF/A
-	 - Path to export PDF or PDF/A, no need to modify
-	 - Tmp path, no need to modify
-	 - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
+    - Enable or disable
+    - Choose to export PDF or PDF/A
+    - Path to export PDF or PDF/A, no need to modify
+    - Tmp path, no need to modify
+    - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
 
 
 ## Apache modifications
