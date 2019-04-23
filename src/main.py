@@ -66,7 +66,7 @@ def launch(args):
     # Start process
     if args['path'] is not None:
         path = args['path']
-        if Separator.enabled == 'True':
+        if Separator.enabled == 'True' and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
                 if not Image.check_file_integrity(path + fileToSep, Config):
                     Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep))
@@ -89,7 +89,7 @@ def launch(args):
             Log.error('The integrity of file could\'nt be verified' + str(path))
             sys.exit()
 
-        if Separator.enabled == 'True':
+        if Separator.enabled == 'True' and args['process'] == 'incoming':
             Separator.run(path)
             if Separator.error: # in case the file is not a pdf, process as an Image
                 process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
