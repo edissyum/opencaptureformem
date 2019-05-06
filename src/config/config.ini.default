@@ -31,7 +31,7 @@ divider             = _
 host                = http://localhost/cs_maarch/rest/
 user                =
 password            =
-processAvailable    = incoming,outgoing,reconciliation
+processAvailable    = incoming,outgoing,reconciliation_default,reconciliation_found
 defaultProcess      = incoming
 
 [OCForMaarch_incoming]

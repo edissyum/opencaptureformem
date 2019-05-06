@@ -30,6 +30,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     else:
         _process = 'OCForMaarch_' + Config.cfg['OCForMaarch']['defaultprocess'].lower()
 
+    Log.info('Using the following process : ' + _process)
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
     if args['RDFF']:
         fileName = os.path.basename(file)
@@ -68,7 +69,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     subjectThread   = FindSubject(Ocr.text)
 
     # Find date of document
-    dateThread      = FindDate(Ocr.text, Log, Locale, Config, WebService)
+    dateThread      = FindDate(Ocr.text, Log, Locale)
 
     # Find mail in document and check if the contact exist in Maarch
     contactThread   = FindContact(Ocr.text, Log, Config, WebService)

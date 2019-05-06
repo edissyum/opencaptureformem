@@ -30,8 +30,8 @@ The functionnalities of OC for Maarch are :
 Tested with :
 - Ubuntu 18.10 with Python 3.7.1 & Tesseract v4.0.0
 - Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0
-- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01
-- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01
+- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0
+- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0
 
 ## Install OpenCapture for Maarch
 
@@ -91,11 +91,14 @@ Here is some examples of possible usages in the launch_XX.sh script:
 ## WebServices for Maarch 18.10
 
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
+To reconciliation documents, 2 other WS were developed
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 Then add the new route to the end of **rest/index.php**, juste before the line <code>$app->run();</code>
 
 > $app->get('/getContactByMail', \Contact\controllers\ContactController::class . ':getByMail');
 > $app->get('/getContactByUrl', \Contact\controllers\ContactController::class . ':getByUrl');
+> $app->post('/reconciliation/add', \Attachment\controllers\ReconciliationController::class . ':create');
+> $app->get('/reconciliation/check', \Attachment\controllers\ReconciliationController::class . ':checkAttachment');
 
 Then, go to **src/app/contact/controllers/ContactController.php** and at the end of the file, juste before the last <code>}</code>, put :
 

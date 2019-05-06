@@ -20,13 +20,11 @@ from datetime import datetime
 from threading import Thread
 
 class FindDate(Thread):
-    def __init__(self, text, Log, Locale, Config, WebService):
+    def __init__(self, text, Log, Locale):
         Thread.__init__(self, name='dateThread')
         self.text       = text
         self.Log        = Log
         self.Locale     = Locale
-        self.Config     = Config
-        self.WebService = WebService
         self.date       = ''
 
     def run(self):

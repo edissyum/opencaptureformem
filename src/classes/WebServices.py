@@ -69,3 +69,11 @@ class WebServices:
             return False
         else:
             return res.text
+
+    def check_attachment(self, chrono):
+        res = requests.get(self.baseUrl + 'reconciliation/check', auth=self.auth, params={'chrono': chrono})
+        if res.status_code != 200:
+            self.Log.error('CheckAttachmentError : ' + str(res.status_code))
+            return False
+        else:
+            return json.loads(res.text)
