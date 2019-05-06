@@ -96,7 +96,10 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     else:
         fileToSend = open(file, 'rb').read()
 
-    os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+    try:
+        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+    except FileNotFoundError as e:
+        Log.error(e)
 
     if q is not None:
         fileToStore = {
