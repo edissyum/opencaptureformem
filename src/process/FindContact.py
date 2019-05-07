@@ -31,10 +31,14 @@ class FindContact(Thread):
         foundContact = False
         for mail in re.finditer(r"[^@\s<>[]+@[^@\s]+\.[^@\s\]>]+", self.text):
             self.Log.info('Find E-MAIL : ' + mail.group())
-            contact = self.WebService.retrieve_contact_by_mail(mail.group())
+            # Now sanitize email to delete potential OCR error
+            sanitized_mail  = re.sub(r"[" + self.Config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
+            self.Log.info('Sanitized E-MAIL : ' + sanitized_mail)
+            contact         = self.WebService.retrieve_contact_by_mail(sanitized_mail)
             if contact:
                 foundContact = True
                 self.contact = contact
+                self.Log.info('Find E-MAIL in Maarch, get it : ' + sanitized_mail)
                 break
         # If no contact were found, search for URL
         if not foundContact:
@@ -46,4 +50,5 @@ class FindContact(Thread):
                 contact = self.WebService.retrieve_contact_by_url(url.group())
                 if contact:
                     self.contact = contact
+                    self.Log.info('Find URL in Maarch, get it : ' + url.group())
                     break
