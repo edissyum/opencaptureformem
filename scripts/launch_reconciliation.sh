@@ -1,17 +1,40 @@
 #!/bin/bash
+# This file is part of OpenCapture.
+
+# OpenCapture is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# OpenCapture is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with OpenCapture.  If not, see <https://www.gnu.org/licenses/>.
+
+# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
+
 
 # Variables
+
 tmp_dir=/tmp
 process_pj=reconciliation_default
 process_attfnd=reconciliation_found
 dispatcher_path=/home/nathan/PycharmProjects/oc_test/
+logFile="$dispatcher_path"/data/log/OCforMaarch.log
+
+echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Launching reconciliation script" >> "$logFile"
 
 # Define functions
 
 convertToJpg(){
     # This command convert first page of the pdf to jpg and crop only the bottom of the image using "x500+0+1500"
     # If you want to crop the top use, for example, "x500+0+0"
-    convert -density 200 "$1[0]" -quality 100 -geometry x2000 -crop x500+0+1500 "$2"
+    # -alpha remove avoid the black background after the convert in a random way
+    convert -density 200 "$1[0]" -quality 100 -alpha remove -geometry x2000 -crop x500+0+1500 "$2"
 }
 
 readBarCode(){
@@ -27,13 +50,57 @@ check_attachment(){
 defaultProcess(){
     # If barcode couldn't be read or isn't present use default process
     # Same if the barcode is read but the attachment doesn't exist on Maarch database
-    python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --read-destination-from-filename --process "$process_pj" -f "$1"
+    python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --read-destination-from-filename --process incoming -f "$1"
 }
 
 reconciliationProcess(){
     # If all things went good, start the reconciliation process and insert the document as a Maarch attachment
-    python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --process "$process_attfnd" --resid "$2" --chrono "$3" -f "$1"
+    python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --process "$process_attfnd" -f "$1" -resid "$2" -chrono "$3"
 }
 
 
-defaultProcess /home/nathan/PycharmProjects/oc_test/data/pdf/DGS_maarch.pdf
+# Main
+
+inputPath="$1"
+
+#sleep 5 # sleep to avoid broken file during file transfert
+
+if [[ ! -f "$1" ]]
+then
+        echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
+        exit 0
+fi
+
+fileName=$(basename $1)
+# service is the parent folder name. e.g : /var/share/sortant/DGS/test.pdf --> $service will be DGS
+service=$(echo "$inputPath" | sed -e 's#/[^/]*$##' -e 's#.*/##')
+
+tmpPath="$tmp_dir"/"$service"_"$fileName"
+mv "$inputPath" "$tmpPath"
+
+# Start process
+
+imgFile="${tmp_dir}/${fileName//.*}.jpg"
+convertToJpg "$tmpPath" "$imgFile"
+barcode=$(readBarCode "$imgFile")
+
+rm "$imgFile"
+
+if [[ -z "$barcode" ]]
+then
+	echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+    defaultProcess "$tmpPath"
+else
+    resid=${barcode%%#*}
+    chrono=${barcode/*#/}
+
+    attachmentOK=$(check_attachment "$chrono")
+    if [[ "$attachmentOK" == "OK" ]]
+    then
+        echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Start RECONCILIATION process" >> "$logFile"
+        reconciliationProcess "$tmpPath" "$resid" "$chrono"
+    else
+        echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+        defaultProcess "$tmpPath"
+    fi
+fi

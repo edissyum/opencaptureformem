@@ -42,17 +42,27 @@ class ProcessQueue(Thread):
 
     def run(self):
         while not self.queue.empty():
-            queueInfo   = self.queue.get()
-            file        = queueInfo['file']
-            date        = queueInfo['date']
-            subject     = queueInfo['subject']
-            contact     = queueInfo['contact']
-            _process    = queueInfo['process']
-            fileToSend  = queueInfo['fileToSend']
-            destination = queueInfo['destination']
+            queueInfo       = self.queue.get()
+            file            = queueInfo['file']
+            date            = queueInfo['date']
+            subject         = queueInfo['subject']
+            contact         = queueInfo['contact']
+            _process        = queueInfo['process']
+            fileToSend      = queueInfo['fileToSend']
+            destination     = queueInfo['destination']
+            resId           = queueInfo['resId']
+            chrono          = queueInfo['chrono']
+            isInternalNote  = queueInfo['isInternalNote']
 
             # Send to Maarch
-            res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process)
+            if 'is_attachment' in self.Config.cfg[_process] and self.Config.cfg[_process]['is_attachment'] != '':
+                if isInternalNote:
+                    res = self.WebService.insert_attachment(fileToSend, self.Config, resId, _process)
+                else:
+                    res = self.WebService.insert_attachment_reconciliation(fileToSend, chrono, _process)
+            else:
+                res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process)
+
             if res:
                 self.Log.info("Insert OK : " + res)
                 try:

@@ -14,6 +14,7 @@
 # along with OpenCapture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 import os
 import sys

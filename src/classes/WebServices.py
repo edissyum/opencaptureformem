@@ -48,7 +48,7 @@ class WebServices:
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
-            'encodedFile'   : base64.b64encode(fileContent),
+            'encodedFile'   : base64.b64encode(fileContent).decode('utf-8'),
             'priority'      : Config.cfg[_process]['priority'],
             'status'        : Config.cfg[_process]['status'],
             'type_id'       : Config.cfg[_process]['type_id'],
@@ -62,10 +62,48 @@ class WebServices:
             'doc_date'      : date
         }
 
-        res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=data, headers={'Connection':'close'})
+        res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})
 
         if res.status_code != 200:
-            self.Log.error('InsertIntoMaarch : ' + str(res.status_code) + ' : ' + str(res.text))
+            self.Log.error('InsertIntoMaarchError : ' + str(res.status_code) + ' : ' + str(res.text))
+            return False
+        else:
+            return res.text
+
+    def insert_attachment(self, fileContent, Config, res_id, _process):
+        data = {
+            'resId'         : res_id,
+            'status'        : Config.cfg[_process]['status'],
+            'collId'        : 'letterbox_coll',
+            'table'         : 'res_attachments',
+            'data'          : [
+                {'column' : 'title', 'value' : 'Rapprochement note interne', 'type': 'string'},
+                {'column' : 'attachment_type', 'value' : Config.cfg[_process]['attachment_type'], 'type' : 'string'},
+                {'column' : 'coll_id', 'value' : 'letterbox_coll', 'type' : 'string'},
+                {'column' : 'res_id_master', 'value' : res_id, 'type' : 'string'}
+            ],
+            'encodedFile'   : base64.b64encode(fileContent).decode('utf-8'),
+            'fileFormat'    : Config.cfg[_process]['format'],
+        }
+
+        res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type' : 'application/json'})
+
+        if res.status_code != 200:
+            self.Log.error('InsertAttachmentsIntoMaarchError : ' + str(res.status_code) + ' : ' + str(res.text))
+            return False
+        else:
+            return res.text
+
+    def insert_attachment_reconciliation(self, fileContent, chrono, _process):
+        data = {
+            'chrono'            : chrono,
+            'encodedFile'       : base64.b64encode(fileContent).decode('utf-8'),
+        }
+
+        res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+        if res.status_code != 200:
+            self.Log.error('InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.status_code) + ' : ' + str(res.text))
             return False
         else:
             return res.text

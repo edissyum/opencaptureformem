@@ -66,10 +66,10 @@ destination         = COU
 [OCForMaarch_reconciliation_found]
 is_attachment       = True
 attachment_type     = outgoing_mail_signed
-status              =
+status              = TRA
 type_id             =
 typist              =
 priority            =
-format              =
+format              = pdf
 category_id         =
 destination         =

@@ -99,7 +99,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     try:
         os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
     except FileNotFoundError as e:
-        Log.error(e)
+        Log.error('Unable to delete ' + Image.jpgName + ' : ' + str(e))
 
     if q is not None:
         fileToStore = {
@@ -109,14 +109,24 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             'subject'       : subject,
             'contact'       : contact,
             'destination'   : destination,
-            'process'       : _process
+            'process'       : _process,
+            'resId'         : args['resid'],
+            'chrono'        : args['chrono'],
+            'isInternalNote': args['isinternalnote']
         }
 
         q.put(fileToStore)
 
         return q
     else:
-        res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process)
+        if 'is_attachment' in Config.cfg[_process] and Config.cfg[_process]['is_attachment'] != '':
+            if args['isinternalnote']:
+                res = WebService.insert_attachment(fileToSend, Config, args['resid'], _process)
+            else:
+                res = WebService.insert_attachment_reconciliation(fileToSend, args['chrono'], _process)
+        else:
+            res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process)
+
         if res:
             Log.info("Insert OK : " + res)
             try:
@@ -125,5 +135,5 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
                 Log.error('Unable to delete ' + file + ' : ' + str(e))
             return True
         else:
-            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
+            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
             return False
