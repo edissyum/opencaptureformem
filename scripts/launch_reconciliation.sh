@@ -23,8 +23,8 @@
 tmp_dir=/tmp
 process_pj=reconciliation_default
 process_attfnd=reconciliation_found
-dispatcher_path=/home/nathan/PycharmProjects/oc_test/
-logFile="$dispatcher_path"/data/log/OCforMaarch.log
+dispatcher_path="/opt/maarch/OpenCapture/"
+logFile="$dispatcher_path/data/log/OCforMaarch.log"
 
 echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Launching reconciliation script" >> "$logFile"
 

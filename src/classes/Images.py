@@ -32,9 +32,10 @@ class Images:
         self.img                    = None
 
     # Convert the first page of PDF to JPG and open the image
-    def pdf_to_jpg(self, pdfName):
+    def pdf_to_jpg(self, pdfName, openImg=True):
         self.save_img_with_wand(pdfName, self.jpgName)
-        self.img = Image.open(self.jpgName)
+        if openImg:
+            self.img = Image.open(self.jpgName)
 
     # Simply open an image
     def open_img(self, img):

@@ -17,13 +17,21 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
+OCPath="/opt/maarch/OpenCapture/"
+tmpFilepath="$OCPath/data/pdf/"
+logFile="$OCPath"/data/log/OCforMaarch.log
+
+echo "[OUT.SH        ] $(date +"%d-%m-%Y %T") INFO Launching IN.SH script" >> "$logFile"
+
 filepath=$1
 filename=$(basename "$filepath")
 destination=$(basename $(dirname "$filepath"))
 
-OCPath="/opt/maarch/OpenCapture/"
-tmpFilepath="$OCPath/data/pdf/"
-
+if [[ ! -f "$1" ]]
+then
+        echo "[OUT.SH        ] $(date +"%d-%m-%Y %T") ERROR $1 is not a valid file" >> "$logFile"
+        exit 0
+fi
 
 mv "$filepath" "$tmpFilepath"
 

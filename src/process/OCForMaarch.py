@@ -89,17 +89,17 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     subject = subjectThread.subject
     contact = contactThread.contact
 
+    try:
+        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+    except FileNotFoundError as e:
+        Log.error('Unable to delete ' + Image.jpgName + ' : ' + str(e))
+
     # Create the searchable PDF if necessary
     if isOcr is False:
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
     else:
         fileToSend = open(file, 'rb').read()
-
-    try:
-        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
-    except FileNotFoundError as e:
-        Log.error('Unable to delete ' + Image.jpgName + ' : ' + str(e))
 
     if q is not None:
         fileToStore = {

@@ -22,7 +22,7 @@ import uuid
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
 class Separator:
     def __init__(self, Log, Config):
@@ -100,7 +100,7 @@ class Separator:
             if i + 1 < self.nb_doc:
                 self.pages[i]['index_end'] = self.pages[i + 1]['index_sep']
             else:
-                self.pages[i]['index_end'] = 'END'
+                self.pages[i]['index_end'] = self.nb_pages
 
     def extract_and_convert_docs(self, file):
         if len(self.pages) == 0:
@@ -113,20 +113,13 @@ class Separator:
             for page in self.pages:
                 if page['is_empty']:
                     continue
-                pdftk_args = ['pdftk']
-                pdftk_args.append(file)
-                pdftk_args.append('cat')
-                pdftk_args.append("%s-%s" % (page['index_start'], page['index_end']))
-                pdftk_args.append('output')
-                pdftk_args.append(page['pdf_filename'])
 
-                subprocess.check_call(pdftk_args)
+                pagesToKeep = range(page['index_start'], page['index_end'] + 1)
+                self.split_pdf(file, page['pdf_filename'], pagesToKeep)
 
                 if self.convert_to_pdfa == 'True':
                     self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
             os.remove(file)
-        except subprocess.CalledProcessError as cpe:
-            self.Log.error("EACD:\ncmd: %s\noutput: %s" % (cpe.cmd, cpe.output))
         except Exception as e:
             self.Log.error("EACD: " + str(e))
 
@@ -137,3 +130,14 @@ class Separator:
         gs_args = gs_commandLine.split('#')
         subprocess.check_call(gs_args)
         os.remove(pdf_filename)
+
+    @staticmethod
+    def split_pdf(inputPath, outputPath, pages):
+        inputPdf = PdfFileReader(open(inputPath, "rb"))
+        outputPdf = PdfFileWriter()
+
+        for page in pages:
+            outputPdf.addPage(inputPdf.getPage(page - 1))
+
+        with open(outputPath, "wb") as stream:
+            outputPdf.write(stream)
