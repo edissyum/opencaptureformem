@@ -56,8 +56,16 @@ class Separator:
 
     def get_xml_qr_code(self, file):
         try:
-            xml         = subprocess.check_output(['zbarimg', '--xml', '-q', '-Sdisable', '-Sqr.enable', file])
-            self.qrList = ET.fromstring(xml)
+            xml = subprocess.Popen([
+                'zbarimg',
+                '--xml',
+                '-q',
+                '-Sdisable',
+                '-Sqr.enable',
+                file
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = xml.communicate()
+            self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
                 self.Log.error("GZX : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
