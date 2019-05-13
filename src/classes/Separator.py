@@ -65,12 +65,14 @@ class Separator:
                 file
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = xml.communicate()
+            if err.decode('utf-8'):
+                self.Log.error('ZBARIMG : ' + err)
             self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
-                self.Log.error("GZX : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
+                self.Log.error("ZBARIMG : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
         except:
-            self.Log.error("GZX2 : Unexpected error : " + str(sys.exc_info()[0]))
+            self.Log.error("ZBARIMG : Unexpected error : " + str(sys.exc_info()[0]))
 
     def parse_xml(self):
         if self.qrList is None:
@@ -132,7 +134,8 @@ class Separator:
             self.Log.error("EACD: " + str(e))
 
 
-    def convert_to_pdfa(self, pdfa_filename, pdf_filename):
+    @staticmethod
+    def convert_to_pdfa(pdfa_filename, pdf_filename):
         gs_commandLine = 'gs#-dPDFA#-dNOOUTERSAVE#-sProcessColorModel=DeviceCMYK#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=1#PDFA_def.ps#%s' \
                          % (pdfa_filename, pdf_filename)
         gs_args = gs_commandLine.split('#')

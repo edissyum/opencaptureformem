@@ -93,78 +93,14 @@ Here is some examples of possible usages in the launch_XX.sh script:
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
 To reconciliation documents, 2 other WS were developed
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
-Then add the new route to the end of **rest/index.php**, juste before the line <code>$app->run();</code>
 
-> $app->get('/getContactByMail', \Contact\controllers\ContactController::class . ':getByMail');
-> $app->get('/getContactByUrl', \Contact\controllers\ContactController::class . ':getByUrl');
-> $app->post('/reconciliation/add', \Attachment\controllers\ReconciliationController::class . ':create');
-> $app->get('/reconciliation/check', \Attachment\controllers\ReconciliationController::class . ':checkAttachment');
+The list of files needed to be modify is in install/Maarch with the correct structure. Each modifications on files are between the following tags :
 
-Then, go to **src/app/contact/controllers/ContactController.php** and at the end of the file, juste before the last <code>}</code>, put :
+    // NCH01
+        some code...
+    // END NCH01
 
-    public function getByMail(Request $request, Response $response)
-    {
-      $data = $request->getParams();
-      $contact = ContactModel::getByMail([
-      'mail' => $data['mail'],
-      ]);
-
-     return $response->withJson($contact);
-    }
-
-    public function getByUrl(Request $request, Response $response)
-    {
-      $data = $request->getParams();
-      $contact = ContactModel::getByUrl([
-      'url' => $data['url'],
-      ]);
-
-     return $response->withJson($contact);
-    }
-
-  Then, go to **src/app/contact/models/ContactModelAbstract.php** and at the end of the file, juste before the last <code>}</code>, put :
-
-
-    public static function getByMail(array $aArgs)
-    {
-        ValidatorModel::notEmpty($aArgs, ['mail']);
-        ValidatorModel::stringType($aArgs, ['mail']);
-
-        $aContact = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['contact_addresses'],
-            'where'     => ['LOWER(email) = ?'],
-            'data'      => [$aArgs['mail']],
-            'limit'     => 1
-        ]);
-
-        if (empty($aContact[0])) {
-            return [];
-        }
-
-        return $aContact[0];
-    }
-
-    public static function getByUrl(array $aArgs)
-    {
-        ValidatorModel::notEmpty($aArgs, ['url']);
-        ValidatorModel::stringType($aArgs, ['url']);
-
-        $aContact = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['contact_addresses'],
-            'where'     => ["REGEXP_REPLACE(LOWER(website), '(http|https)://?(www\.)?', '', 'g') = ?"],
-            'data'      => [$aArgs['url']],
-            'limit'     => 1
-        ]);
-
-        if (empty($aContact[0])) {
-            return [];
-        }
-
-        return $aContact[0];
-    }
-
+Just report the modifications onto you Maarch installation
 
 ## Various
 If you want to generate PDF/A instead of PDF, you have to do the following :
