@@ -23,10 +23,9 @@ class Log:
         self.LOGGER = logging.getLogger('OpenCapture')
         if self.LOGGER.hasHandlers():
             self.LOGGER.handlers.clear() # Clear the handlers to avoid double logs
-        self.path   = path
         logFile = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024,
                             backupCount=2, encoding=None, delay=0)
-        formatter = logging.Formatter('[%(threadName)-14s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S',)
+        formatter = logging.Formatter('[%(threadName)-14s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
         logFile.setFormatter(formatter)
         self.LOGGER.addHandler(logFile)
         self.LOGGER.setLevel(logging.DEBUG)
