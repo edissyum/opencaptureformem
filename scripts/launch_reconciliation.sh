@@ -48,7 +48,7 @@ check_attachment(){
 }
 
 defaultProcess(){
-    # If barcode couldn't be read or isn't present use default process
+    # If barcode couldn't be read or isn't present, use default process
     # Same if the barcode is read but the attachment doesn't exist on Maarch database
     python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --read-destination-from-filename --process incoming -f "$1"
 }
