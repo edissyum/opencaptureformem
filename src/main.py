@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 import os
 import sys
+import time
 import queue
 
 # useful to use the worker and avoid ModuleNotFoundError
@@ -44,6 +45,7 @@ m = Manager(OCforMaarch)
 
 @OCforMaarch.task()
 def launch(args):
+    start = time.time()
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
@@ -111,3 +113,12 @@ def launch(args):
 
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
+
+    end = time.time()
+
+    def timer(startTime, endTime):
+        hours, rem = divmod(endTime - startTime, 3600)
+        minutes, seconds = divmod(rem, 60)
+        return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
+
+    Log.info('Process end after ' + timer(start,end) + '')
