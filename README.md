@@ -41,6 +41,10 @@ Nothing as simple as that :
     $ sudo apt install git
     $ git clone https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
+
+The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **16** and **17**
+
+
     $ sudo ./Makefile
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
 
@@ -49,10 +53,6 @@ Nothing as simple as that :
     $ sudo apt install tesseract-ocr-langcode
 
   Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
-
-## Create service
-
-The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **16** and **17**
 
 ## Set up the incron & the cron to start the service
 
