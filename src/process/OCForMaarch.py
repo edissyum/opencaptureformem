@@ -96,6 +96,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
 
     # Create the searchable PDF if necessary
     if isOcr is False:
+        Log.info('Start OCR on document before send it')
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
     else:
