@@ -15,6 +15,7 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
+import sys
 import json
 import base64
 import requests
@@ -25,11 +26,20 @@ class WebServices:
         self.baseUrl    = host
         self.auth       = HTTPBasicAuth(user, pwd)
         self.Log        = Log
+        self.check_connection()
+
+    def check_connection(self):
+        try:
+            requests.get(self.baseUrl)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error connecting to the host. Exiting program..')
+            self.Log.error('More information : ' + str(e))
+            sys.exit('Connection error')
 
     def retrieve_contact_by_mail(self, mail):
         res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail' : mail})
         if res.status_code != 200:
-            self.Log.error('GetContactByMailError : ' + str(res.status_code))
+            self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)
@@ -39,7 +49,7 @@ class WebServices:
         res = requests.get(self.baseUrl + 'getContactByUrl', auth=self.auth, params={'url': url})
 
         if res.status_code != 200:
-            self.Log.error('GetContactByUrlError : ' + str(res.status_code))
+            self.Log.error('(' + str(res.status_code) + ') GetContactByUrlError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)
@@ -65,7 +75,7 @@ class WebServices:
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})
 
         if res.status_code != 200:
-            self.Log.error('InsertIntoMaarchError : ' + str(res.status_code) + ' : ' + str(res.text))
+            self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
             return False
         else:
             return res.text
@@ -89,7 +99,7 @@ class WebServices:
         res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type' : 'application/json'})
 
         if res.status_code != 200:
-            self.Log.error('InsertAttachmentsIntoMaarchError : ' + str(res.status_code) + ' : ' + str(res.text))
+            self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
             return False
         else:
             return res.text
@@ -103,7 +113,7 @@ class WebServices:
         res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
 
         if res.status_code != 200:
-            self.Log.error('InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.status_code) + ' : ' + str(res.text))
+            self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
             return False
         else:
             return res.text
@@ -111,7 +121,7 @@ class WebServices:
     def check_attachment(self, chrono):
         res = requests.get(self.baseUrl + 'reconciliation/check', auth=self.auth, params={'chrono': chrono})
         if res.status_code != 200:
-            self.Log.error('CheckAttachmentError : ' + str(res.status_code))
+            self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)
