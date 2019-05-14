@@ -1,4 +1,3 @@
-pdftk
 incron
 python3
 zbar-tools
