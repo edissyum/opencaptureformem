@@ -41,7 +41,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 1.0 https://gitlab.com/edissyum/opencapture/ /opt/maarch/OpenCapture/
+    $ git clone -b 1.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **16** and **17**
