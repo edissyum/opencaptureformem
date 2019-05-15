@@ -22,6 +22,8 @@ The functionnalities of OC for Maarch are :
  - Fully logged, infos and errors
  - For now it deals only with **PDF** or **JPG** files
  - Check integrity of a file to avoid processing incomplete files
+ - Handle different process type
+ - QR Code recognition from a file to reconcile it with the original document
 
 # Installation
 
@@ -73,14 +75,13 @@ We use worker and jobs to enqueue process. The worker is encapsulated into a ser
 
     @reboot systemctl start oc-worker.service
 
-
-
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
     $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
     $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
     $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
@@ -121,17 +122,17 @@ Maarch permit the creation of separator, with QRCODE containing the ID of an ent
 The file <code>src/config/config.ini</code> is splitted in different categories
 
  - Global
+    - Choose the number of threads used to multi-threads (5 by defaults)
+    - Resolution and compressionQuality when PDF are converted to JPG
+    - String use to sanitize char when mail detection
     - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
     - tmpPath, no need to modify
-    - Resolution and compressionQuality when PDF are converted to JPG
+    - errorPath, no need to modify
     - Path to the logFile, no need to modify
  - Locale
     - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
     - Choose the locale of OCR (see the langcodes of Tesseract)
     - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
- - OCForMaarch
-    - Link to **/rest** API of Maarch with User and Password
-    - Default metadata to insert documents (type_id, status, priority, format, category_id and destination)
  - Regex
     - Add extensions to detect URL during text detection
  - Separator_QR
@@ -140,14 +141,17 @@ The file <code>src/config/config.ini</code> is splitted in different categories
     - Path to export PDF or PDF/A, no need to modify
     - Tmp path, no need to modify
     - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
-
+  - OCForMaarch
+    - Link to **/rest** API of Maarch with User and Password
+  - OCForMaarch_**process_name**
+     - Default metadata to insert documents (type_id, status, typist, priority, format, category_id and destination)
 
 ## Apache modifications
 
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
 > /etc/php/7.X/apache2/php.ini
 
-By default it is recommended to replace **8M** by **0**
+By default it is recommended to replace **8M** by **20M** or more if needed
 
 # LICENSE
 
