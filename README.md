@@ -1,6 +1,6 @@
 ![Logo OpenCapture](https://vitrine.hellyum.com/wp-content/uploads/2019/04/OpenCapture.png)
 
-# OpenCapture for Maarch  18.10
+# OpenCapture for Maarch  19.04
 
 OpenCapture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
@@ -41,7 +41,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 1.1 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 2.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **16** and **17**
@@ -92,7 +92,6 @@ Here is some examples of possible usages in the launch_XX.sh script:
 ## WebServices for Maarch 18.10
 
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
-To reconciliation documents, 2 other WS were developed
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
 The list of files needed to be modify is in install/Maarch with the correct structure. Each modifications on files are between the following tags :
