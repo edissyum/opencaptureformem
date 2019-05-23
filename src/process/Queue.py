@@ -71,5 +71,5 @@ class ProcessQueue(Thread):
                     self.Log.error('Unable to delete ' + file + ' : ' + str(e))
                 return True
             else:
-                shutil.move(file, self.Config.cfg['GLOBAL']['errorpath'] + file)
+                shutil.move(file, self.Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                 return False
