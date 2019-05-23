@@ -92,7 +92,7 @@ class Images:
                         try:
                             PyPDF2.PdfFileReader(doc)
                         except PyPDF2.utils.PdfReadError:
-                            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + file)
+                            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                             return False
                         else:
                             return True
