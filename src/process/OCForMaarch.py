@@ -66,10 +66,10 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     Ocr.text_builder(Image.img)
 
     # Find subject of document
-    subjectThread   = FindSubject(Ocr.text)
+    subjectThread   = FindSubject(Ocr.text, Locale, Log)
 
     # Find date of document
-    dateThread      = FindDate(Ocr.text, Log, Locale)
+    dateThread      = FindDate(Ocr.text, Locale)
 
     # Find mail in document and check if the contact exist in Maarch
     contactThread   = FindContact(Ocr.text, Log, Config, WebService)

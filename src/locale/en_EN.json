@@ -1,5 +1,5 @@
 {
-    "dateConvert"           : {
+    "dateConvert"     : {
         "01": [
             "January",
             "Jan",
@@ -61,7 +61,8 @@
             "Dec."
         ]
     },
-    "dateRegex"             : "(\\d{4}\\s?|[/,-]\\d{1,2}[/,-]\\d{1,2}|\\d{1,2}\\s?[JFMASONDjfmasond][a-zA-Z_À-ÿ]*\\s?\\d{2,4})",
-    "dateTimeFormat"        : "%Y %m %d",
-    "dateFormat"            : "%Y-%m-%d"
+    "dateRegex"       : "(\\d{4}\\s?|[/,-]\\d{1,2}[/,-]\\d{1,2}|\\d{1,2}\\s?[JFMASONDjfmasond][a-zA-Z_À-ÿ]*\\s?\\d{2,4})",
+    "dateTimeFormat"  : "%Y %m %d",
+    "dateFormat"      : "%Y-%m-%d",
+    "subjectRegex"    : "([o,O]bje[c]?t|[O,o,Y,y]ur\\s*[r,R]ef(s?|erence)+)\\s*(:)?\\s*.*"
 }
