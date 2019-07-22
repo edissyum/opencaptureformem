@@ -1,10 +1,11 @@
 #!/bin/bash
 
 OS=$(lsb_release -si)
+VER=$(lsb_release -r)
 
 apt update
 
-if [[ "$OS" = 'Debian' ]]
+if [[ "$OS" = 'Debian' && "$VER" == *'9'* ]]
 then
 su -c 'cat > /etc/apt/sources.list.d/stretch-backports.list << EOF
 deb http://http.debian.net/debian stretch-backports main contrib non-free
@@ -14,7 +15,7 @@ EOF'
     apt install -y -t stretch-backports tesseract-ocr-fra
     apt install -y -t stretch-backports tesseract-ocr-eng
 
-elif [[ "$OS" = 'Ubuntu' ]]
+elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && $VER == *'10'* ]]
 then
     apt install -y tesseract-ocr
     apt install -y tesseract-ocr-fra
