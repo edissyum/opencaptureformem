@@ -20,10 +20,9 @@ from datetime import datetime
 from threading import Thread
 
 class FindDate(Thread):
-    def __init__(self, text, Log, Locale):
+    def __init__(self, text, Locale):
         Thread.__init__(self, name='dateThread')
         self.text       = text
-        self.Log        = Log
         self.Locale     = Locale
         self.date       = ''
 

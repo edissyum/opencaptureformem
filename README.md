@@ -32,8 +32,9 @@ The functionnalities of OC for Maarch are :
 Tested with :
 - Ubuntu 18.10 with Python 3.7.1 & Tesseract v4.0.0
 - Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0
-- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0
-- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0
+- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
+- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
+- Debian 10 with Python 3.7.3 Tesseract V4.0.0
 
 ## Install OpenCapture for Maarch
 
@@ -44,7 +45,7 @@ Nothing as simple as that :
     $ git clone -b 2.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
-The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **16** and **17**
+The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **40** and **41**
 
 
     $ sudo ./Makefile
@@ -89,7 +90,7 @@ Here is some examples of possible usages in the launch_XX.sh script:
 -process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
-## WebServices for Maarch 18.10
+## WebServices for Maarch 19.04
 
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).

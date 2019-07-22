@@ -19,12 +19,18 @@ import re
 from threading import Thread
 
 class FindSubject(Thread):
-    def __init__(self, text):
+    def __init__(self, text, Locale, Log):
         Thread.__init__(self, name='subjectThread')
         self.text       = text
+        self.Log        = Log
+        self.Locale     = Locale
         self.subject    = None
 
     def run(self):
-        for _subject in re.finditer(r"[o,O]bje[c]?t\s*(:)?\s*.*", self.text):
-            self.subject = re.sub(r"[o,O]bje[c]?t\s*(:)?\s*", '', _subject.group())
+        #print(self.text)
+        for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
+            # Using the [:-2] to delete the ".*" of the regex
+            # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
+            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', _subject.group())
+            self.Log.info("Find the following subject : " + self.subject)
             break
