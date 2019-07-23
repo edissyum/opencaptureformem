@@ -69,7 +69,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     subjectThread   = FindSubject(Ocr.text, Locale, Log)
 
     # Find date of document
-    dateThread      = FindDate(Ocr.text, Locale)
+    dateThread      = FindDate(Ocr.text, Locale, Log)
 
     # Find mail in document and check if the contact exist in Maarch
     contactThread   = FindContact(Ocr.text, Log, Config, WebService)

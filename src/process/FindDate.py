@@ -20,23 +20,30 @@ from datetime import datetime
 from threading import Thread
 
 class FindDate(Thread):
-    def __init__(self, text, Locale):
+    def __init__(self, text, Locale, Log):
         Thread.__init__(self, name='dateThread')
         self.text       = text
         self.Locale     = Locale
         self.date       = ''
+        self.Log        = Log
 
     def run(self):
         for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text):
             self.date = _date.group().replace('1er', '01')  # Replace some possible inconvenient char
+            self.date = self.date.replace(',', '')          # Replace some possible inconvenient char
+
             dateConvert = self.Locale.arrayDate
             for key in dateConvert:
                 for month in dateConvert[key]:
-                    if month.lower() in self.date:
+                    if month.lower() in self.date.lower():
                         self.date = (self.date.lower().replace(month.lower(), key))
                         break
+
             try:
                 self.date = datetime.strptime(self.date, self.Locale.dateTimeFomat).strftime(self.Locale.formatDate)
+                self.Log.info("Date found : " + self.date)
                 break
             except ValueError:
+                self.date = ''
+                self.Log.info("Date wasn't in a good format : " + self.date)
                 continue
