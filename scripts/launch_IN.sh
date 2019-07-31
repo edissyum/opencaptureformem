@@ -18,20 +18,22 @@
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 OCPath="/opt/maarch/OpenCapture/"
-tmpFilepath="$OCPath/data/pdf/"
 logFile="$OCPath"/data/log/OCforMaarch.log
 
 echo "[IN.SH         ] $(date +"%d-%m-%Y %T") INFO Launching IN.SH script" >> "$logFile"
 
 filepath=$1
-filename=$(basename "$filepath")
 
-if [[ ! -f "$1" ]]
+if [[ ! -f "$filepath" ]]
 then
-        echo "[IN.SH         ] $(date +"%d-%m-%Y %T") ERROR $1 is not a valid file" >> "$logFile"
+        echo "[IN.SH         ] $(date +"%d-%m-%Y %T") ERROR $filepath is not a valid file" >> "$logFile"
         exit 0
 fi
 
+sleep 5
+
+filename=$(basename "$filepath")
+tmpFilepath="$OCPath/data/pdf/"
 mv "$filepath" "$tmpFilepath"
 
 python3 "$OCPath"/worker.py -c "$OCPath"/src/config/config.ini -f "$OCPath"/data/pdf/"$filename" --read-destination-from-filename -process incoming
