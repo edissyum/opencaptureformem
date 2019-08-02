@@ -24,7 +24,7 @@ errFilepath="$OCPath/data/error/$name/"
 tmpFilepath="$OCPath/data/pdf/"
 PID=/tmp/securite-$name.pid
 
-echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
+echo "[$name.sh      ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
 
 filepath=$1
 filename=$(basename "$filepath")
@@ -34,7 +34,7 @@ if ! test -e $PID && test "$ext" = 'application/pdf; charset=binary' && test -f 
 then
     touch $PID
     echo $$ > $PID
-    echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
+    echo "[$name.sh      ] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
 
     mv "$filepath" "$tmpFilepath"
 
@@ -44,10 +44,10 @@ then
 
 elif test -f "$filepath" && test "$ext" != 'application/pdf; charset=binary';
 then
-    echo "[$name.sh   ] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
+    echo "[$name.sh      ] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
     mkdir -p "$errFilepath"
     mv "$filepath" "$errFilepath"
 else
-    echo "[$name.sh   ] $(date +"%d-%m-%Y %T") WARNING capture on $filepath aready active : PID exists : $PID" >> "$logFile"
+    echo "[$name.sh      ] $(date +"%d-%m-%Y %T") WARNING capture on $filepath aready active : PID exists : $PID" >> "$logFile"
 fi
 
