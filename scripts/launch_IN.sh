@@ -17,23 +17,37 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
+name="IN"
 OCPath="/opt/maarch/OpenCapture/"
 logFile="$OCPath"/data/log/OCforMaarch.log
+errFilepath="$OCPath/data/error/$name/"
+tmpFilepath="$OCPath/data/pdf/"
+PID=/tmp/securite-$name.pid
 
-echo "[IN.SH         ] $(date +"%d-%m-%Y %T") INFO Launching IN.SH script" >> "$logFile"
+echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
 
 filepath=$1
+filename=$(basename "$filepath")
+ext=$(file -b -i "$filepath")
 
-if [[ ! -f "$filepath" ]]
+if ! test -e $PID && test "$ext" = 'application/pdf; charset=binary' && test -f "$filepath";
 then
-        echo "[IN.SH         ] $(date +"%d-%m-%Y %T") ERROR $filepath is not a valid file" >> "$logFile"
-        exit 0
+    touch $PID
+    echo $$ > $PID
+    echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
+
+    mv "$filepath" "$tmpFilepath"
+
+    python3 "$OCPath"/worker.py -c "$OCPath"/src/config/config.ini -f "$tmpFilepath"/"$filename" --read-destination-from-filename -process incoming
+
+    rm -f $PID
+
+elif test -f "$filepath" && test "$ext" != 'application/pdf; charset=binary';
+then
+    echo "[$name.sh   ] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
+    mkdir -p "$errFilepath"
+    mv "$filepath" "$errFilepath"
+else
+    echo "[$name.sh   ] $(date +"%d-%m-%Y %T") WARNING capture on $filepath aready active : PID exists : $PID" >> "$logFile"
 fi
 
-sleep 5
-
-filename=$(basename "$filepath")
-tmpFilepath="$OCPath/data/pdf/"
-mv "$filepath" "$tmpFilepath"
-
-python3 "$OCPath"/worker.py -c "$OCPath"/src/config/config.ini -f "$OCPath"/data/pdf/"$filename" --read-destination-from-filename -process incoming
