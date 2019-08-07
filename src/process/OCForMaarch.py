@@ -128,7 +128,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             else:
                 res = WebService.insert_attachment_reconciliation(fileToSend, args['chrono'], _process)
         else:
-            res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process)
+            res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process, custom_mail)
 
         if res:
             Log.info("Insert OK : " + res)
