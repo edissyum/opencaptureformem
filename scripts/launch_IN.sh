@@ -22,7 +22,7 @@ OCPath="/opt/maarch/OpenCapture/"
 logFile="$OCPath"/data/log/OCforMaarch.log
 errFilepath="$OCPath/data/error/$name/"
 tmpFilepath="$OCPath/data/pdf/"
-PID=/tmp/securite-$name.pid
+PID=/tmp/securite-$name-$$.pid
 
 echo "[$name.sh      ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
 
