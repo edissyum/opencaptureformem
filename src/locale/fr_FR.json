@@ -68,5 +68,5 @@
     "dateRegex"     : "(\\d{1,2}|\\d{1}\\w{2})\\s?([JFMASONDjfmasond][a-zA-Z_À-ÿ\\.,-]*|[/,-\\.]\\d{2}[/,-\\.])\\s?\\d{4}",
     "dateTimeFormat": "%d %m %Y",
     "dateFormat"    : "%d-%m-%Y",
-    "subjectRegex"  : "([o,O]bje[c]?t|[v,V,n,N]os\\s*[r,R][e,é]f(s?|[e,é]rence)+)\\s*(:)?\\s*.*"
+    "subjectRegex"  : "([o,O]bje[c]?t|[v,V,n,N]os\\s*[r,R][e,é]f(s?|[e,é]rence)+|[s,S]u[b]?je[c]?t)\\s*(:)?\\s*.*"
 }

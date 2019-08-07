@@ -27,7 +27,6 @@ class FindSubject(Thread):
         self.subject    = None
 
     def run(self):
-        #print(self.text)
         for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
             # Using the [:-2] to delete the ".*" of the regex
             # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")

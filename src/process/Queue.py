@@ -53,6 +53,7 @@ class ProcessQueue(Thread):
             resId           = queueInfo['resId']
             chrono          = queueInfo['chrono']
             isInternalNote  = queueInfo['isInternalNote']
+            custom_mail     = queueInfo[self.Config.cfg[_process]['custom_mail']]
 
             # Send to Maarch
             if 'is_attachment' in self.Config.cfg[_process] and self.Config.cfg[_process]['is_attachment'] != '':
@@ -61,7 +62,7 @@ class ProcessQueue(Thread):
                 else:
                     res = self.WebService.insert_attachment_reconciliation(fileToSend, chrono, _process)
             else:
-                res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process)
+                res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process, custom_mail)
 
             if res:
                 self.Log.info("Insert OK : " + res)

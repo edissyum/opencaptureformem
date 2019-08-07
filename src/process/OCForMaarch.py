@@ -69,7 +69,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     subjectThread   = FindSubject(Ocr.text, Locale, Log)
 
     # Find date of document
-    dateThread      = FindDate(Ocr.text, Locale, Log)
+    dateThread      = FindDate(Ocr.text, Locale, Log, Config)
 
     # Find mail in document and check if the contact exist in Maarch
     contactThread   = FindContact(Ocr.text, Log, Config, WebService)
@@ -85,9 +85,10 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     contactThread.join()
 
     # Get the returned values
-    date    = dateThread.date
-    subject = subjectThread.subject
-    contact = contactThread.contact
+    date            = dateThread.date
+    subject         = subjectThread.subject
+    contact         = contactThread.contact
+    custom_mail     = contactThread.custom_mail
 
     try:
         os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
@@ -113,7 +114,8 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             'process'       : _process,
             'resId'         : args['resid'],
             'chrono'        : args['chrono'],
-            'isInternalNote': args['isinternalnote']
+            'isInternalNote': args['isinternalnote'],
+            Config.cfg[_process]['custom_mail'] : custom_mail
         }
 
         q.put(fileToStore)

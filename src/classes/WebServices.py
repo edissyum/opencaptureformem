@@ -54,7 +54,7 @@ class WebServices:
         else:
             return json.loads(res.text)
 
-    def insert_with_args(self, fileContent, Config, contact, subject, date, destination, _process):
+    def insert_with_args(self, fileContent, Config, contact, subject, date, destination, _process, custom_mail):
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
         data = {
@@ -69,7 +69,8 @@ class WebServices:
             'destination'   : destination,
             'address_id'    : contact['id'],
             'exp_contact_id': contact['contact_id'],
-            'doc_date'      : date
+            'doc_date'      : date,
+            Config.cfg[_process]['custom_mail'] : custom_mail
         }
 
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})

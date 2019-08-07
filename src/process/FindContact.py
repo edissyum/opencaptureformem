@@ -26,6 +26,7 @@ class FindContact(Thread):
         self.Config     = Config
         self.WebService = WebService
         self.contact    = ''
+        self.custom_mail = ''
 
     def run(self):
         foundContact = False
@@ -40,6 +41,10 @@ class FindContact(Thread):
                 self.contact = contact
                 self.Log.info('Find E-MAIL in Maarch, get it : ' + sanitized_mail)
                 break
+            else:
+                # Add the e-mail into a custom value (custom_t10 by default)
+                self.custom_mail += sanitized_mail + ';'
+                continue
         # If no contact were found, search for URL
         if not foundContact:
             for url in re.finditer(

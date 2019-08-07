@@ -35,6 +35,8 @@ user                =
 password            =
 processAvailable    = incoming,outgoing,reconciliation_default,reconciliation_found
 defaultProcess      = incoming
+# Delta between date found and today date, in days
+timeDelta           = 62
 
 [OCForMaarch_incoming]
 status              = INIT
@@ -44,6 +46,7 @@ priority            = poiuytre1357nbvc
 format              = pdf
 category_id         = incoming
 destination         = COU
+custom_mail         = custom_t10
 
 [OCForMaarch_outgoing]
 status              = INIT
@@ -53,6 +56,7 @@ priority            = poiuytre1357nbvc
 format              = pdf
 category_id         = outgoing
 destination         = COU
+custom_mail         = custom_t10
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC

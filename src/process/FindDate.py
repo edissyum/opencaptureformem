@@ -20,17 +20,20 @@ from datetime import datetime
 from threading import Thread
 
 class FindDate(Thread):
-    def __init__(self, text, Locale, Log):
+    def __init__(self, text, Locale, Log, Config):
         Thread.__init__(self, name='dateThread')
         self.text       = text
         self.Locale     = Locale
         self.date       = ''
         self.Log        = Log
+        self.Config     = Config
 
     def run(self):
         for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text):
             self.date = _date.group().replace('1er', '01')  # Replace some possible inconvenient char
             self.date = self.date.replace(',', '')          # Replace some possible inconvenient char
+            self.date = self.date.replace('/', ' ')          # Replace some possible inconvenient char
+            self.date = self.date.replace('-', ' ')          # Replace some possible inconvenient char
 
             dateConvert = self.Locale.arrayDate
             for key in dateConvert:
@@ -40,9 +43,19 @@ class FindDate(Thread):
                         break
 
             try:
-                self.date = datetime.strptime(self.date, self.Locale.dateTimeFomat).strftime(self.Locale.formatDate)
-                self.Log.info("Date found : " + self.date)
-                break
+                self.date   = datetime.strptime(self.date, self.Locale.dateTimeFomat).strftime(self.Locale.formatDate)
+
+                # Check if the date of the document isn't too old. 62 is equivalent of 2 months
+                today       = datetime.now()
+                docDate     = datetime.strptime(self.date, self.Locale.formatDate)
+                timedelta   = today - docDate
+                if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']):
+                    self.date = ''
+                    self.Log.info("Date is older than 2 month : " + self.date)
+                    continue
+                else:
+                    self.Log.info("Date found : " + self.date)
+                    break
             except ValueError:
                 self.date = ''
                 self.Log.info("Date wasn't in a good format : " + self.date)
