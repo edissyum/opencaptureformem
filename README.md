@@ -1,4 +1,4 @@
-![Logo OpenCapture](https://vitrine.hellyum.com/wp-content/uploads/2019/04/OpenCapture.png)
+![Logo OpenCapture](https://edissyum.com/wp-content/uploads/2019/04/OpenCapture.png)
 
 # OpenCapture for Maarch  19.04
 
@@ -46,7 +46,6 @@ Nothing as simple as that :
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **40** and **41**
-
 
     $ sudo ./Makefile
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
