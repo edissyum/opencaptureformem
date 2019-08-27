@@ -62,7 +62,8 @@ def launch(args):
     Image       = imagesClass.Images(
         fileName,
         int(Config.cfg['GLOBAL']['resolution']),
-        int(Config.cfg['GLOBAL']['compressionquality'])
+        int(Config.cfg['GLOBAL']['compressionquality']),
+        Log
     )
 
     # Start process

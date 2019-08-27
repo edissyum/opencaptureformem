@@ -16,7 +16,9 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import sys
 import time
+from wand import exceptions as wandExcept
 import shutil
 import PyPDF2
 from PIL import Image
@@ -25,11 +27,13 @@ from wand.color import Color
 
 
 class Images:
-    def __init__(self, jpgName, res, quality):
+    def __init__(self, jpgName, res, quality, Log):
+        Image.MAX_IMAGE_PIXELS      = None  # Disable to avoid DecompressionBombWarning error
         self.jpgName                = jpgName
         self.resolution             = res
         self.compressionQuality     = quality
-        self.img                    = None
+        self.img                    = None,
+        self.Log                    = Log
 
     # Convert the first page of PDF to JPG and open the image
     def pdf_to_jpg(self, pdfName, openImg=True):
@@ -37,17 +41,26 @@ class Images:
         if openImg:
             self.img = Image.open(self.jpgName)
 
-    # Simply open an image
+    # Simply open an
     def open_img(self, img):
         self.img = Image.open(img)
 
     # Save pdf with one or more pages into JPG file
     def save_img_with_wand(self, pdfName, output):
-        with Img(filename=pdfName, resolution=self.resolution) as pic:
-            pic.compression_quality = self.compressionQuality
-            pic.background_color = Color("white")
-            pic.alpha_channel = 'remove'
-            pic.save(filename=output)
+        try:
+            with Img(filename=pdfName, resolution=300) as pic:
+                pic.compression_quality = self.compressionQuality
+                pic.background_color = Color("white")
+                pic.alpha_channel = 'remove'
+                pic.save(filename=output)
+        except wandExcept.WandRuntimeError as e:
+            self.Log.error(e)
+            self.Log.error('Exiting program...')
+            sys.exit()
+        except wandExcept.CacheError as e:
+            self.Log.error(e)
+            self.Log.error('Exiting program...')
+            sys.exit()
 
     @staticmethod
     def sorted_file(path, extension):
