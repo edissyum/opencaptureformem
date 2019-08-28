@@ -18,12 +18,12 @@
 import os
 import sys
 import time
-from wand import exceptions as wandExcept
 import shutil
 import PyPDF2
 from PIL import Image
-from wand.image import Image as Img
 from wand.color import Color
+from wand.image import Image as Img
+from wand import exceptions as wandExcept
 
 
 class Images:

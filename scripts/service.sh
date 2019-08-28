@@ -17,7 +17,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 export LD_LIBRARY_PATH=/usr/local/lib
+export MAGICK_TMPDIR=/tmp/OpenCapture/
 export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
 
-cd /opt/maarch/OpenCapture/
+cd /opt/maarch/OpenCapture/ || exit
 /usr/local/bin/kuyruk --app src.main.OCforMaarch worker
