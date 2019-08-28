@@ -1,8 +1,8 @@
-![Logo OpenCapture](https://edissyum.com/wp-content/uploads/2019/04/OpenCapture.png)
+![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-# OpenCapture for Maarch  19.04
+# Open-Capture for Maarch  19.04
 
-OpenCapture is a **free and Open Source** software under **GNU General Public License v3.0**.
+Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of OC for Maarch are :
 
@@ -36,7 +36,7 @@ Tested with :
 - Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
 
-## Install OpenCapture for Maarch
+## Install Open-Capture for Maarch
 
 Nothing as simple as that :
 
@@ -154,4 +154,4 @@ By default it is recommended to replace **8M** by **20M** or more if needed
 
 # LICENSE
 
-OpenCapture for Maarch is released under the GPL v3.
+Open-Capture for Maarch is released under the GPL v3.
