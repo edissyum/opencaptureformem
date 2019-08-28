@@ -32,7 +32,7 @@ find -name ".gitkeep" -delete
 touch /etc/systemd/system/oc-worker.service
 su -c 'cat > /etc/systemd/system/oc-worker.service << EOF
 [Unit]
-Description=Daemon for OpenCapture for Maarch
+Description=Daemon for Open-Capture for Maarch
 
 [Service]
 Type=simple

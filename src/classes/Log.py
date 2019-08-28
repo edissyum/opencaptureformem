@@ -20,7 +20,7 @@ from logging.handlers import RotatingFileHandler
 
 class Log:
     def __init__(self, path):
-        self.LOGGER = logging.getLogger('OpenCapture')
+        self.LOGGER = logging.getLogger('Open-Capture')
         if self.LOGGER.hasHandlers():
             self.LOGGER.handlers.clear() # Clear the handlers to avoid double logs
         logFile = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024,
