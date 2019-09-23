@@ -29,9 +29,9 @@ class FindDate(Thread):
         self.Config     = Config
 
     def run(self):
-        for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text):
-            self.date = _date.group().replace('1er', '01')  # Replace some possible inconvenient char
-            self.date = self.date.replace(',', '')          # Replace some possible inconvenient char
+        for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text.replace(' ', '')):
+            self.date = _date.group().replace('1er', '01')   # Replace some possible inconvenient char
+            self.date = self.date.replace(',', '')           # Replace some possible inconvenient char
             self.date = self.date.replace('/', ' ')          # Replace some possible inconvenient char
             self.date = self.date.replace('-', ' ')          # Replace some possible inconvenient char
 
@@ -44,14 +44,14 @@ class FindDate(Thread):
 
             try:
                 self.date   = datetime.strptime(self.date, self.Locale.dateTimeFomat).strftime(self.Locale.formatDate)
-
-                # Check if the date of the document isn't too old. 62 is equivalent of 2 months
+                # Check if the date of the document isn't too old. 62 (default value) is equivalent of 2 months
                 today       = datetime.now()
                 docDate     = datetime.strptime(self.date, self.Locale.formatDate)
                 timedelta   = today - docDate
-                if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']):
+
+                if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0 :
+                    self.Log.info("Date is older than 2 month or in the future: " + self.date)
                     self.date = ''
-                    self.Log.info("Date is older than 2 month : " + self.date)
                     continue
                 else:
                     self.Log.info("Date found : " + self.date)
