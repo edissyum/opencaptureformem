@@ -28,8 +28,9 @@ class FindSubject(Thread):
 
     def run(self):
         for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
-            # Using the [:-2] to delete the ".*" of the regex
-            # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
-            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', _subject.group())
-            self.Log.info("Find the following subject : " + self.subject)
-            break
+            if len(_subject.group()) > 3:
+                # Using the [:-2] to delete the ".*" of the regex
+                # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
+                self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', _subject.group())
+                self.Log.info("Find the following subject : " + self.subject)
+                break
