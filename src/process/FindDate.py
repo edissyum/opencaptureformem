@@ -29,7 +29,7 @@ class FindDate(Thread):
         self.Config     = Config
 
     def run(self):
-        for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text.replace(' ', '')):
+        for _date in re.finditer(r"" + self.Locale.regexDate + "", re.sub(r'(\d)\s+(\d)', r'\1\2', self.text)): # The re.sub is useful to fix space between numerics
             self.date = _date.group().replace('1er', '01')   # Replace some possible inconvenient char
             self.date = self.date.replace(',', '')           # Replace some possible inconvenient char
             self.date = self.date.replace('/', ' ')          # Replace some possible inconvenient char
