@@ -57,6 +57,6 @@ class FindDate(Thread):
                     self.Log.info("Date found : " + self.date)
                     break
             except ValueError:
-                self.date = ''
                 self.Log.info("Date wasn't in a good format : " + self.date)
+                self.date = ''
                 continue
