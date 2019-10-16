@@ -49,13 +49,13 @@ class FindDate(Thread):
                 docDate     = datetime.strptime(self.date, self.Locale.formatDate)
                 timedelta   = today - docDate
 
-                if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0 :
-                    self.Log.info("Date is older than 2 month or in the future: " + self.date)
-                    self.date = ''
-                    continue
-                else:
-                    self.Log.info("Date found : " + self.date)
-                    break
+                if int(self.Config.cfg['OCForMaarch']['timedelta']) != -1:
+                    if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0 :
+                        self.Log.info("Date is older than 2 month or in the future: " + self.date)
+                        self.date = ''
+                        continue
+                self.Log.info("Date found : " + self.date)
+                break
             except ValueError:
                 self.Log.info("Date wasn't in a good format : " + self.date)
                 self.date = ''

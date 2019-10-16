@@ -36,6 +36,7 @@ password            =
 processAvailable    = incoming,outgoing,reconciliation_default,reconciliation_found
 defaultProcess      = incoming
 # Delta between date found and today date, in days
+# -1 to disable
 timeDelta           = 62
 
 [OCForMaarch_incoming]
