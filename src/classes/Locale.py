@@ -25,7 +25,7 @@ class Locale:
         self.regexDate      = ''
         self.regexSubject   = ''
         self.formatDate     = ''
-        self.dateTimeFomat  = ''
+        self.dateTimeFormat = ''
         self.date_path      = Config.cfg['LOCALE']['localedatepath']
 
         with open(self.date_path + self.locale + '.json') as file:
@@ -34,4 +34,4 @@ class Locale:
             self.formatDate     = fp['dateFormat']
             self.arrayDate      = fp['dateConvert']
             self.regexSubject   = fp['subjectRegex']
-            self.dateTimeFomat  = fp['dateTimeFormat']
+            self.dateTimeFormat  = fp['dateTimeFormat']

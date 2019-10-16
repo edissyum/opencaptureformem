@@ -43,7 +43,7 @@ class FindDate(Thread):
                         break
 
             try:
-                self.date   = datetime.strptime(self.date, self.Locale.dateTimeFomat).strftime(self.Locale.formatDate)
+                self.date   = datetime.strptime(self.date, self.Locale.dateTimeFormat).strftime(self.Locale.formatDate)
                 # Check if the date of the document isn't too old. 62 (default value) is equivalent of 2 months
                 today       = datetime.now()
                 docDate     = datetime.strptime(self.date, self.Locale.formatDate)
