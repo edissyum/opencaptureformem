@@ -29,6 +29,10 @@ pip3 install -r pip-requirements.txt
 cd ../
 find -name ".gitkeep" -delete
 
+# Makes scripts executable
+chmod u+x scripts/*.sh
+
+# Create the service
 touch /etc/systemd/system/oc-worker.service
 su -c 'cat > /etc/systemd/system/oc-worker.service << EOF
 [Unit]
