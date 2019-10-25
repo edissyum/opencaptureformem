@@ -42,7 +42,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 2.3 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 2.4 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **40** and **41**
@@ -78,10 +78,10 @@ We use worker and jobs to enqueue process. The worker is encapsulated into a ser
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
-    $ python3 /opt/maarch/OpenCapture/worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
+    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
+    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
+    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
