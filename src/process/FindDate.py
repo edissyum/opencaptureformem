@@ -34,6 +34,7 @@ class FindDate(Thread):
             self.date = self.date.replace(',', '')           # Replace some possible inconvenient char
             self.date = self.date.replace('/', ' ')          # Replace some possible inconvenient char
             self.date = self.date.replace('-', ' ')          # Replace some possible inconvenient char
+            self.date = self.date.replace('.', ' ')          # Replace some possible inconvenient char
 
             dateConvert = self.Locale.arrayDate
             for key in dateConvert:
