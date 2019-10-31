@@ -62,38 +62,39 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         Image.open_img(file)
         isOcr = False
 
-    # Get the OCR of the file as a string content
-    Ocr.text_builder(Image.img)
+    if 'reconciliation' not in _process:
+        # Get the OCR of the file as a string content
+        Ocr.text_builder(Image.img)
 
-    # Find subject of document
-    subjectThread   = FindSubject(Ocr.text, Locale, Log)
+        # Find subject of document
+        subjectThread   = FindSubject(Ocr.text, Locale, Log)
 
-    # Find date of document
-    dateThread      = FindDate(Ocr.text, Locale, Log, Config)
+        # Find date of document
+        dateThread      = FindDate(Ocr.text, Locale, Log, Config)
 
-    # Find mail in document and check if the contact exist in Maarch
-    contactThread   = FindContact(Ocr.text, Log, Config, WebService)
+        # Find mail in document and check if the contact exist in Maarch
+        contactThread   = FindContact(Ocr.text, Log, Config, WebService)
 
-    # Launch all threads
-    dateThread.start()
-    subjectThread.start()
-    contactThread.start()
+        # Launch all threads
+        dateThread.start()
+        subjectThread.start()
+        contactThread.start()
 
-    # Wait for end of threads
-    dateThread.join()
-    subjectThread.join()
-    contactThread.join()
+        # Wait for end of threads
+        dateThread.join()
+        subjectThread.join()
+        contactThread.join()
 
-    # Get the returned values
-    date            = dateThread.date
-    subject         = subjectThread.subject
-    contact         = contactThread.contact
-    custom_mail     = contactThread.custom_mail
+        # Get the returned values
+        date            = dateThread.date
+        subject         = subjectThread.subject
+        contact         = contactThread.contact
+        custom_mail     = contactThread.custom_mail
 
-    try:
-        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
-    except FileNotFoundError as e:
-        Log.error('Unable to delete ' + Image.jpgName + ' : ' + str(e))
+        try:
+            os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+        except FileNotFoundError as e:
+            Log.error('Unable to delete ' + Image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
     if isOcr is False:
