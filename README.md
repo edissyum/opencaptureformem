@@ -45,7 +45,7 @@ Nothing as simple as that :
     $ git clone -b 2.4 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
-The ./Makefile command create the service, but you may want to change the User and Group so just open the ./Makefile and change lines **40** and **41**
+The ./Makefile command create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **44** and **45**
 
     $ sudo ./Makefile
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
