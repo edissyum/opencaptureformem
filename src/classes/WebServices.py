@@ -70,7 +70,7 @@ class WebServices:
             'address_id'    : contact['id'],
             'exp_contact_id': contact['contact_id'],
             'doc_date'      : date,
-            Config.cfg[_process]['custom_mail'] : custom_mail
+            Config.cfg[_process]['custom_mail'] : custom_mail[:254] # 254 to avoid too long string (maarch custom is limited to 255 char)
         }
 
         res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})
