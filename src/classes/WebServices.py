@@ -73,13 +73,18 @@ class WebServices:
             Config.cfg[_process]['custom_mail'] : custom_mail[:254] # 254 to avoid too long string (maarch custom is limited to 255 char)
         }
 
-        res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})
+        try:
+            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})
 
-        if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
+                return False
+            else:
+                return res.text
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
-        else:
-            return res.text
 
     def insert_attachment(self, fileContent, Config, res_id, _process):
         data = {
@@ -97,13 +102,18 @@ class WebServices:
             'fileFormat'    : Config.cfg[_process]['format'],
         }
 
-        res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type' : 'application/json'})
+        try:
+            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type' : 'application/json'})
 
-        if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
+                return False
+            else:
+                return res.text
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
-        else:
-            return res.text
 
     def insert_attachment_reconciliation(self, fileContent, chrono, _process):
         data = {
@@ -111,13 +121,18 @@ class WebServices:
             'encodedFile'       : base64.b64encode(fileContent).decode('utf-8'),
         }
 
-        res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+        try:
+            res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
 
-        if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
+                return False
+            else:
+                return res.text
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
-        else:
-            return res.text
 
     def check_attachment(self, chrono):
         res = requests.get(self.baseUrl + 'reconciliation/check', auth=self.auth, params={'chrono': chrono})
