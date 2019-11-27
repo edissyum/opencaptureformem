@@ -26,6 +26,7 @@ class Locale:
         self.regexSubject   = ''
         self.formatDate     = ''
         self.dateTimeFormat = ''
+        self.URLPattern     = ''
         self.date_path      = Config.cfg['LOCALE']['localedatepath']
 
         with open(self.date_path + self.locale + '.json') as file:
@@ -34,4 +35,8 @@ class Locale:
             self.formatDate     = fp['dateFormat']
             self.arrayDate      = fp['dateConvert']
             self.regexSubject   = fp['subjectRegex']
-            self.dateTimeFormat  = fp['dateTimeFormat']
+            self.dateTimeFormat = fp['dateTimeFormat']
+            self.phoneRegex     = fp['phoneRegex']
+            self.emailRegex     = fp['emailRegex']
+            self.URLRegex       = fp['URLRegex']
+            self.URLPattern     = fp['URLPattern']
