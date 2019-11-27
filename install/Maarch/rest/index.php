@@ -338,4 +338,8 @@ $app->get('/getContactByMail', \Contact\controllers\ContactController::class . '
 $app->get('/getContactByUrl', \Contact\controllers\ContactController::class . ':getByUrl');
 // END NCH01
 
+// OBR01
+$app->get('/getContactByPhone', \Contact\controllers\ContactController::class . ':getByPhone');
+// END OBR01
+
 $app->run();
