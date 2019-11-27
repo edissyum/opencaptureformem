@@ -12,7 +12,7 @@ The functionnalities of OC for Maarch are :
  - Split PDF using QRCode and rename splitted PDF file using QRCode content
  - OCR and text recognition :
     - Find a date and use it as metadata
-    - Find a mail or URL to reconciliate with an existing contact in Maarch
+    - Find a mail, phone or URL to reconciliate with an existing contact in Maarch
     - Find an object and use it as metadata
  - Insert documents in Maarch with pre-qualified metadata :
     - Destination with QRCode
