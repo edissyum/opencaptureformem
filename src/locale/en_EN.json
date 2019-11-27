@@ -64,5 +64,9 @@
     "dateRegex"       : "(\\d{4}\\s?|[/,-]\\d{1,2}[/,-]\\d{1,2}|\\d{1,2}\\s?[JFMASONDjfmasond][a-zA-Z_À-ÿ\\.,]*\\s?\\d{2,4})",
     "dateTimeFormat"  : "%Y %m %d",
     "dateFormat"      : "%Y-%m-%d",
-    "subjectRegex"    : "([o,O]bje[c]?t|[O,o,Y,y]ur\\s*[r,R]ef(s?|erence)+|[s,S]u[b]?je[c]?t)\\s*(:)?\\s*.*"
+    "subjectRegex"    : "([o,O]bje[c]?t|[O,o,Y,y]ur\\s*[r,R]ef(s?|erence)+|[s,S]u[b]?je[c]?t)\\s*(:)?\\s*.*",
+    "phoneRegex"      : "([(]|[+]|[0])([+]?\\d?\\d?[)]?[ ]?\\d?[ ]?\\d{1}\\D?\\d?\\D?\\d{2}\\D?\\d{2}(?!$)\\D?\\d(?!$)\\d?(?!$)\\D?\\d{2}(?!$)?)",
+    "emailRegex"      : "[^@\\s<>[]+@[^@\\s]+\\.[^@\\s\\]>]+",
+    "URLRegex"        : "((http|https)://)?(www\\.)?[a-zA-Z0-9+_.\\-]+\\.",
+    "URLPattern"      : "fr|com|net|org|gouv"
 }
