@@ -17,9 +17,6 @@ locale              = fr_FR
 localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
-[REGEX]
-urlPattern          = fr|com|net|org|gouv
-
 [SEPARATOR_QR]
 enabled             = True
 exportPdfa          = False
