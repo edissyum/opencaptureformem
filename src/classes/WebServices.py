@@ -44,6 +44,14 @@ class WebServices:
         else:
             return json.loads(res.text)
 
+    def retrieve_contact_by_phone(self, phone):
+        res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone})
+        if res.status_code != 200:
+            self.Log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text))
+            return False
+        else:
+            return json.loads(res.text)
+
     def retrieve_contact_by_url(self, url):
         url = url.replace('http://', '').replace('https://', '').replace('www.', '')
         res = requests.get(self.baseUrl + 'getContactByUrl', auth=self.auth, params={'url': url})

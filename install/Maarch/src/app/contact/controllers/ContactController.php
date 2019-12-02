@@ -389,6 +389,20 @@ class ContactController
         }
     }
 
+
+    // OBR01
+    public function getByPhone(Request $request, Response $response)
+    {
+        $data = $request->getParams();
+        $contact = ContactModel::getByPhone([
+            'select'    => ['id', 'contact_id'],
+            'phone'     => $data['phone'],
+        ]);
+
+        return $response->withJson($contact);
+    }
+    // END OBR01
+
     // NCH01
     public function getByMail(Request $request, Response $response)
     {

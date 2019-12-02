@@ -503,6 +503,28 @@ abstract class ContactModelAbstract
         }
     }
 
+    // OBR01
+    public static function getByPhone(array $aArgs)
+    {
+        ValidatorModel::notEmpty($aArgs, ['phone']);
+        ValidatorModel::stringType($aArgs, ['phone']);
+
+        $aContact = DatabaseModel::select([
+            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'     => ['contact_addresses'],
+            'where'     => ["CONCAT(0,RIGHT(REGEXP_REPLACE(phone, '[^0-9]+', '', 'g'),9)) = ?"],
+            'data'      => [$aArgs['phone']],
+            'limit'     => 1
+        ]);
+
+        if (empty($aContact[0])) {
+            return [];
+        }
+
+        return $aContact[0];
+    }
+    // END OBR01
+
     // NCH01
     public static function getByMail(array $aArgs)
     {
