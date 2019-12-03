@@ -49,9 +49,6 @@ ExecStart=/opt/maarch/OpenCapture/scripts/service.sh
 
 Restart=on-failure
 
-# Configures the time to wait before service is stopped forcefully.
-TimeoutStopSec=300
-
 [Install]
 WantedBy=multi-user.target
 EOF'
