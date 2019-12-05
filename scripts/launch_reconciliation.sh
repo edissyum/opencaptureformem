@@ -50,12 +50,12 @@ check_attachment(){
 defaultProcess(){
     # If barcode couldn't be read or isn't present, use default process
     # Same if the barcode is read but the attachment doesn't exist on Maarch database
-    python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --read-destination-from-filename --process incoming -f "$1"
+    python3 ${dispatcher_path}/launch_worker.py -c "$dispatcher_path/src/config/config.ini" --read-destination-from-filename --process incoming -f "$1"
 }
 
 reconciliationProcess(){
     # If all things went good, start the reconciliation process and insert the document as a Maarch attachment
-    python3 ${dispatcher_path}/worker.py -c "$dispatcher_path/src/config/config.ini" --process "$process_attfnd" -f "$1" -resid "$2" -chrono "$3"
+    python3 ${dispatcher_path}/launch_worker.py -c "$dispatcher_path/src/config/config.ini" --process "$process_attfnd" -f "$1" -resid "$2" -chrono "$3"
 }
 
 

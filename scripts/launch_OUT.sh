@@ -38,7 +38,7 @@ then
     echo "[$name.sh      ] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
     mv "$filepath" "$tmpFilepath"
 
-    python3 "$OCPath"/worker.py -c "$OCPath"/src/config/config.ini -f "$OCPath"/data/pdf/"$filename" --destination "$destination" -process outgoing
+    python3 "$OCPath"/launch_worker.py -c "$OCPath"/src/config/config.ini -f "$OCPath"/data/pdf/"$filename" --destination "$destination" -process outgoing
 
     rm -f $PID
 
