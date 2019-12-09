@@ -47,6 +47,7 @@ Nothing as simple as that :
 
 The ./Makefile command create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **44** and **45**
 
+    $ sudo chmod u+x Makefile
     $ sudo ./Makefile
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
 
