@@ -58,3 +58,4 @@ systemctl daemon-reload && systemctl start oc-worker.service
 
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir /tmp/OpenCapture/
+chown -R edissyum:edissyum /tmp/OpenCapture
