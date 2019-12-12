@@ -34,7 +34,6 @@ class FindContact(Thread):
     def run(self):
         foundContact = False
 
-        self.Log.info('this a log !!')
         for phone in re.finditer(r"([(]|[+]|[0])([+]?\d?\d?[)]?[ ]?\d?[ ]?\d{1}\D?\d?\D?\d{2}\D?\d{2}\D?\d\d?\D?(\d{2})?)", self.text):
             self.Log.info('Find PHONE : ' + phone.group())
 
