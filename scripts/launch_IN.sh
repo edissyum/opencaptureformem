@@ -24,7 +24,7 @@ errFilepath="$OCPath/data/error/$name/"
 tmpFilepath="$OCPath/data/pdf/"
 PID=/tmp/securite-$name-$$.pid
 
-echo "[$name.sh      ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
+echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
 
 filepath=$1
 filename=$(basename "$filepath")

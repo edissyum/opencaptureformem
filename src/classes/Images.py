@@ -22,6 +22,7 @@ import shutil
 import PyPDF2
 from PIL import Image
 from wand.color import Color
+from PyPDF2.pdf import PageObject
 from wand.image import Image as Img
 from wand import exceptions as wandExcept
 
@@ -82,11 +83,24 @@ class Images:
 
     @staticmethod
     def merge_pdf(fileSorted, tmpPath):
-        merger = PyPDF2.PdfFileMerger()
+        writer = PyPDF2.PdfFileWriter()
         for pdf in fileSorted:
-            merger.append(pdf[1])
+            reader  = PyPDF2.PdfFileReader(pdf[1])
+            pdfSize = reader.getPage(0).mediaBox
+            width   = pdfSize[2]
+            height  = pdfSize[3]
+
+            page    = PageObject.createBlankPage(reader)
+            page.mergePage(reader.getPage(0))
+            page.scaleTo(width=int(width),height=int(height))
+            writer.addPage(page)
+
             os.remove(pdf[1])
-        merger.write(tmpPath + '/result.pdf')
+
+        outputStream = open(tmpPath + '/result.pdf', 'wb')
+        writer.write(outputStream)
+        outputStream.close()
+
         fileToReturn = open(tmpPath + '/result.pdf', 'rb').read()
         os.remove(tmpPath + '/result.pdf')
 
