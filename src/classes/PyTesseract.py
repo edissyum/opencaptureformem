@@ -49,7 +49,10 @@ class PyTesseract:
             f.write(bytearray(tmpSearchablePdf))
             f.close()
             i = i + 1
-            os.remove(img[1])
+            try:
+                os.remove(img[1])               # Delete the temporary image
+            except FileNotFoundError as e:
+                self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
 
         sortedPdfList       = Image.sorted_file(tmpPath, 'pdf')
         self.searchablePdf  = Image.merge_pdf(sortedPdfList, tmpPath)

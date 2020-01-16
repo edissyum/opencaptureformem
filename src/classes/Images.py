@@ -81,8 +81,7 @@ class Images:
         sorted_file = sorted(file_json, key=lambda fileCPT: fileCPT[0])
         return sorted_file
 
-    @staticmethod
-    def merge_pdf(fileSorted, tmpPath):
+    def merge_pdf(self, fileSorted, tmpPath):
         writer = PyPDF2.PdfFileWriter()
         for pdf in fileSorted:
             reader  = PyPDF2.PdfFileReader(pdf[1])
@@ -102,7 +101,11 @@ class Images:
         outputStream.close()
 
         fileToReturn = open(tmpPath + '/result.pdf', 'rb').read()
-        os.remove(tmpPath + '/result.pdf')
+
+        try:
+            os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
+        except FileNotFoundError as e:
+            self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
 
         return fileToReturn
 

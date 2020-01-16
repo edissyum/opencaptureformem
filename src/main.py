@@ -122,4 +122,12 @@ def launch(args):
         minutes, seconds = divmod(rem, 60)
         return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
+    # Empty the tmp dir to avoid residual file
+    tmpPath = Config.cfg['GLOBAL']['tmppath']
+    for file in os.listdir(tmpPath):
+        try:
+            os.remove(file)
+        except FileNotFoundError as e:
+            Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
+
     Log.info('Process end after ' + timer(start,end) + '')
