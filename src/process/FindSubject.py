@@ -26,11 +26,35 @@ class FindSubject(Thread):
         self.Locale     = Locale
         self.subject    = None
 
+    @staticmethod
+    def loopFindSubject(array, compilePattern):
+        pattern = re.compile(compilePattern)
+        for value in array:
+            if pattern.search(value):
+                return value
+        return None
+
     def run(self):
+        subjectArray = []
         for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
             if len(_subject.group()) > 3:
                 # Using the [:-2] to delete the ".*" of the regex
                 # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
-                self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', _subject.group())
-                self.Log.info("Find the following subject : " + self.subject)
-                break
+                subjectArray.append( _subject.group())
+
+        # If there is more than one subject found, prefer the "Object" one instead of "Ref"
+        if len(subjectArray) > 1:
+            subject = self.loopFindSubject(subjectArray, self.Locale.subjectOnly)
+            if subject:
+                self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
+            else:
+                subject = self.loopFindSubject(subjectArray, self.Locale.refOnly)
+                if subject:
+                    self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
+        elif len(subjectArray) == 1:
+            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subjectArray[0]).strip()
+        else:
+            self.subject = ''
+
+        if self.subject is not '':
+            self.Log.info("Find the following subject : " + self.subject)

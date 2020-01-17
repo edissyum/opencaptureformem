@@ -24,6 +24,8 @@ class Locale:
         self.arrayDate      = []
         self.regexDate      = ''
         self.regexSubject   = ''
+        self.subjectOnly    = ''
+        self.refOnly        = ''
         self.formatDate     = ''
         self.dateTimeFormat = ''
         self.URLPattern     = ''
@@ -40,3 +42,5 @@ class Locale:
             self.emailRegex     = fp['emailRegex']
             self.URLRegex       = fp['URLRegex']
             self.URLPattern     = fp['URLPattern']
+            self.subjectOnly    = fp['subjectOnly']
+            self.refOnly        = fp['refOnly']
