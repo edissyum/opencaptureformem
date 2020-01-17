@@ -69,7 +69,7 @@ class ProcessQueue(Thread):
                 try:
                     os.remove(file)
                 except FileNotFoundError as e:
-                    self.Log.error('Unable to delete ' + file + ' : ' + str(e))
+                    self.Log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
                 return True
             else:
                 shutil.move(file, self.Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))

@@ -94,7 +94,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         try:
             os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
         except FileNotFoundError as e:
-            Log.error('Unable to delete ' + Image.jpgName + ' : ' + str(e))
+            Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
     if isOcr is False:
@@ -136,7 +136,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             try:
                 os.remove(file)
             except FileNotFoundError as e:
-                Log.error('Unable to delete ' + file + ' : ' + str(e))
+                Log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
             return True
         else:
             shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
