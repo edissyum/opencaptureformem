@@ -43,8 +43,6 @@ class FindContact(Thread):
 
             contact = self.WebService.retrieve_contact_by_phone(sanitized_phone)
             if contact:
-                self.Log.info('\n contact content : ' + json.dumps(contact))
-
                 foundContact = True
                 self.contact = contact
                 self.Log.info('Find phone in Maarch, get it : ' + sanitized_phone)
