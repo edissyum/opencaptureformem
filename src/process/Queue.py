@@ -65,11 +65,11 @@ class ProcessQueue(Thread):
                 res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process, custom_mail)
 
             if res:
-                self.Log.info("Insert OK : " + res, 'Queue.py', 68)
+                self.Log.info("Insert OK : " + res)
                 try:
                     os.remove(file)
                 except FileNotFoundError as e:
-                    self.Log.error('Unable to delete ' + file + ' after insertion : ' + str(e), 'Queue.py', 72)
+                    self.Log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
                 return True
             else:
                 shutil.move(file, self.Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))

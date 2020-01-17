@@ -72,7 +72,7 @@ def launch(args):
         if Separator.enabled == 'True' and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
                 if not Image.check_file_integrity(path + fileToSep, Config):
-                    Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep), 'main.py', 75)
+                    Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep))
                     sys.exit()
                 Separator.run(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
@@ -89,7 +89,7 @@ def launch(args):
     elif args['file'] is not None:
         path = args['file']
         if not Image.check_file_integrity(path, Config):
-            Log.error('The integrity of file could\'nt be verified' + str(path), 'main.py', 92)
+            Log.error('The integrity of file could\'nt be verified' + str(path))
             sys.exit()
 
         if Separator.enabled == 'True' and args['process'] == 'incoming':
@@ -109,7 +109,7 @@ def launch(args):
                     runQueue(q, Config, Image, Log, WebService, Ocr)
         else:
             if not Image.check_file_integrity(path, Config):
-                Log.error('The integrity of file could\'nt be verified', 'main.py', 112)
+                Log.error('The integrity of file could\'nt be verified')
                 sys.exit()
 
             # Process the file and send it to Maarch
@@ -128,6 +128,6 @@ def launch(args):
         try:
             os.remove(tmpPath + file)
         except FileNotFoundError as e:
-            Log.error('Unable to delete ' + tmpPath + file + ' on temp folder: ' + str(e), 'main.py', 131)
+            Log.error('Unable to delete ' + tmpPath + file + ' on temp folder: ' + str(e))
 
-    Log.info('Process end after ' + timer(start,end) + '', 'main.py', 133)
+    Log.info('Process end after ' + timer(start,end) + '')

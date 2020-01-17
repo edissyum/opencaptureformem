@@ -33,7 +33,7 @@ class PyTesseract:
                 lang=self.lang
             )
         except pytesseract.pytesseract.TesseractError as t:
-            self.Log.error('Tesseract ERROR : ' + str(t), 'PyTesseract.py', 36)
+            self.Log.error('Tesseract ERROR : ' + str(t))
 
     def generate_searchable_pdf(self, pdf, Image, Config):
         tmpPath = Config.cfg['GLOBAL']['tmppath']
@@ -52,7 +52,7 @@ class PyTesseract:
             try:
                 os.remove(img[1])               # Delete the temporary image
             except FileNotFoundError as e:
-                self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e), 'PyTesseract.py', 55)
+                self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
 
         sortedPdfList       = Image.sorted_file(tmpPath, 'pdf')
         self.searchablePdf  = Image.merge_pdf(sortedPdfList, tmpPath)

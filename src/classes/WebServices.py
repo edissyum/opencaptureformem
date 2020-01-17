@@ -32,14 +32,14 @@ class WebServices:
         try:
             requests.get(self.baseUrl)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error connecting to the host. Exiting program..', 'WebServices.py', 35)
-            self.Log.error('More information : ' + str(e), 'WebServices.py', 36)
+            self.Log.error('Error connecting to the host. Exiting program..')
+            self.Log.error('More information : ' + str(e))
             sys.exit('Connection error')
 
     def retrieve_contact_by_mail(self, mail):
         res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail' : mail})
         if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text), 'WebServices.py', 42)
+            self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)
@@ -47,7 +47,7 @@ class WebServices:
     def retrieve_contact_by_phone(self, phone):
         res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone})
         if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text), 'WebServices.py', 50)
+            self.Log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)
@@ -57,7 +57,7 @@ class WebServices:
         res = requests.get(self.baseUrl + 'getContactByUrl', auth=self.auth, params={'url': url})
 
         if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') GetContactByUrlError : ' + str(res.text), 'WebServices.py', 60)
+            self.Log.error('(' + str(res.status_code) + ') GetContactByUrlError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)
@@ -85,13 +85,13 @@ class WebServices:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text), 'WebServices.py', 88)
+                self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
                 return False
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch', 'WebServices.py', 93)
-            self.Log.error('More information : ' + str(e), 'WebServices.py', 94)
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
 
     def insert_attachment(self, fileContent, Config, res_id, _process):
@@ -114,13 +114,13 @@ class WebServices:
             res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type' : 'application/json'})
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text), 'WebServices.py', 117)
+                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
                 return False
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch', 'WebServices.py', 122)
-            self.Log.error('More information : ' + str(e), 'WebServices.py', 123)
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
 
     def insert_attachment_reconciliation(self, fileContent, chrono, _process):
@@ -133,19 +133,19 @@ class WebServices:
             res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text), 'WebServices.py', 136)
+                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
                 return False
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch', 'WebServices.py', 141)
-            self.Log.error('More information : ' + str(e), 'WebServices.py', 142)
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
 
     def check_attachment(self, chrono):
         res = requests.get(self.baseUrl + 'reconciliation/check', auth=self.auth, params={'chrono': chrono})
         if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text), 'WebServices.py', 148)
+            self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
             return False
         else:
             return json.loads(res.text)

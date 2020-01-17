@@ -51,7 +51,7 @@ class Separator:
             self.extract_and_convert_docs(file)
         except Exception as e:
             self.error = True
-            self.Log.error("INIT : " + str(e), 'Separator.py', 54)
+            self.Log.error("INIT : " + str(e))
 
 
     def get_xml_qr_code(self, file):
@@ -66,13 +66,13 @@ class Separator:
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = xml.communicate()
             if err.decode('utf-8'):
-                self.Log.error('ZBARIMG : ' + err, 'Separator.py', 69)
+                self.Log.error('ZBARIMG : ' + err)
             self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
-                self.Log.error("ZBARIMG : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe), 'Separator.py', 73)
+                self.Log.error("ZBARIMG : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
         except:
-            self.Log.error("ZBARIMG : Unexpected error : " + str(sys.exc_info()[0]), 'Separator.py', 75)
+            self.Log.error("ZBARIMG : Unexpected error : " + str(sys.exc_info()[0]))
 
     def parse_xml(self):
         if self.qrList is None:
@@ -117,7 +117,7 @@ class Separator:
             try:
                 shutil.move(file, self.output_dir)
             except shutil.Error as e:
-                self.Log.error('Moving file ' + file + ' error : ' + str(e), 'Separator.py', 120)
+                self.Log.error('Moving file ' + file + ' error : ' + str(e))
             return
         try:
             for page in self.pages:
@@ -131,7 +131,7 @@ class Separator:
                     self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
             os.remove(file)
         except Exception as e:
-            self.Log.error("EACD: " + str(e), 'Separator.py', 134)
+            self.Log.error("EACD: " + str(e))
 
 
     @staticmethod

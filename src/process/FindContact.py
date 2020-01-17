@@ -35,19 +35,19 @@ class FindContact(Thread):
         foundContact = False
 
         for phone in re.finditer(r"" + self.Locale.phoneRegex + "", self.text):
-            self.Log.info('Find PHONE : ' + phone.group(), 'FindContact.py', 38)
+            self.Log.info('Find PHONE : ' + phone.group())
 
             # Now sanitize email to delete potential OCR error
             sanitized_phone = re.sub(r"[^0-9]", "", phone.group())
-            self.Log.info('Sanitized PHONE : ' + sanitized_phone, 'FindContact.py', 42)
+            self.Log.info('Sanitized PHONE : ' + sanitized_phone)
 
             contact = self.WebService.retrieve_contact_by_phone(sanitized_phone)
             if contact:
-                self.Log.info('\n contact content : ' + json.dumps(contact), 'FindContact.py', 46)
+                self.Log.info('\n contact content : ' + json.dumps(contact))
 
                 foundContact = True
                 self.contact = contact
-                self.Log.info('Find phone in Maarch, get it : ' + sanitized_phone, 'FindContact.py', 50)
+                self.Log.info('Find phone in Maarch, get it : ' + sanitized_phone)
                 break
             else:
                 # Add the phone into a custom value (custom_t10 by default)
@@ -56,16 +56,16 @@ class FindContact(Thread):
 
         if not foundContact:
             for mail in re.finditer(r"" + self.Locale.emailRegex + "", self.text):
-                self.Log.info('Find E-MAIL : ' + mail.group(), 'FindContact.py', 59)
+                self.Log.info('Find E-MAIL : ' + mail.group())
                 # Now sanitize email to delete potential OCR error
                 sanitized_mail  = re.sub(r"[" + self.Config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
-                self.Log.info('Sanitized E-MAIL : ' + sanitized_mail, 'FindContact.py', 62)
+                self.Log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
                 contact         = self.WebService.retrieve_contact_by_mail(sanitized_mail)
                 if contact:
                     foundContact = True
                     self.contact = contact
-                    self.Log.info('Find E-MAIL in Maarch, get it : ' + sanitized_mail, 'FindContact.py', 68)
+                    self.Log.info('Find E-MAIL in Maarch, get it : ' + sanitized_mail)
                     break
                 else:
                     # Add the e-mail into a custom value (custom_t10 by default)
@@ -78,7 +78,7 @@ class FindContact(Thread):
                     r"" + self.Locale.URLRegex +"(" + self.Locale.URLPattern + ")",
                     self.text
             ):
-                self.Log.info('Find URL : ' + url.group(), 'FindContact.py', 81)
+                self.Log.info('Find URL : ' + url.group())
                 contact = self.WebService.retrieve_contact_by_url(url.group())
                 if contact:
                     self.contact = contact

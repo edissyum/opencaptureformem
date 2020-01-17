@@ -57,4 +57,4 @@ class FindSubject(Thread):
             self.subject = ''
 
         if self.subject is not '':
-            self.Log.info("Find the following subject : " + self.subject, 'FindSubject.py', 60)
+            self.Log.info("Find the following subject : " + self.subject)
