@@ -22,7 +22,7 @@ from .FindSubject import FindSubject
 from .FindContact import FindContact
 
 def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, q = None):
-    Log.info('Processing file : ' + file)
+    Log.info('Processing file : ' + file, 'OCForMaarch.py', 25)
 
     # Check if the choosen process mode if available. If not take the default one
     if args['process'] in Config.cfg['OCForMaarch']['processavailable'].split(','):
@@ -30,7 +30,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
     else:
         _process = 'OCForMaarch_' + Config.cfg['OCForMaarch']['defaultprocess'].lower()
 
-    Log.info('Using the following process : ' + _process)
+    Log.info('Using the following process : ' + _process, 'OCForMaarch.py', 33)
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
     if args['RDFF']:
         fileName = os.path.basename(file)
@@ -94,11 +94,11 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         try:
             os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
         except FileNotFoundError as e:
-            Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
+            Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e), 'OCForMaarch.py', 97)
 
     # Create the searchable PDF if necessary
     if isOcr is False:
-        Log.info('Start OCR on document before send it')
+        Log.info('Start OCR on document before send it', 'OCForMaarch.py', 101)
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
     else:
@@ -132,11 +132,11 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process, custom_mail)
 
         if res:
-            Log.info("Insert OK : " + res)
+            Log.info("Insert OK : " + res, 'OCForMaarch.py', 135)
             try:
                 os.remove(file)
             except FileNotFoundError as e:
-                Log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
+                Log.error('Unable to delete ' + file + ' after insertion : ' + str(e), 'OCForMaarch.py', 139)
             return True
         else:
             shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))

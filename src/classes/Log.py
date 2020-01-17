@@ -23,15 +23,17 @@ class Log:
         self.LOGGER = logging.getLogger('Open-Capture')
         if self.LOGGER.hasHandlers():
             self.LOGGER.handlers.clear() # Clear the handlers to avoid double logs
-        logFile = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024,
+        self.logFile = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024,
                             backupCount=2, encoding=None, delay=0)
-        formatter = logging.Formatter('[%(threadName)-14s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
-        logFile.setFormatter(formatter)
-        self.LOGGER.addHandler(logFile)
+        formatter = logging.Formatter('[%(threadName)-14s] [%(filename)s:%(lineno)-15s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
+        self.logFile.setFormatter(formatter)
+        self.LOGGER.addHandler(self.logFile)
         self.LOGGER.setLevel(logging.DEBUG)
 
-    def info(self, msg):
-        self.LOGGER.info(msg)
+    def info(self, msg, filename, lineno):
+        self.logFile.setFormatter(logging.Formatter('[%(threadName)-14s] [%(customFilename)-15sline %(customLineNumber)-4s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S'))
+        self.LOGGER.info(msg, extra={'customFilename': filename, 'customLineNumber' : lineno})
 
-    def error(self, msg):
-        self.LOGGER.error(msg)
+    def error(self, msg,filename, lineno):
+        self.logFile.setFormatter(logging.Formatter('[%(threadName)-14s] [%(customFilename)-15sline %(customLineNumber)-4s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S'))
+        self.LOGGER.error(msg, extra={'customFilename': filename, 'customLineNumber' : lineno})

@@ -52,12 +52,12 @@ class FindDate(Thread):
 
                 if int(self.Config.cfg['OCForMaarch']['timedelta']) != -1:
                     if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0 :
-                        self.Log.info("Date is older than " + str(self.Config.cfg['OCForMaarch']['timedelta']) + " days or in the future: " + self.date)
+                        self.Log.info("Date is older than " + str(self.Config.cfg['OCForMaarch']['timedelta']) + " days or in the future: " + self.date, 'FindDate.py', 55)
                         self.date = ''
                         continue
-                self.Log.info("Date found : " + self.date)
+                self.Log.info("Date found : " + self.date, 'FindDate.py', 58)
                 break
             except ValueError:
-                self.Log.info("Date wasn't in a good format : " + self.date)
+                self.Log.info("Date wasn't in a good format : " + self.date, 'FindDate.py', 61)
                 self.date = ''
                 continue

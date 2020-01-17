@@ -55,12 +55,12 @@ class Images:
                 pic.alpha_channel = 'remove'
                 pic.save(filename=output)
         except wandExcept.WandRuntimeError as e:
-            self.Log.error(e)
-            self.Log.error('Exiting program...')
+            self.Log.error(e, 'Images.py', 58)
+            self.Log.error('Exiting program...', 'Images.py', 59)
             sys.exit()
         except wandExcept.CacheError as e:
-            self.Log.error(e)
-            self.Log.error('Exiting program...')
+            self.Log.error(e, 'Images.py', 62)
+            self.Log.error('Exiting program...', 'Images.py', 63)
             sys.exit()
 
     @staticmethod
@@ -105,7 +105,7 @@ class Images:
         try:
             os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
         except FileNotFoundError as e:
-            self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
+            self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e), 'Images.py', 108)
 
         return fileToReturn
 
