@@ -18,7 +18,7 @@ localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
 [SEPARATOR_QR]
-enabled             = True
+enabled             = False
 exportPdfa          = False
 outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
 outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
