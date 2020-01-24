@@ -27,6 +27,7 @@ tmpPath             = /tmp/
 divider             = _
 
 [OCForMaarch]
+# Dont forget to add the /rest at the end of the URL (Link to WS)
 host                = http://localhost/cs_maarch/rest/
 user                =
 password            =

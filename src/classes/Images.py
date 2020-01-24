@@ -62,6 +62,11 @@ class Images:
             self.Log.error(e)
             self.Log.error('Exiting program...')
             sys.exit()
+        except wandExcept.PolicyError as e:
+            self.Log.error(e)
+            self.Log.error('Maybe you have to check the PDF rights in ImageMagick policy.xml file')
+            self.Log.error('Exiting programm...')
+            sys.exit()
 
     @staticmethod
     def sorted_file(path, extension):
