@@ -32,7 +32,7 @@ The functionnalities of OC for Maarch are :
 Tested with :
 - Ubuntu 18.10 with Python 3.7.1 & Tesseract v4.0.0-beta.1
 - Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0-beta.1
-- Ubuntu Server 18.04 with Python 3.6.9 & Tesseract v4.0.0-beta.1
+- Ubuntu Server 18.04.3 with Python 3.6.9 & Tesseract v4.0.0-beta.1
 - Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
