@@ -63,7 +63,7 @@ class FindContact(Thread):
                 if contact:
                     foundContact = True
                     self.contact = contact
-                    self.Log.info('Find E-MAIL in Maarch, get it : ' + sanitized_mail)
+                    self.Log.info('Find E-MAIL in Maarch, attach it to the document')
                     break
                 else:
                     # Add the e-mail into a custom value (custom_t10 by default)
