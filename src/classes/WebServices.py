@@ -80,6 +80,7 @@ class WebServices:
             'exp_contact_id': contact['contact_id'],
             'doc_date'      : date,
         }
+
         if 'reconciliation' not in _process:
             data[Config.cfg[_process]['custom_mail']] = custom_mail[:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
 
