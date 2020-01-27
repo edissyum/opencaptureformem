@@ -65,6 +65,7 @@ class WebServices:
     def insert_with_args(self, fileContent, Config, contact, subject, date, destination, _process, custom_mail):
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
+
         data = {
             'encodedFile'   : base64.b64encode(fileContent).decode('utf-8'),
             'priority'      : Config.cfg[_process]['priority'],
@@ -78,8 +79,9 @@ class WebServices:
             'address_id'    : contact['id'],
             'exp_contact_id': contact['contact_id'],
             'doc_date'      : date,
-            Config.cfg[_process]['custom_mail'] : custom_mail[:254] # 254 to avoid too long string (maarch custom is limited to 255 char)
         }
+        if 'reconciliation' not in _process:
+            data[Config.cfg[_process]['custom_mail']] = custom_mail[:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
 
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection':'close', 'Content-Type' : 'application/json'})

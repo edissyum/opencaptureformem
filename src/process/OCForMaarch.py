@@ -95,13 +95,18 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
         except FileNotFoundError as e:
             Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
+    else:
+        date        = ''
+        subject     = ''
+        contact     = ''
+        custom_mail = ''
 
     # Create the searchable PDF if necessary
-    #if isOcr is False:
+    if isOcr is False:
         Log.info('Start OCR on document before send it')
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
-    #else:
+    else:
         fileToSend = open(file, 'rb').read()
 
     if q is not None:
