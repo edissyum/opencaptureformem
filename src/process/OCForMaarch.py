@@ -45,7 +45,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         destination = Config.cfg[_process]['destination']
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
-        Image.pdf_to_jpg(file + '[0]')
+        Image.pdf_to_jpg(file + '[0]', Config.cfg['GLOBAL']['tmppath'], True)
 
         # Check if pdf is already OCR and searchable
 
@@ -97,11 +97,11 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
             Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
-    if isOcr is False:
+    #if isOcr is False:
         Log.info('Start OCR on document before send it')
         Ocr.generate_searchable_pdf(file, Image, Config)
         fileToSend = Ocr.searchablePdf
-    else:
+    #else:
         fileToSend = open(file, 'rb').read()
 
     if q is not None:

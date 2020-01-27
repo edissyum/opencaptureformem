@@ -19,6 +19,7 @@ import os
 import sys
 import time
 import shutil
+
 import PyPDF2
 from PIL import Image
 from wand.color import Color
@@ -37,8 +38,8 @@ class Images:
         self.Log                    = Log
 
     # Convert the first page of PDF to JPG and open the image
-    def pdf_to_jpg(self, pdfName, openImg=True):
-        self.save_img_with_wand(pdfName, self.jpgName)
+    def pdf_to_jpg(self, pdfName, tmpPath,  get_first_page = False, openImg = True):
+        self.save_img_with_wand(pdfName, self.jpgName, tmpPath, get_first_page)
         if openImg:
             self.img = Image.open(self.jpgName)
 
@@ -47,13 +48,27 @@ class Images:
         self.img = Image.open(img)
 
     # Save pdf with one or more pages into JPG file
-    def save_img_with_wand(self, pdfName, output):
+    def save_img_with_wand(self, pdfName, output, tmpPath, get_first_page = False):
         try:
-            with Img(filename=pdfName, resolution=300) as pic:
-                pic.compression_quality = self.compressionQuality
-                pic.background_color = Color("white")
-                pic.alpha_channel = 'remove'
-                pic.save(filename=output)
+            with Img(filename=pdfName, resolution=self.resolution) as document:
+                reader = PyPDF2.PdfFileReader(pdfName.replace('[0]', ''))
+                for page_number, page in enumerate(document.sequence):
+                    pdfSize = reader.getPage(page_number).mediaBox
+                    width   = pdfSize[2]
+                    height  = pdfSize[3]
+                    with Img(page) as img:
+                        # Do not resize first page, which used to find useful informations
+                        if not get_first_page:
+                            img.resize(int(width), int(height))
+                        img.compression_quality = self.compressionQuality
+                        img.background_color    = Color("white")
+                        img.alpha_channel       = 'remove'
+                        if get_first_page:
+                            filename = output
+                        else:
+                            filename = tmpPath + 'tmp-' + str(page_number) + '.jpg'
+                        img.save(filename=filename)
+
         except wandExcept.WandRuntimeError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...')
@@ -93,7 +108,6 @@ class Images:
             pdfSize = reader.getPage(0).mediaBox
             width   = pdfSize[2]
             height  = pdfSize[3]
-
             page    = PageObject.createBlankPage(reader)
             page.mergePage(reader.getPage(0))
             page.scaleTo(width=int(width),height=int(height))
@@ -104,9 +118,7 @@ class Images:
         outputStream = open(tmpPath + '/result.pdf', 'wb')
         writer.write(outputStream)
         outputStream.close()
-
         fileToReturn = open(tmpPath + '/result.pdf', 'rb').read()
-
         try:
             os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
         except FileNotFoundError as e:

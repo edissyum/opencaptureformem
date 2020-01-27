@@ -37,9 +37,10 @@ class PyTesseract:
 
     def generate_searchable_pdf(self, pdf, Image, Config):
         tmpPath = Config.cfg['GLOBAL']['tmppath']
-        Image.save_img_with_wand(pdf, tmpPath + 'tmp.jpg')
+        Image.save_img_with_wand(pdf, '', tmpPath)
         i = 0
         sortedImgList = Image.sorted_file(tmpPath, 'jpg')
+
         for img in sortedImgList:
             tmpSearchablePdf =  pytesseract.image_to_pdf_or_hocr(
                 img[1],
@@ -49,10 +50,11 @@ class PyTesseract:
             f.write(bytearray(tmpSearchablePdf))
             f.close()
             i = i + 1
+
             try:
-                os.remove(img[1])               # Delete the temporary image
+                os.remove(img[1]) # Delete the temporary image
             except FileNotFoundError as e:
-                self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
+                self.Log.error('Unable to delete ' + tmpPath + img[1] + ' : ' + str(e))
 
         sortedPdfList       = Image.sorted_file(tmpPath, 'pdf')
         self.searchablePdf  = Image.merge_pdf(sortedPdfList, tmpPath)
