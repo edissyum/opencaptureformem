@@ -91,15 +91,16 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         contact         = contactThread.contact
         custom_mail     = contactThread.custom_mail
 
-        try:
-            os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
-        except FileNotFoundError as e:
-            Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
     else:
         date        = ''
         subject     = ''
         contact     = ''
         custom_mail = ''
+
+    try:
+        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+    except FileNotFoundError as e:
+        Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
     if isOcr is False:
