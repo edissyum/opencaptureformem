@@ -16,7 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import sys
+import subprocess
 import time
 import shutil
 
@@ -38,8 +38,8 @@ class Images:
         self.Log                    = Log
 
     # Convert the first page of PDF to JPG and open the image
-    def pdf_to_jpg(self, pdfName, tmpPath,  get_first_page = False, openImg = True):
-        self.save_img_with_wand(pdfName, self.jpgName, tmpPath, get_first_page)
+    def pdf_to_jpg(self, pdfName, openImg = True):
+        self.save_img_with_wand(pdfName, self.jpgName)
         if openImg:
             self.img = Image.open(self.jpgName)
 
@@ -48,40 +48,46 @@ class Images:
         self.img = Image.open(img)
 
     # Save pdf with one or more pages into JPG file
-    def save_img_with_wand(self, pdfName, output, tmpPath, get_first_page = False):
+    def save_img_with_wand(self, pdfName, output):
         try:
-            with Img(filename=pdfName, resolution=self.resolution) as document:
+            with Img(filename=pdfName, resolution=self.resolution) as pic:
+                pic.compression_quality = self.compressionQuality
+                pic.background_color    = Color("white")
+                pic.alpha_channel       = 'remove'
+                pic.save(filename=output)
+
+            '''with Img(filename=pdfName, resolution=self.resolution) as document:
                 reader = PyPDF2.PdfFileReader(pdfName.replace('[0]', ''))
                 for page_number, page in enumerate(document.sequence):
                     pdfSize = reader.getPage(page_number).mediaBox
-                    width   = pdfSize[2]
-                    height  = pdfSize[3]
-                    with Img(page) as img:
+                    width   = int(pdfSize[2])
+                    height  = int(pdfSize[3])
+                    with Img(page, resolution=self.resolution, width=width, height=height) as img:
                         # Do not resize first page, which used to find useful informations
-                        if not get_first_page:
-                            img.resize(int(width), int(height))
+                        # if not get_first_page:
+                        #     img.resize(int(width), int(height))
                         img.compression_quality = self.compressionQuality
                         img.background_color    = Color("white")
                         img.alpha_channel       = 'remove'
                         if get_first_page:
                             filename = output
                         else:
-                            filename = tmpPath + 'tmp-' + str(page_number) + '.jpg'
-                        img.save(filename=filename)
+                            filename = tmpPath + '/' + 'tmp-' + str(page_number) + '.jpg'
+                        img.save(filename=filename)'''
 
         except wandExcept.WandRuntimeError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...')
-            sys.exit()
+            os._exit(1)
         except wandExcept.CacheError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...')
-            sys.exit()
+            os._exit(1)
         except wandExcept.PolicyError as e:
             self.Log.error(e)
             self.Log.error('Maybe you have to check the PDF rights in ImageMagick policy.xml file')
             self.Log.error('Exiting programm...')
-            sys.exit()
+            os._exit(1)
 
     @staticmethod
     def sorted_file(path, extension):
@@ -101,29 +107,34 @@ class Images:
         sorted_file = sorted(file_json, key=lambda fileCPT: fileCPT[0])
         return sorted_file
 
-    def merge_pdf(self, fileSorted, tmpPath):
-        writer = PyPDF2.PdfFileWriter()
+    def merge_pdf(self, fileSorted, tmpPath, originalFile):
+        print(fileSorted)
+        writer          = PyPDF2.PdfFileWriter()
+        readerOriginal  = PyPDF2.PdfFileReader(originalFile)
+        i = 0
         for pdf in fileSorted:
             reader  = PyPDF2.PdfFileReader(pdf[1])
-            pdfSize = reader.getPage(0).mediaBox
+            pdfSize = readerOriginal.getPage(i).mediaBox
             width   = pdfSize[2]
             height  = pdfSize[3]
+
             page    = PageObject.createBlankPage(reader)
             page.mergePage(reader.getPage(0))
             page.scaleTo(width=int(width),height=int(height))
             writer.addPage(page)
-
+            i = i + 1
             os.remove(pdf[1])
 
         outputStream = open(tmpPath + '/result.pdf', 'wb')
         writer.write(outputStream)
         outputStream.close()
+        # self.compress(tmpPath + '/result.pdf', tmpPath + '/result2.pdf', 3)
         fileToReturn = open(tmpPath + '/result.pdf', 'rb').read()
-        try:
-            os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
-        except FileNotFoundError as e:
-            self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
-
+        # try:
+        #     os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
+        # except FileNotFoundError as e:
+        #     self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
+        exit()
         return fileToReturn
 
     @staticmethod
@@ -152,3 +163,54 @@ class Images:
                             return True
                 else:
                     continue
+
+    @staticmethod
+    def compress(file, new_file, compress_level, show_compress_info = True):
+        """
+        Function to compress PDF via Ghostscript command line interface
+        :param show_compress_info:
+        :param compress_level:
+        :param file: old file that needs to be compressed
+        :param new_file: new file that is commpressed
+        :return: True or False, to do a cleanup when needed
+        """
+        quality = {
+            0: '/default',
+            1: '/prepress',
+            2: '/printer',
+            3: '/ebook',
+            4: '/screen'
+        }
+        try:
+            if not os.path.isfile(file):
+                print("Error: invalid path for input PDF file")
+                os._exit()
+
+            # Check if file is a PDF by extension
+            filename, file_extension = os.path.splitext(file)
+            if file_extension != '.pdf':
+                raise Exception("Error: input file is not a PDF")
+                return False
+
+            if show_compress_info:
+                initial_size = os.path.getsize(file)
+
+            subprocess.call(['gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+                             '-dPDFSETTINGS={}'.format(quality[compress_level]),
+                             '-dNOPAUSE', '-dQUIET', '-dBATCH',
+                             '-sOutputFile={}'.format(new_file),
+                             file]
+                            )
+
+            if show_compress_info:
+                final_size = os.path.getsize(new_file)
+                ratio = 1 - (final_size / initial_size)
+                print("Compression by {0:.0%}.".format(ratio))
+                print("Final file size is {0:.1f}MB".format(final_size / 1000000))
+
+            return True
+        except Exception as error:
+            print('Caught this error: ' + repr(error))
+        except subprocess.CalledProcessError as e:
+            print("Unexpected error:".format(e.output))
+            return False

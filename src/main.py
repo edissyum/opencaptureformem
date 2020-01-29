@@ -17,6 +17,7 @@
 import os
 import sys
 import time
+import uuid
 import queue
 
 # useful to use the worker and avoid ModuleNotFoundError
@@ -49,7 +50,14 @@ def launch(args):
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
-    fileName    = Config.cfg['GLOBAL']['tmppath'] + 'tmp.jpg'
+    tmpFolder   = Config.cfg['GLOBAL']['tmppath'] + '/' + str(uuid.uuid4()) + '/'
+
+    if not os.path.exists(tmpFolder):
+        os.mkdir(tmpFolder)
+        fileName    = tmpFolder + 'tmp.jpg'
+    else:
+        fileName    = Config.cfg['GLOBAL']['tmppath'] + '/tmp.jpg'
+
     Locale      = localeClass.Locale(Config)
     Ocr         = ocrClass.PyTesseract(Locale.localeOCR, Log)
     Separator   = separatorClass.Separator(Log, Config)
@@ -81,7 +89,7 @@ def launch(args):
         q = queue.Queue()
         # Find file in the wanted folder (default or exported pdf after qrcode separation)
         for file in os.listdir(path):
-            q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, q)
+            q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
 
         while not q.empty():
             runQueue(q, Config, Image, Log, WebService, Ocr)
@@ -95,7 +103,7 @@ def launch(args):
         if Separator.enabled == 'True' and args['process'] == 'incoming':
             Separator.run(path)
             if Separator.error: # in case the file is not a pdf, process as an Image
-                process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
+                process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
             else:
                 path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
@@ -103,7 +111,7 @@ def launch(args):
                 q = queue.Queue()
                 # Find file in the wanted folder (default or exported pdf after qrcode separation)
                 for file in os.listdir(path):
-                    q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, q)
+                    q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
 
                 while not q.empty():
                     runQueue(q, Config, Image, Log, WebService, Ocr)
@@ -113,7 +121,7 @@ def launch(args):
                 os._exit()
 
             # Process the file and send it to Maarch
-            process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService)
+            process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
 
     end = time.time()
 
@@ -124,10 +132,15 @@ def launch(args):
 
     # Empty the tmp dir to avoid residual file
     tmpPath = Config.cfg['GLOBAL']['tmppath']
-    for file in os.listdir(tmpPath):
+    for dir in os.listdir(tmpPath):
+        for file in os.listdir(tmpPath + '/' + dir):
+            try:
+                os.remove(tmpPath + '/' + dir + '/' + file)
+            except FileNotFoundError as e:
+                Log.error('Unable to delete ' + tmpPath + '/' + dir + '/' + file + ' on temp folder: ' + str(e))
         try:
-            os.remove(tmpPath + file)
+            os.rmdir(tmpPath + '/' + dir)
         except FileNotFoundError as e:
-            Log.error('Unable to delete ' + tmpPath + file + ' on temp folder: ' + str(e))
+            Log.error('Unable to delete ' + tmpPath + '/' + dir + ' on temp folder: ' + str(e))
 
     Log.info('Process end after ' + timer(start,end) + '')

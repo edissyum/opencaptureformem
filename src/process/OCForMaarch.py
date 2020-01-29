@@ -21,7 +21,7 @@ from .FindDate import FindDate
 from .FindSubject import FindSubject
 from .FindContact import FindContact
 
-def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, q = None):
+def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q = None):
     Log.info('Processing file : ' + file)
 
     # Check if the choosen process mode if available. If not take the default one
@@ -45,7 +45,7 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         destination = Config.cfg[_process]['destination']
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
-        Image.pdf_to_jpg(file + '[0]', Config.cfg['GLOBAL']['tmppath'], True)
+        Image.pdf_to_jpg(file + '[0]', True)
 
         # Check if pdf is already OCR and searchable
 
@@ -103,12 +103,13 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
-    if isOcr is False:
-        Log.info('Start OCR on document before send it')
-        Ocr.generate_searchable_pdf(file, Image, Config)
-        fileToSend = Ocr.searchablePdf
-    else:
-        fileToSend = open(file, 'rb').read()
+    #if isOcr is False:
+    Log.info('Start OCR on document before send it')
+    print(tmpFolder)
+    Ocr.generate_searchable_pdf(file, Image, tmpFolder)
+    fileToSend = Ocr.searchablePdf
+    #else:
+        #fileToSend = open(file, 'rb').read()
 
     if q is not None:
         fileToStore = {
