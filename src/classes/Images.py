@@ -108,7 +108,6 @@ class Images:
         return sorted_file
 
     def merge_pdf(self, fileSorted, tmpPath, originalFile):
-        print(fileSorted)
         writer          = PyPDF2.PdfFileWriter()
         readerOriginal  = PyPDF2.PdfFileReader(originalFile)
         i = 0
@@ -128,13 +127,13 @@ class Images:
         outputStream = open(tmpPath + '/result.pdf', 'wb')
         writer.write(outputStream)
         outputStream.close()
-        # self.compress(tmpPath + '/result.pdf', tmpPath + '/result2.pdf', 3)
+
+        # self.compress(tmpPath + '/result.pdf', tmpPath + '/result2.pdf', 2)
         fileToReturn = open(tmpPath + '/result.pdf', 'rb').read()
-        # try:
-        #     os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
-        # except FileNotFoundError as e:
-        #     self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
-        exit()
+        try:
+            os.remove(tmpPath + '/result.pdf')  # Delete the pdf file because we return the content of the pdf file
+        except FileNotFoundError as e:
+            self.Log.error('Unable to delete ' + tmpPath + '/result.pdf' + ' : ' + str(e))
         return fileToReturn
 
     @staticmethod
@@ -166,14 +165,6 @@ class Images:
 
     @staticmethod
     def compress(file, new_file, compress_level, show_compress_info = True):
-        """
-        Function to compress PDF via Ghostscript command line interface
-        :param show_compress_info:
-        :param compress_level:
-        :param file: old file that needs to be compressed
-        :param new_file: new file that is commpressed
-        :return: True or False, to do a cleanup when needed
-        """
         quality = {
             0: '/default',
             1: '/prepress',
