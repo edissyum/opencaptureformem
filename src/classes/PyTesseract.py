@@ -15,7 +15,7 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-import os
+import ocrmypdf
 import pytesseract
 
 class PyTesseract:
@@ -35,25 +35,9 @@ class PyTesseract:
         except pytesseract.pytesseract.TesseractError as t:
             self.Log.error('Tesseract ERROR : ' + str(t))
 
-    def generate_searchable_pdf(self, pdf, Image, tmpPath):
-        Image.save_img_with_wand(pdf, tmpPath + 'tmp.jpg')
-        i = 0
-        sortedImgList = Image.sorted_file(tmpPath, 'jpg')
-
-        for img in sortedImgList:
-            tmpSearchablePdf =  pytesseract.image_to_pdf_or_hocr(
-                img[1],
-                extension='pdf'
-            )
-            f = open(tmpPath + 'tmp-'+ str(i) +'.pdf', 'wb')
-            f.write(bytearray(tmpSearchablePdf))
-            f.close()
-            i = i + 1
-
-            try:
-                os.remove(img[1]) # Delete the temporary image
-            except FileNotFoundError as e:
-                self.Log.error('Unable to delete ' + tmpPath + img[1] + ' : ' + str(e))
-
-        sortedPdfList       = Image.sorted_file(tmpPath, 'pdf')
-        self.searchablePdf  = Image.merge_pdf(sortedPdfList, tmpPath, pdf)
+    def generate_searchable_pdf(self, pdf, tmpPath):
+        try:
+            ocrmypdf.ocr(pdf, tmpPath + '/result.pdf', language=self.lang, skip_text = True, progress_bar = False)
+            self.searchablePdf = open(tmpPath + '/result.pdf', 'rb').read()
+        except ocrmypdf.exceptions.PriorOcrFoundError as e:
+            self.Log.error(e)

@@ -103,13 +103,12 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
-    #if isOcr is False:
-    Log.info('Start OCR on document before send it')
-    print(tmpFolder)
-    Ocr.generate_searchable_pdf(file, Image, tmpFolder)
-    fileToSend = Ocr.searchablePdf
-    #else:
-        #fileToSend = open(file, 'rb').read()
+    if isOcr is False:
+        Log.info('Start OCR on document before send it')
+        Ocr.generate_searchable_pdf(file, tmpFolder)
+        fileToSend = Ocr.searchablePdf
+    else:
+        fileToSend = open(file, 'rb').read()
 
     if q is not None:
         fileToStore = {

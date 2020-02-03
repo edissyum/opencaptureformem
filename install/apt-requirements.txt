@@ -1,5 +1,8 @@
 incron
 python3
+libxml2
+ocrmypdf
+pngquant
 zbar-tools
 pkg-config
 imagemagick

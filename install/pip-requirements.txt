@@ -2,6 +2,7 @@ wand
 pyPdf2
 pillow
 kuyruk
+ocrmypdf
 requests
 pytesseract
 configparser
