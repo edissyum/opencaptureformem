@@ -24,6 +24,7 @@ fi
 
 
 cat apt-requirements.txt | xargs apt install -y
+pip3 install --upgrade pip
 pip3 install -r pip-requirements.txt
 
 cd ../
