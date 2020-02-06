@@ -17,14 +17,24 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
-name="IN"
+script="IN"
+# Made 14 char for name, to have the same layout in log as OC application
+# Made 24 char for filename, to have the same layout in log as OC application
+spaces="              "
+name="$script.sh"
+name=${name:0:14}${spaces:0:$((14-${#name}))}
+
+spaces="                        "
+scriptName="launch_$script.sh"
+scriptName=${scriptName:0:24}${spaces:0:$((24-${#scriptName}))}
+
 OCPath="/opt/maarch/OpenCapture/"
 logFile="$OCPath"/data/log/OCforMaarch.log
-errFilepath="$OCPath/data/error/$name/"
+errFilepath="$OCPath/data/error/$script/"
 tmpFilepath="$OCPath/data/pdf/"
-PID=/tmp/securite-$name-$$.pid
+PID=/tmp/securite-$script-$$.pid
 
-echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO Launching $name.sh script" >> "$logFile"
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
 filepath=$1
 filename=$(basename "$filepath")
@@ -32,22 +42,27 @@ ext=$(file -b -i "$filepath")
 
 if ! test -e $PID && test "$ext" = 'application/pdf; charset=binary' && test -f "$filepath";
 then
-    touch $PID
-    echo $$ > $PID
-    echo "[$name.sh         ] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
+  touch $PID
+  echo $$ > $PID
+  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
 
-    mv "$filepath" "$tmpFilepath"
+  mv "$filepath" "$tmpFilepath"
 
-    python3 "$OCPath"/launch_worker.py -c "$OCPath"/src/config/config.ini -f "$tmpFilepath"/"$filename" --read-destination-from-filename -process incoming
+  python3 "$OCPath"/launch_worker.py -c "$OCPath"/src/config/config.ini -f "$tmpFilepath"/"$filename" --read-destination-from-filename -process incoming
 
-    rm -f $PID
+  rm -f $PID
 
 elif test -f "$filepath" && test "$ext" != 'application/pdf; charset=binary';
 then
-    echo "[$name.sh         ] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
-    mkdir -p "$errFilepath"
-    mv "$filepath" "$errFilepath"
+  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
+  mkdir -p "$errFilepath"
+  mv "$filepath" "$errFilepath"
+
+elif test -d "$filepath";
+then
+  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a directory. Do not process it" >> "$logFile"
+
 else
-    echo "[$name.sh         ] $(date +"%d-%m-%Y %T") WARNING capture on $filepath aready active : PID exists : $PID" >> "$logFile"
+  echo "[$name] [$scriptName]  $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
 fi
 

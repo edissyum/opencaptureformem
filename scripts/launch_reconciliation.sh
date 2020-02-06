@@ -19,6 +19,16 @@
 
 
 # Variables
+script="RECONCILIATION"
+# Made 14 char for name, to have the same layout in log as OC application
+# Made 24 char for filename, to have the same layout in log as OC application
+spaces="              "
+name="$script"
+name=${name:0:14}${spaces:0:$((14-${#name}))}
+
+spaces="                        "
+scriptName="launch_$script.sh"
+scriptName=${scriptName:0:24}${spaces:0:$((24-${#scriptName}))}
 
 tmp_dir=/tmp
 process_pj=reconciliation_default
@@ -26,7 +36,7 @@ process_attfnd=reconciliation_found
 dispatcher_path="/opt/maarch/OpenCapture/"
 logFile="$dispatcher_path/data/log/OCforMaarch.log"
 
-echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Launching reconciliation script" >> "$logFile"
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
 # Define functions
 
@@ -67,7 +77,7 @@ inputPath="$1"
 
 if [[ ! -f "$1" ]]
 then
-        echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
+        echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
         exit 0
 fi
 
@@ -88,7 +98,7 @@ rm "$imgFile"
 
 if [[ -z "$barcode" ]]
 then
-	echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+	echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
     defaultProcess "$tmpPath"
 else
     resid=${barcode%%#*}
@@ -97,10 +107,10 @@ else
     attachmentOK=$(check_attachment "$chrono")
     if [[ "$attachmentOK" == "OK" ]]
     then
-        echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Start RECONCILIATION process" >> "$logFile"
+        echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start RECONCILIATION process" >> "$logFile"
         reconciliationProcess "$tmpPath" "$resid" "$chrono"
     else
-        echo "[RECONCILIATION] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+        echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
         defaultProcess "$tmpPath"
     fi
 fi
