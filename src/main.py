@@ -131,16 +131,14 @@ def launch(args):
         return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
     # Empty the tmp dir to avoid residual file
-    tmpPath = Config.cfg['GLOBAL']['tmppath']
-    for dir in os.listdir(tmpPath):
-        for file in os.listdir(tmpPath + '/' + dir):
-            try:
-                os.remove(tmpPath + '/' + dir + '/' + file)
-            except FileNotFoundError as e:
-                Log.error('Unable to delete ' + tmpPath + '/' + dir + '/' + file + ' on temp folder: ' + str(e))
+    for file in os.listdir(tmpFolder):
         try:
-            os.rmdir(tmpPath + '/' + dir)
+            os.remove(tmpFolder + '/' + file)
         except FileNotFoundError as e:
-            Log.error('Unable to delete ' + tmpPath + '/' + dir + ' on temp folder: ' + str(e))
+            Log.error('Unable to delete ' + tmpFolder + '/' + file + ' on temp folder: ' + str(e))
+    try:
+        os.rmdir(tmpFolder)
+    except FileNotFoundError as e:
+        Log.error('Unable to delete ' + tmpFolder + ' on temp folder: ' + str(e))
 
     Log.info('Process end after ' + timer(start,end) + '')
