@@ -17,8 +17,8 @@
 import os
 import sys
 import time
-import uuid
 import queue
+import tempfile
 
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -50,13 +50,8 @@ def launch(args):
     # Init all the necessary classes
     Config      = configClass.Config(args['config'])
     Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
-    tmpFolder   = Config.cfg['GLOBAL']['tmppath'] + '/' + str(uuid.uuid4()) + '/'
-
-    if not os.path.exists(tmpFolder):
-        os.mkdir(tmpFolder)
-        fileName    = tmpFolder + 'tmp.jpg'
-    else:
-        fileName    = Config.cfg['GLOBAL']['tmppath'] + '/tmp.jpg'
+    tmpFolder   = tempfile.mkdtemp(dir=Config.cfg['GLOBAL']['tmppath'])
+    fileName    = tempfile.NamedTemporaryFile(dir=tmpFolder).name + '.jpg'
 
     Locale      = localeClass.Locale(Config)
     Ocr         = ocrClass.PyTesseract(Locale.localeOCR, Log)
@@ -81,7 +76,7 @@ def launch(args):
             for fileToSep in os.listdir(path):
                 if not Image.check_file_integrity(path + fileToSep, Config):
                     Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep))
-                    os._exit()
+                    os._exit(os.EX_IOERR)
                 Separator.run(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
@@ -98,7 +93,7 @@ def launch(args):
         path = args['file']
         if not Image.check_file_integrity(path, Config):
             Log.error('The integrity of file could\'nt be verified' + str(path))
-            os._exit()
+            os._exit(os.EX_IOERR)
 
         if Separator.enabled == 'True' and args['process'] == 'incoming':
             Separator.run(path)
@@ -118,7 +113,7 @@ def launch(args):
         else:
             if not Image.check_file_integrity(path, Config):
                 Log.error('The integrity of file could\'nt be verified')
-                os._exit()
+                os._exit(os.EX_IOERR)
 
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
@@ -143,4 +138,4 @@ def launch(args):
 
     Log.info('Process end after ' + timer(start,end) + '')
 
-    os._exit()
+    os._exit(os.EX_OK)
