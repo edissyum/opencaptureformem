@@ -16,17 +16,14 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import subprocess
 import time
 import shutil
 
 import PyPDF2
 from PIL import Image
 from wand.color import Color
-from PyPDF2.pdf import PageObject
 from wand.image import Image as Img
 from wand import exceptions as wandExcept
-
 
 class Images:
     def __init__(self, jpgName, res, quality, Log):
@@ -59,16 +56,16 @@ class Images:
         except wandExcept.WandRuntimeError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...')
-            os._exit(1)
+            os._exit(os.EX_OSERR)
         except wandExcept.CacheError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...')
-            os._exit(1)
+            os._exit(os.EX_OSERR)
         except wandExcept.PolicyError as e:
             self.Log.error(e)
             self.Log.error('Maybe you have to check the PDF rights in ImageMagick policy.xml file')
             self.Log.error('Exiting programm...')
-            os._exit(1)
+            os._exit(os.EX_NOPERM)
 
     @staticmethod
     def check_file_integrity(file, Config):
