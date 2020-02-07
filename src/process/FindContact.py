@@ -16,8 +16,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
+import sys
 from threading import Thread
-import json
 
 class FindContact(Thread):
     def __init__(self, text, Log, Config, WebService, Locale):
@@ -82,3 +82,6 @@ class FindContact(Thread):
                     self.contact = contact
                     self.Log.info('Find URL in Maarch, get it : ' + url.group())
                     break
+
+        # Stop the thread
+        sys.exit()

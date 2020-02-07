@@ -142,3 +142,5 @@ def launch(args):
         Log.error('Unable to delete ' + tmpFolder + ' on temp folder: ' + str(e))
 
     Log.info('Process end after ' + timer(start,end) + '')
+
+    os._exit()

@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
+import sys
 from threading import Thread
 
 class FindSubject(Thread):
@@ -58,3 +59,6 @@ class FindSubject(Thread):
 
         if self.subject is not '':
             self.Log.info("Find the following subject : " + self.subject)
+
+        # Stop the thread
+        sys.exit()
