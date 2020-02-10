@@ -69,7 +69,7 @@ class WebServices:
         if not subject:
             subject = ''
         else:
-            if Config.cfg['OCForMaarch']['upperCaseSubject']:
+            if Config.cfg['OCForMaarch']['uppercasesubject']:
                 subject = subject.upper()
 
         data = {
