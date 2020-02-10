@@ -25,23 +25,26 @@ import xml.etree.ElementTree as ET
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
 class Separator:
-    def __init__(self, Log, Config):
+    def __init__(self, Log, Config, tmpFolder):
         self.qrList             = None
         self.Log                = Log
         self.pages              = []
         self.nb_pages           = 0
         self.nb_doc             = 0
+        tmpFolderName           = os.path.basename(os.path.normpath(tmpFolder))
         self.enabled            = Config.cfg['SEPARATOR_QR']['enabled']
-        self.output_dir         = Config.cfg['SEPARATOR_QR']['outputpdfpath']
-        self.output_dir_pdfa    = Config.cfg['SEPARATOR_QR']['outputpdfapath']
-        self.tmp_dir            = Config.cfg['SEPARATOR_QR']['tmppath']
+        self.output_dir         = Config.cfg['SEPARATOR_QR']['outputpdfpath'] + '/' + tmpFolderName + '/'
+        self.output_dir_pdfa    = Config.cfg['SEPARATOR_QR']['outputpdfapath'] + '/' + tmpFolderName + '/'
+        self.tmp_dir            = Config.cfg['SEPARATOR_QR']['tmppath'] + '/' + tmpFolderName + '/'
         self.convert_to_pdfa    = Config.cfg['SEPARATOR_QR']['exportpdfa']
         self.divider            = Config.cfg['SEPARATOR_QR']['divider']
         self.error              = False
 
     def run(self, file):
+        self.Log.info('Start page separation using QR CODE')
         self.pages  =   []
         try:
+            print(file)
             pdf = PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
             self.get_xml_qr_code(file)
@@ -115,11 +118,13 @@ class Separator:
     def extract_and_convert_docs(self, file):
         if len(self.pages) == 0:
             try:
+                os.mkdir(self.output_dir)
                 shutil.move(file, self.output_dir)
             except shutil.Error as e:
                 self.Log.error('Moving file ' + file + ' error : ' + str(e))
             return
         try:
+            print(self.pages)
             for page in self.pages:
                 if page['is_empty']:
                     continue
