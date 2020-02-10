@@ -18,7 +18,9 @@ localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
 [SEPARATOR_QR]
+# True or False
 enabled             = False
+# True or False
 exportPdfa          = False
 outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
 outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
@@ -36,6 +38,7 @@ defaultProcess      = incoming
 # Delta between date found and today date, in days
 # -1 to disable
 timeDelta           = 62
+# True or False
 upperCaseSubject    = False
 
 [OCForMaarch_incoming]
