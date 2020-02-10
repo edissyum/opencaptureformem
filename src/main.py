@@ -42,8 +42,22 @@ OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
 m = Manager(OCforMaarch)
 
-# If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
+def run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder):
+    q = queue.Queue()
+    # Find file in the wanted folder (default or exported pdf after qrcode separation)
+    for file in os.listdir(path):
+        q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
 
+    while not q.empty():
+        runQueue(q, Config, Image, Log, WebService, Ocr)
+
+def check_file(Image, path, Config, Log):
+    if not Image.check_file_integrity(path, Config):
+        Log.error('The integrity of file could\'nt be verified : ' + str(path + path))
+        os._exit(os.EX_IOERR)
+
+
+# If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 @OCforMaarch.task()
 def launch(args):
     start = time.time()
@@ -55,7 +69,7 @@ def launch(args):
 
     Locale      = localeClass.Locale(Config)
     Ocr         = ocrClass.PyTesseract(Locale.localeOCR, Log)
-    Separator   = separatorClass.Separator(Log, Config)
+    Separator   = separatorClass.Separator(Log, Config, tmpFolder)
     WebService  = webserviceClass.WebServices(
         Config.cfg['OCForMaarch']['host'],
         Config.cfg['OCForMaarch']['user'],
@@ -74,46 +88,28 @@ def launch(args):
         path = args['path']
         if Separator.enabled == 'True' and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
-                if not Image.check_file_integrity(path + fileToSep, Config):
-                    Log.error('The integrity of file could\'nt be verified : ' + str(path + fileToSep))
-                    os._exit(os.EX_IOERR)
+                check_file(Image, path + fileToSep, Config, Log)
                 Separator.run(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
         # Create the Queue to store files
-        q = queue.Queue()
-        # Find file in the wanted folder (default or exported pdf after qrcode separation)
-        for file in os.listdir(path):
-            q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
-
-        while not q.empty():
-            runQueue(q, Config, Image, Log, WebService, Ocr)
+        run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
 
     elif args['file'] is not None:
         path = args['file']
-        if not Image.check_file_integrity(path, Config):
-            Log.error('The integrity of file could\'nt be verified' + str(path))
-            os._exit(os.EX_IOERR)
+        check_file(Image, path, Config, Log)
 
         if Separator.enabled == 'True' and args['process'] == 'incoming':
             Separator.run(path)
-            if Separator.error: # in case the file is not a pdf, process as an Image
+            if Separator.error: # in case the file is not a pdf or no qrcode was found, process as an Image
                 process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
             else:
                 path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
                 # Create the Queue to store files
-                q = queue.Queue()
-                # Find file in the wanted folder (default or exported pdf after qrcode separation)
-                for file in os.listdir(path):
-                    q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
-
-                while not q.empty():
-                    runQueue(q, Config, Image, Log, WebService, Ocr)
+                run_queue(args,path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
         else:
-            if not Image.check_file_integrity(path, Config):
-                Log.error('The integrity of file could\'nt be verified')
-                os._exit(os.EX_IOERR)
+            check_file(Image, path, Config, Log)
 
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
