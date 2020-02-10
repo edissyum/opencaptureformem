@@ -44,6 +44,7 @@ m = Manager(OCforMaarch)
 
 def run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder):
     q = queue.Queue()
+
     # Find file in the wanted folder (default or exported pdf after qrcode separation)
     for file in os.listdir(path):
         q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
@@ -66,6 +67,11 @@ def recursive_delete(folder, Log):
         os.rmdir(folder)
     except FileNotFoundError as e:
         Log.error('Unable to delete ' + folder + ' on temp folder: ' + str(e))
+
+def timer(startTime, endTime):
+    hours, rem = divmod(endTime - startTime, 3600)
+    minutes, seconds = divmod(rem, 60)
+    return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 @OCforMaarch.task()
@@ -92,7 +98,7 @@ def launch(args):
         int(Config.cfg['GLOBAL']['compressionquality']),
         Log
     )
-    path = False
+
     # Start process
     if args['path'] is not None:
         path = args['path']
@@ -124,19 +130,14 @@ def launch(args):
             # Process the file and send it to Maarch
             process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
 
-    end = time.time()
-
-    def timer(startTime, endTime):
-        hours, rem = divmod(endTime - startTime, 3600)
-        minutes, seconds = divmod(rem, 60)
-        return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
-
     # Empty the tmp dir to avoid residual file
     recursive_delete(tmpFolder, Log)
 
-    if Separator.enabled == 'True' and path is not False:
-        recursive_delete(path, Log)
+    if Separator.enabled == 'True':
+        recursive_delete(Separator.output_dir, Log)
+        recursive_delete(Separator.output_dir_pdfa, Log)
 
-    Log.info('Process end after ' + timer(start,end) + '')
+    end = time.time()
+    Log.info('Process end after ' + timer(start, end) + '')
 
     os._exit(os.EX_OK)
