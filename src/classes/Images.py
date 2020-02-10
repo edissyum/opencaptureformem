@@ -67,29 +67,33 @@ class Images:
             self.Log.error('Exiting programm...')
             os._exit(os.EX_NOPERM)
 
-    @staticmethod
-    def check_file_integrity(file, Config):
+    def check_file_integrity(self, file, Config):
         isFull = False
         while not isFull:
-            with open(file, 'rb') as doc:
-                size = os.path.getsize(file)
-                time.sleep(1)
-                size2 = os.path.getsize(file)
-                if size2 == size:
-                    if file.endswith(".pdf"):
-                        try:
-                            PyPDF2.PdfFileReader(doc)
-                        except PyPDF2.utils.PdfReadError:
-                            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
-                            return False
-                        else:
-                            return True
-                    elif file.endswith('.jpg'):
-                        try:
-                            Image.open(file)
-                        except OSError:
-                            return False
-                        else:
-                            return True
-                else:
-                    continue
+            try:
+                with open(file, 'rb') as doc:
+                    # size and size2 allow to check if file is full (to avoid process truncate file while files was send over network)
+                    size = os.path.getsize(file)
+                    time.sleep(1)
+                    size2 = os.path.getsize(file)
+                    if size2 == size:
+                        if file.endswith(".pdf"):
+                            try:
+                                PyPDF2.PdfFileReader(doc)
+                            except PyPDF2.utils.PdfReadError:
+                                shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                                return False
+                            else:
+                                return True
+                        elif file.endswith('.jpg'):
+                            try:
+                                Image.open(file)
+                            except OSError:
+                                return False
+                            else:
+                                return True
+                    else:
+                        continue
+            except PermissionError as e:
+                self.Log.error(e)
+                return False
