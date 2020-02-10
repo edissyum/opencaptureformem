@@ -40,11 +40,13 @@ class Separator:
         self.divider            = Config.cfg['SEPARATOR_QR']['divider']
         self.error              = False
 
+        os.mkdir(self.output_dir)
+        os.mkdir(self.output_dir_pdfa)
+
     def run(self, file):
         self.Log.info('Start page separation using QR CODE')
         self.pages  =   []
         try:
-            print(file)
             pdf = PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
             self.get_xml_qr_code(file)
@@ -118,13 +120,11 @@ class Separator:
     def extract_and_convert_docs(self, file):
         if len(self.pages) == 0:
             try:
-                os.mkdir(self.output_dir)
                 shutil.move(file, self.output_dir)
             except shutil.Error as e:
                 self.Log.error('Moving file ' + file + ' error : ' + str(e))
             return
         try:
-            print(self.pages)
             for page in self.pages:
                 if page['is_empty']:
                     continue
