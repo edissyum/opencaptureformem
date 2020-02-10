@@ -66,6 +66,12 @@ class WebServices:
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
 
+        if not subject:
+            subject = ''
+        else:
+            if Config.cfg['OCForMaarch']['upperCaseSubject']:
+                subject = subject.upper()
+
         data = {
             'encodedFile'   : base64.b64encode(fileContent).decode('utf-8'),
             'priority'      : Config.cfg[_process]['priority'],

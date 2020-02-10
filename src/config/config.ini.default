@@ -36,6 +36,7 @@ defaultProcess      = incoming
 # Delta between date found and today date, in days
 # -1 to disable
 timeDelta           = 62
+upperCaseSubject    = True
 
 [OCForMaarch_incoming]
 status              = INIT
