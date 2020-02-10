@@ -56,6 +56,16 @@ def check_file(Image, path, Config, Log):
         Log.error('The integrity of file could\'nt be verified : ' + str(path + path))
         os._exit(os.EX_IOERR)
 
+def recursive_delete(folder, Log):
+    for file in os.listdir(folder):
+        try:
+            os.remove(folder + '/' + file)
+        except FileNotFoundError as e:
+            Log.error('Unable to delete ' + folder + '/' + file + ' on temp folder: ' + str(e))
+    try:
+        os.rmdir(folder)
+    except FileNotFoundError as e:
+        Log.error('Unable to delete ' + folder + ' on temp folder: ' + str(e))
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 @OCforMaarch.task()
@@ -82,7 +92,7 @@ def launch(args):
         int(Config.cfg['GLOBAL']['compressionquality']),
         Log
     )
-
+    path = False
     # Start process
     if args['path'] is not None:
         path = args['path']
@@ -122,15 +132,10 @@ def launch(args):
         return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
     # Empty the tmp dir to avoid residual file
-    for file in os.listdir(tmpFolder):
-        try:
-            os.remove(tmpFolder + '/' + file)
-        except FileNotFoundError as e:
-            Log.error('Unable to delete ' + tmpFolder + '/' + file + ' on temp folder: ' + str(e))
-    try:
-        os.rmdir(tmpFolder)
-    except FileNotFoundError as e:
-        Log.error('Unable to delete ' + tmpFolder + ' on temp folder: ' + str(e))
+    recursive_delete(tmpFolder, Log)
+
+    if Separator.enabled == 'True' and path is not False:
+        recursive_delete(path, Log)
 
     Log.info('Process end after ' + timer(start,end) + '')
 
