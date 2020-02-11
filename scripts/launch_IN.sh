@@ -63,6 +63,6 @@ then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a directory. Do not process it" >> "$logFile"
 
 else
-  echo "[$name] [$scriptName]  $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
+  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
 fi
 

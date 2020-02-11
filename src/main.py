@@ -14,6 +14,7 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+
 import os
 import sys
 import time
@@ -96,7 +97,8 @@ def launch(args):
         fileName,
         int(Config.cfg['GLOBAL']['resolution']),
         int(Config.cfg['GLOBAL']['compressionquality']),
-        Log
+        Log,
+        Config
     )
 
     # Start process
@@ -139,5 +141,4 @@ def launch(args):
 
     end = time.time()
     Log.info('Process end after ' + timer(start, end) + '')
-
     os._exit(os.EX_OK)

@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import sys
 import time
 import shutil
 
@@ -26,19 +27,27 @@ from wand.image import Image as Img
 from wand import exceptions as wandExcept
 
 class Images:
-    def __init__(self, jpgName, res, quality, Log):
+    def __init__(self, jpgName, res, quality, Log, Config):
         Image.MAX_IMAGE_PIXELS      = None  # Disable to avoid DecompressionBombWarning error
         self.jpgName                = jpgName
         self.resolution             = res
         self.compressionQuality     = quality
-        self.img                    = None,
+        self.img                    = None
         self.Log                    = Log
+        self.Config                 = Config.cfg
 
     # Convert the first page of PDF to JPG and open the image
     def pdf_to_jpg(self, pdfName, openImg = True):
-        self.save_img_with_wand(pdfName, self.jpgName)
-        if openImg:
-            self.img = Image.open(self.jpgName)
+        res = self.save_img_with_wand(pdfName, self.jpgName)
+        if res:
+            if openImg:
+                self.img = Image.open(self.jpgName)
+        else:
+            try:
+                shutil.move(pdfName.replace('[0]', ''), self.Config['GLOBAL']['errorpath'])
+            except shutil.Error as e2:
+                self.Log.error('Moving file ' + pdfName.replace('[0]', '') + ' error : ' + str(e2))
+            return False
 
     # Simply open an
     def open_img(self, img):
@@ -55,17 +64,17 @@ class Images:
 
         except wandExcept.WandRuntimeError as e:
             self.Log.error(e)
-            self.Log.error('Exiting program...')
-            os._exit(os.EX_OSERR)
+            self.Log.error('Exiting program...Fix the issue and restart the service')
+            return False
         except wandExcept.CacheError as e:
             self.Log.error(e)
-            self.Log.error('Exiting program...')
-            os._exit(os.EX_OSERR)
+            self.Log.error('Exiting program...Fix the issue and restart the service')
+            return False
         except wandExcept.PolicyError as e:
             self.Log.error(e)
             self.Log.error('Maybe you have to check the PDF rights in ImageMagick policy.xml file')
-            self.Log.error('Exiting programm...')
-            os._exit(os.EX_NOPERM)
+            self.Log.error('Exiting programm...Fix the issue and restart the service')
+            return False
 
     def check_file_integrity(self, file, Config):
         isFull = False

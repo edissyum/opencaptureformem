@@ -45,8 +45,9 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
         destination = Config.cfg[_process]['destination']
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
-        Image.pdf_to_jpg(file + '[0]', True)
-
+        res = Image.pdf_to_jpg(file + '[0]', True)
+        if not res:
+            os._exit(os.EX_IOERR)
         # Check if pdf is already OCR and searchable
 
         checkOcr    = os.popen('pdffonts ' + file, 'r')
