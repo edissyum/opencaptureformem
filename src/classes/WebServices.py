@@ -65,7 +65,6 @@ class WebServices:
     def insert_with_args(self, fileContent, Config, contact, subject, date, destination, _process, custom_mail):
         if not contact:
             contact = {'id' : '', 'contact_id' : ''}
-
         if not subject:
             subject = ''
         else:
