@@ -48,7 +48,8 @@ def run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService
 
     # Find file in the wanted folder (default or exported pdf after qrcode separation)
     for file in os.listdir(path):
-        q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
+        if check_file(Image, file, Config, Log):
+            q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
 
     while not q.empty():
         runQueue(q, Config, Image, Log, WebService, Ocr)
@@ -56,7 +57,9 @@ def run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService
 def check_file(Image, path, Config, Log):
     if not Image.check_file_integrity(path, Config):
         Log.error('The integrity of file could\'nt be verified : ' + str(path))
-        os._exit(os.EX_IOERR)
+        return False
+    else:
+        return True
 
 def recursive_delete(folder, Log):
     for file in os.listdir(folder):
@@ -106,8 +109,8 @@ def launch(args):
         path = args['path']
         if Separator.enabled == 'True' and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
-                check_file(Image, path + fileToSep, Config, Log)
-                Separator.run(path + fileToSep)
+                if check_file(Image, path + fileToSep, Config, Log):
+                    Separator.run(path + fileToSep)
             path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
         # Create the Queue to store files
@@ -115,22 +118,20 @@ def launch(args):
 
     elif args['file'] is not None:
         path = args['file']
-        check_file(Image, path, Config, Log)
+        if check_file(Image, path, Config, Log):
+            if Separator.enabled == 'True' and args['process'] == 'incoming':
+                Separator.run(path)
+                if Separator.error: # in case the file is not a pdf or no qrcode was found, process as an Image
+                    process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+                else:
+                    path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
 
-        if Separator.enabled == 'True' and args['process'] == 'incoming':
-            Separator.run(path)
-            if Separator.error: # in case the file is not a pdf or no qrcode was found, process as an Image
-                process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+                    # Create the Queue to store files
+                    run_queue(args,path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
             else:
-                path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
-
-                # Create the Queue to store files
-                run_queue(args,path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
-        else:
-            check_file(Image, path, Config, Log)
-
-            # Process the file and send it to Maarch
-            process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+                if check_file(Image, path, Config, Log):
+                    # Process the file and send it to Maarch
+                    process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
 
     # Empty the tmp dir to avoid residual file
     recursive_delete(tmpFolder, Log)

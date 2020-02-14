@@ -92,7 +92,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 EOF
-  "
+"
 
   systemctl daemon-reload
   systemctl start oc-worker.service
