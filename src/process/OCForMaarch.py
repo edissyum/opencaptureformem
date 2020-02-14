@@ -46,10 +46,10 @@ def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, 
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
         res = Image.pdf_to_jpg(file + '[0]', True)
-        if not res:
+        if res is False:
             os._exit(os.EX_IOERR)
-        # Check if pdf is already OCR and searchable
 
+        # Check if pdf is already OCR and searchable
         checkOcr    = os.popen('pdffonts ' + file, 'r')
         tmp         = ''
         for line in checkOcr:

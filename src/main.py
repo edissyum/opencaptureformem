@@ -55,7 +55,7 @@ def run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService
 
 def check_file(Image, path, Config, Log):
     if not Image.check_file_integrity(path, Config):
-        Log.error('The integrity of file could\'nt be verified : ' + str(path + path))
+        Log.error('The integrity of file could\'nt be verified : ' + str(path))
         os._exit(os.EX_IOERR)
 
 def recursive_delete(folder, Log):

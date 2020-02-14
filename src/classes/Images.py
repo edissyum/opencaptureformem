@@ -42,6 +42,7 @@ class Images:
         if res is not False:
             if openImg:
                 self.img = Image.open(self.jpgName)
+            return True
         else:
             try:
                 shutil.move(pdfName.replace('[0]', ''), self.Config['GLOBAL']['errorpath'])
