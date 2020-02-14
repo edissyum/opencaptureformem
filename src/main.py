@@ -141,4 +141,3 @@ def launch(args):
 
     end = time.time()
     Log.info('Process end after ' + timer(start, end) + '')
-    os._exit(os.EX_OK)
