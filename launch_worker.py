@@ -21,7 +21,7 @@ import argparse
 from src.main import launch
 
 # construct the argument parse and parse the arguments
-ap      = argparse.ArgumentParser()
+ap = argparse.ArgumentParser()
 ap.add_argument('-resid', "--resid", required=False)
 ap.add_argument('-chrono', "--chrono", required=False)
 ap.add_argument("-f", "--file", required=False, help="path to file")
@@ -31,7 +31,7 @@ ap.add_argument('-process', "--process", required=False, default='incoming')
 ap.add_argument("-d", '--destination', required=False, help="Default destination")
 ap.add_argument("-p", "--path", required=False, help="path to folder containing documents")
 ap.add_argument("--read-destination-from-filename", '--RDFF', dest='RDFF', action="store_true", required=False, help="Read destination from filename")
-args    = vars(ap.parse_args())
+args = vars(ap.parse_args())
 
 if args['path'] is None and args['file'] is None:
     sys.exit('No file or path were given')

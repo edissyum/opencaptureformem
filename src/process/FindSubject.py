@@ -19,41 +19,39 @@ import re
 import sys
 from threading import Thread
 
-class FindSubject(Thread):
-    def __init__(self, text, Locale, Log):
-        Thread.__init__(self, name='subjectThread')
-        self.text       = text
-        self.Log        = Log
-        self.Locale     = Locale
-        self.subject    = None
 
-    @staticmethod
-    def loopFindSubject(array, compilePattern):
-        pattern = re.compile(compilePattern)
-        for value in array:
-            if pattern.search(value):
-                return value
-        return None
+class FindSubject(Thread):
+    def __init__(self, text, locale, log):
+        Thread.__init__(self, name='subjectThread')
+        self.Log = log
+        self.text = text
+        self.subject = None
+        self.Locale = locale
 
     def run(self):
-        subjectArray = []
+        """
+        Override the default run function of threading package
+        This will search for a subject into the text of original PDF
+
+        """
+        subject_array = []
         for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
             if len(_subject.group()) > 3:
                 # Using the [:-2] to delete the ".*" of the regex
                 # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
-                subjectArray.append( _subject.group())
+                subject_array.append( _subject.group())
 
         # If there is more than one subject found, prefer the "Object" one instead of "Ref"
-        if len(subjectArray) > 1:
-            subject = self.loopFindSubject(subjectArray, self.Locale.subjectOnly)
+        if len(subject_array) > 1:
+            subject = loop_find_subject(subject_array, self.Locale.subjectOnly)
             if subject:
                 self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
             else:
-                subject = self.loopFindSubject(subjectArray, self.Locale.refOnly)
+                subject = loop_find_subject(subject_array, self.Locale.refOnly)
                 if subject:
                     self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
-        elif len(subjectArray) == 1:
-            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subjectArray[0]).strip()
+        elif len(subject_array) == 1:
+            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject_array[0]).strip()
         else:
             self.subject = ''
 
@@ -62,3 +60,18 @@ class FindSubject(Thread):
 
         # Stop the thread
         sys.exit()
+
+
+def loop_find_subject(array, compile_pattern):
+    """
+    Simple loop to find subject when multiple subject are found
+
+    :param array: Array of subject
+    :param compile_pattern: Choose between subject of ref to choose between all the subject in array
+    :return: Return the best subject, or None
+    """
+    pattern = re.compile(compile_pattern)
+    for value in array:
+        if pattern.search(value):
+            return value
+    return None

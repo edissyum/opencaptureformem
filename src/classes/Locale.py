@@ -17,30 +17,31 @@
 
 import json
 
+
 class Locale:
-    def __init__(self, Config):
-        self.locale         = Config.cfg['LOCALE']['locale']
-        self.localeOCR      = Config.cfg['LOCALE']['localeocr']
-        self.arrayDate      = []
-        self.regexDate      = ''
-        self.regexSubject   = ''
-        self.subjectOnly    = ''
-        self.refOnly        = ''
-        self.formatDate     = ''
+    def __init__(self, config):
+        self.refOnly = ''
+        self.arrayDate = []
+        self.regexDate = ''
+        self.formatDate = ''
+        self.URLPattern = ''
+        self.subjectOnly = ''
+        self.regexSubject = ''
         self.dateTimeFormat = ''
-        self.URLPattern     = ''
-        self.date_path      = Config.cfg['LOCALE']['localedatepath']
+        self.locale = config.cfg['LOCALE']['locale']
+        self.localeOCR = config.cfg['LOCALE']['localeocr']
+        self.date_path = config.cfg['LOCALE']['localedatepath']
 
         with open(self.date_path + self.locale + '.json') as file:
-            fp                  = json.load(file)
-            self.regexDate      = fp['dateRegex']
-            self.formatDate     = fp['dateFormat']
-            self.arrayDate      = fp['dateConvert']
-            self.regexSubject   = fp['subjectRegex']
+            fp = json.load(file)
+            self.refOnly = fp['refOnly']
+            self.URLRegex = fp['URLRegex']
+            self.regexDate = fp['dateRegex']
+            self.formatDate = fp['dateFormat']
+            self.arrayDate = fp['dateConvert']
+            self.phoneRegex = fp['phoneRegex']
+            self.emailRegex = fp['emailRegex']
+            self.URLPattern = fp['URLPattern']
+            self.subjectOnly = fp['subjectOnly']
+            self.regexSubject = fp['subjectRegex']
             self.dateTimeFormat = fp['dateTimeFormat']
-            self.phoneRegex     = fp['phoneRegex']
-            self.emailRegex     = fp['emailRegex']
-            self.URLRegex       = fp['URLRegex']
-            self.URLPattern     = fp['URLPattern']
-            self.subjectOnly    = fp['subjectOnly']
-            self.refOnly        = fp['refOnly']

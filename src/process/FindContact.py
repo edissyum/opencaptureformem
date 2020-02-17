@@ -19,20 +19,28 @@ import re
 import sys
 from threading import Thread
 
+
 class FindContact(Thread):
-    def __init__(self, text, Log, Config, WebService, Locale):
+    def __init__(self, text, log, config, web_service, locale):
         Thread.__init__(self, name='contactThread')
-        self.text           = text
-        self.Log            = Log
-        self.Config         = Config
-        self.WebService     = WebService
-        self.contact        = ''
-        self.custom_mail    = ''
-        self.custom_phone   = ''
-        self.Locale         = Locale
+        self.Log = log
+        self.text = text
+        self.contact = ''
+        self.Locale = locale
+        self.Config = config
+        self.custom_mail = ''
+        self.custom_phone = ''
+        self.WebService = web_service
 
     def run(self):
-        foundContact = False
+        """
+        Override the default run function of threading package
+        This will search for a contact into the text of original PDF
+        It will use mail, phone or URL regex
+
+        """
+
+        found_contact = False
 
         for phone in re.finditer(r"" + self.Locale.phoneRegex + "", self.text):
             self.Log.info('Find PHONE : ' + phone.group())
@@ -43,7 +51,7 @@ class FindContact(Thread):
 
             contact = self.WebService.retrieve_contact_by_phone(sanitized_phone)
             if contact:
-                foundContact = True
+                found_contact = True
                 self.contact = contact
                 self.Log.info('Find phone in Maarch, get it : ' + sanitized_phone)
                 break
@@ -52,16 +60,16 @@ class FindContact(Thread):
                 self.custom_phone += sanitized_phone + ';'
                 continue
 
-        if not foundContact:
+        if not found_contact:
             for mail in re.finditer(r"" + self.Locale.emailRegex + "", self.text):
                 self.Log.info('Find E-MAIL : ' + mail.group())
                 # Now sanitize email to delete potential OCR error
-                sanitized_mail  = re.sub(r"[" + self.Config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
+                sanitized_mail = re.sub(r"[" + self.Config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
                 self.Log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
-                contact         = self.WebService.retrieve_contact_by_mail(sanitized_mail)
+                contact = self.WebService.retrieve_contact_by_mail(sanitized_mail)
                 if contact:
-                    foundContact = True
+                    found_contact = True
                     self.contact = contact
                     self.Log.info('Find E-MAIL in Maarch, attach it to the document')
                     break
@@ -71,9 +79,9 @@ class FindContact(Thread):
                     continue
 
         # If no contact were found, search for URL
-        if not foundContact:
+        if not found_contact:
             for url in re.finditer(
-                    r"" + self.Locale.URLRegex +"(" + self.Locale.URLPattern + ")",
+                    r"" + self.Locale.URLRegex + "(" + self.Locale.URLPattern + ")",
                     self.text
             ):
                 self.Log.info('Find URL : ' + url.group())

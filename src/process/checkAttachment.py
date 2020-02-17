@@ -24,22 +24,22 @@ from classes.Config import Config
 from classes.WebServices import WebServices
 
 # construct the argument parse and parse the arguments
-ap      = argparse.ArgumentParser()
+ap = argparse.ArgumentParser()
 ap.add_argument("-chrono", "--chrono", required=True, help="path to file")
 ap.add_argument("-c", "--config", required=True, help="path to config.xml")
-args    = vars(ap.parse_args())
+args = vars(ap.parse_args())
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     # Init all the var
-    Config      = Config(args['config'])
-    Log         = Log(Config.cfg['GLOBAL']['logfile'])
-    WebService  = WebServices(
+    Config = Config(args['config'])
+    Log = Log(Config.cfg['GLOBAL']['logfile'])
+    WebService = WebServices(
         Config.cfg['OCForMaarch']['host'],
         Config.cfg['OCForMaarch']['user'],
         Config.cfg['OCForMaarch']['password'],
         Log
     )
-    chrono      = args['chrono']
+    chrono = args['chrono']
 
     response = WebService.check_attachment(chrono)
     if response:

@@ -22,32 +22,38 @@ import uuid
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
-from PyPDF2 import PdfFileReader, PdfFileWriter
+import PyPDF2
+
 
 class Separator:
-    def __init__(self, Log, Config, tmpFolder):
-        self.qrList             = None
-        self.Log                = Log
-        self.pages              = []
-        self.nb_pages           = 0
-        self.nb_doc             = 0
-        tmpFolderName           = os.path.basename(os.path.normpath(tmpFolder))
-        self.enabled            = Config.cfg['SEPARATOR_QR']['enabled']
-        self.output_dir         = Config.cfg['SEPARATOR_QR']['outputpdfpath'] + '/' + tmpFolderName + '/'
-        self.output_dir_pdfa    = Config.cfg['SEPARATOR_QR']['outputpdfapath'] + '/' + tmpFolderName + '/'
-        self.tmp_dir            = Config.cfg['SEPARATOR_QR']['tmppath'] + '/' + tmpFolderName + '/'
-        self.convert_to_pdfa    = Config.cfg['SEPARATOR_QR']['exportpdfa']
-        self.divider            = Config.cfg['SEPARATOR_QR']['divider']
-        self.error              = False
+    def __init__(self, log, config, tmp_folder):
+        self.Log = log
+        self.pages = []
+        self.nb_doc = 0
+        self.nb_pages = 0
+        self.error = False
+        self.qrList = None
+        self.enabled = config.cfg['SEPARATOR_QR']['enabled']
+        self.divider = config.cfg['SEPARATOR_QR']['divider']
+        self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['exportpdfa']
+        tmp_folder_name = os.path.basename(os.path.normpath(tmp_folder))
+        self.tmp_dir = config.cfg['SEPARATOR_QR']['tmppath'] + '/' + tmp_folder_name + '/'
+        self.output_dir = config.cfg['SEPARATOR_QR']['outputpdfpath'] + '/' + tmp_folder_name + '/'
+        self.output_dir_pdfa = config.cfg['SEPARATOR_QR']['outputpdfapath'] + '/' + tmp_folder_name + '/'
 
         os.mkdir(self.output_dir)
         os.mkdir(self.output_dir_pdfa)
 
     def run(self, file):
+        """
+        Function that runs all the subprocess in order to separate a document using splitter with QR Code
+
+        :param file: Path to pdf file
+        """
         self.Log.info('Start page separation using QR CODE')
-        self.pages  =   []
+        self.pages = []
         try:
-            pdf = PdfFileReader(open(file, 'rb'))
+            pdf = PyPDF2.PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
             self.get_xml_qr_code(file)
             self.parse_xml()
@@ -58,8 +64,12 @@ class Separator:
             self.error = True
             self.Log.error("INIT : " + str(e))
 
-
     def get_xml_qr_code(self, file):
+        """
+        Retrieve the content of a QR Code
+
+        :param file: Path to pdf file
+        """
         try:
             xml = subprocess.Popen([
                 'zbarimg',
@@ -71,44 +81,54 @@ class Separator:
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = xml.communicate()
             if err.decode('utf-8'):
-                self.Log.error('ZBARIMG : ' + err)
+                self.Log.error('ZBARIMG : ' + str(err))
             self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
                 self.Log.error("ZBARIMG : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
-        except:
-            self.Log.error("ZBARIMG : Unexpected error : " + str(sys.exc_info()[0]))
 
     def parse_xml(self):
+        """
+        Parse XML content of QR Code to retrieve the destination of the document (in Maarc)
+
+        """
         if self.qrList is None:
             return
         ns = {'bc': 'http://zbar.sourceforge.net/2008/barcode'}
         indexes = self.qrList[0].findall('bc:index', ns)
         for index in indexes:
-            page                = {}
-            data                = index.find('bc:symbol', ns).find('bc:data', ns)
-            page['service']     = data.text
-            page['index_sep']   = int(index.attrib['num'])
+            page = {}
+            data = index.find('bc:symbol', ns).find('bc:data', ns)
+            page['service'] = data.text
+            page['index_sep'] = int(index.attrib['num'])
 
-            if page['index_sep'] + 1 >= self.nb_pages: # If last page is a separator
-                page['is_empty']    = True
+            if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
+                page['is_empty'] = True
             else:
-                page['is_empty']    = False
+                page['is_empty'] = False
                 page['index_start'] = page['index_sep'] + 2
 
-            page['uuid']            = str(uuid.uuid4())    # Generate random number for pdf filename
-            page['pdf_filename']    = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
-            page['pdfa_filename']   = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
+            page['uuid'] = str(uuid.uuid4())    # Generate random number for pdf filename
+            page['pdf_filename'] = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
+            page['pdfa_filename'] = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
             self.pages.append(page)
 
         self.nb_doc = len(self.pages)
 
     def check_empty_docs(self):
+        """
+        Check if a document is empty
+
+        """
         for i in range(self.nb_doc - 1):
             if self.pages[i]['index_sep'] + 1 == self.pages[i + 1]['index_sep']:
                 self.pages[i]['is_empty'] = True
 
     def set_doc_ends(self):
+        """
+        Set a virtual limit to split document later
+
+        """
         for i in range(self.nb_doc):
             if self.pages[i]['is_empty']:
                 continue
@@ -118,42 +138,60 @@ class Separator:
                 self.pages[i]['index_end'] = self.nb_pages
 
     def extract_and_convert_docs(self, file):
+        """
+        If empty doc, move it directly
+        Else, split document and export them
+
+        :param file:
+        """
         if len(self.pages) == 0:
             try:
                 shutil.move(file, self.output_dir)
             except shutil.Error as e:
                 self.Log.error('Moving file ' + file + ' error : ' + str(e))
             return
-        try:
-            for page in self.pages:
-                if page['is_empty']:
-                    continue
+        else:
+            try:
+                for page in self.pages:
+                    if page['is_empty']:
+                        continue
 
-                pagesToKeep = range(page['index_start'], page['index_end'] + 1)
-                self.split_pdf(file, page['pdf_filename'], pagesToKeep)
+                    pages_to_keep = range(page['index_start'], page['index_end'] + 1)
+                    split_pdf(file, page['pdf_filename'], pages_to_keep)
 
-                if self.convert_to_pdfa == 'True':
-                    self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
-            os.remove(file)
-        except Exception as e:
-            self.Log.error("EACD: " + str(e))
+                    if self.convert_to_pdfa == 'True':
+                        self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
+                os.remove(file)
+            except Exception as e:
+                self.Log.error("EACD: " + str(e))
 
 
-    @staticmethod
-    def convert_to_pdfa(pdfa_filename, pdf_filename):
-        gs_commandLine = 'gs#-dPDFA#-dNOOUTERSAVE#-sProcessColorModel=DeviceCMYK#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=1#PDFA_def.ps#%s' \
-                         % (pdfa_filename, pdf_filename)
-        gs_args = gs_commandLine.split('#')
-        subprocess.check_call(gs_args)
-        os.remove(pdf_filename)
+def split_pdf(input_path, output_path, pages):
+    """
+    Finally, split PDF into multiple PDF
 
-    @staticmethod
-    def split_pdf(inputPath, outputPath, pages):
-        inputPdf = PdfFileReader(open(inputPath, "rb"))
-        outputPdf = PdfFileWriter()
+    :param input_path: Orignal PDF (including separator with QR Code)
+    :param output_path: Final PDF, splitted
+    :param pages: Pages which compose the new PDF
+    """
+    input_pdf = PyPDF2.PdfFileReader(open(input_path, "rb"))
+    output_pdf = PyPDF2.PdfFileWriter()
 
-        for page in pages:
-            outputPdf.addPage(inputPdf.getPage(page - 1))
+    for page in pages:
+        output_pdf.addPage(input_pdf.getPage(page - 1))
 
-        with open(outputPath, "wb") as stream:
-            outputPdf.write(stream)
+    with open(output_path, "wb") as stream:
+        output_pdf.write(stream)
+
+
+def convert_to_pdfa(pdfa_filename, pdf_filename):
+    """
+    Convert a simple PDF to a PDF/A
+
+    :param pdfa_filename: New PDF/A filename
+    :param pdf_filename: Old PDF filename
+    """
+    gs_command_line = 'gs#-dPDFA#-dNOOUTERSAVE#-sProcessColorModel=DeviceCMYK#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=1#PDFA_def.ps#%s' % (pdfa_filename, pdf_filename)
+    gs_args = gs_command_line.split('#')
+    subprocess.check_call(gs_args)
+    os.remove(pdf_filename)

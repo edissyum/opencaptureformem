@@ -16,17 +16,17 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import sys
-import time
 import queue
+import sys
 import tempfile
+import time
 
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
 from kuyruk_manager import Manager
 import src.classes.Log as logClass
-from src.process.Queue import runQueue
+from src.process.Queue import run_queue
 import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
 import src.classes.Config as configClass
@@ -43,102 +43,142 @@ OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
 m = Manager(OCforMaarch)
 
-def run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder):
+
+def run_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder):
+    """
+    Run queue to handle multiple process running at the same time
+
+    :param args: dict or argument (path to file, process to use etc..)
+    :param path: Direct path to the file
+    :param log: Class Log instance
+    :param separator: Class Separator instance
+    :param config: Class Config instance
+    :param image: Class Image instance
+    :param ocr: Class OCR instance
+    :param locale: Class Locale instance
+    :param web_service: Class WebServices instance
+    :param tmp_folder: Path to tmp folder (created using tempfile python lib)
+    """
     q = queue.Queue()
 
     # Find file in the wanted folder (default or exported pdf after qrcode separation)
     for file in os.listdir(path):
-        if check_file(Image, file, Config, Log):
-            q = process(args, path + file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q)
+        if check_file(image, file, config, log):
+            q = process(args, path + file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q)
 
     while not q.empty():
-        runQueue(q, Config, Image, Log, WebService, Ocr)
+        run_queue(q, config, image, log, web_service, ocr)
 
-def check_file(Image, path, Config, Log):
-    if not Image.check_file_integrity(path, Config):
-        Log.error('The integrity of file could\'nt be verified : ' + str(path))
+
+def check_file(image, path, config, log):
+    """
+    Check integrity of file
+
+    :param image: Class Image instance
+    :param path: Path to file
+    :param config: Class Config instance
+    :param log: Class Log instance
+    :return: Boolean to show if integrity of file is ok or not
+    """
+    if not image.check_file_integrity(path, config):
+        log.error('The integrity of file could\'nt be verified : ' + str(path))
         return False
     else:
         return True
 
-def recursive_delete(folder, Log):
+
+def recursive_delete(folder, log):
+    """
+    Delete recusively a folder (temporary folder)
+
+    :param folder: Folder to recursively delete
+    :param log: Class Log instance
+    """
     for file in os.listdir(folder):
         try:
             os.remove(folder + '/' + file)
         except FileNotFoundError as e:
-            Log.error('Unable to delete ' + folder + '/' + file + ' on temp folder: ' + str(e))
+            log.error('Unable to delete ' + folder + '/' + file + ' on temp folder: ' + str(e))
     try:
         os.rmdir(folder)
     except FileNotFoundError as e:
-        Log.error('Unable to delete ' + folder + ' on temp folder: ' + str(e))
+        log.error('Unable to delete ' + folder + ' on temp folder: ' + str(e))
 
-def timer(startTime, endTime):
-    hours, rem = divmod(endTime - startTime, 3600)
+
+def timer(start_time, end_time):
+    """
+    Show how long the process takes
+
+    :param start_time: Time when the program start
+    :param end_time: Time when all the processes are done
+    :return: Difference between :start_time and :end_time
+    """
+    hours, rem = divmod(end_time - start_time, 3600)
     minutes, seconds = divmod(rem, 60)
     return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
+
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 @OCforMaarch.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
-    Config      = configClass.Config(args['config'])
-    Log         = logClass.Log(Config.cfg['GLOBAL']['logfile'])
-    tmpFolder   = tempfile.mkdtemp(dir=Config.cfg['GLOBAL']['tmppath'])
-    fileName    = tempfile.NamedTemporaryFile(dir=tmpFolder).name + '.jpg'
-
-    Locale      = localeClass.Locale(Config)
-    Ocr         = ocrClass.PyTesseract(Locale.localeOCR, Log)
-    Separator   = separatorClass.Separator(Log, Config, tmpFolder)
-    WebService  = webserviceClass.WebServices(
-        Config.cfg['OCForMaarch']['host'],
-        Config.cfg['OCForMaarch']['user'],
-        Config.cfg['OCForMaarch']['password'],
-        Log
+    config = configClass.Config(args['config'])
+    log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+    tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
+    filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
+    locale = localeClass.Locale(config)
+    ocr = ocrClass.PyTesseract(locale.localeOCR, log)
+    separator = separatorClass.Separator(log, config, tmp_folder)
+    web_service = webserviceClass.WebServices(
+        config.cfg['OCForMaarch']['host'],
+        config.cfg['OCForMaarch']['user'],
+        config.cfg['OCForMaarch']['password'],
+        log
     )
-    Image       = imagesClass.Images(
-        fileName,
-        int(Config.cfg['GLOBAL']['resolution']),
-        int(Config.cfg['GLOBAL']['compressionquality']),
-        Log,
-        Config
+    image = imagesClass.Images(
+        filename,
+        int(config.cfg['GLOBAL']['resolution']),
+        int(config.cfg['GLOBAL']['compressionquality']),
+        log,
+        config
     )
 
     # Start process
     if args['path'] is not None:
         path = args['path']
-        if Separator.enabled == 'True' and args['process'] == 'incoming':
+        if separator.enabled == 'True' and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
-                if check_file(Image, path + fileToSep, Config, Log):
-                    Separator.run(path + fileToSep)
-            path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
+                if check_file(image, path + fileToSep, config, log):
+                    separator.run(path + fileToSep)
+            path = separator.output_dir_pdfa if separator.convert_to_pdfa == 'True' else separator.output_dir
 
         # Create the Queue to store files
-        run_queue(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+        run_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
 
     elif args['file'] is not None:
         path = args['file']
-        if check_file(Image, path, Config, Log):
-            if Separator.enabled == 'True' and args['process'] == 'incoming':
-                Separator.run(path)
-                if Separator.error: # in case the file is not a pdf or no qrcode was found, process as an Image
-                    process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+        if check_file(image, path, config, log):
+            if separator.enabled == 'True' and args['process'] == 'incoming':
+                separator.run(path)
+                if separator.error:  # in case the file is not a pdf or no qrcode was found, process as an image
+                    process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
                 else:
-                    path = Separator.output_dir_pdfa if Separator.convert_to_pdfa == 'True' else Separator.output_dir
+                    path = separator.output_dir_pdfa if separator.convert_to_pdfa == 'True' else separator.output_dir
 
                     # Create the Queue to store files
-                    run_queue(args,path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+                    run_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
             else:
-                if check_file(Image, path, Config, Log):
+                if check_file(image, path, config, log):
                     # Process the file and send it to Maarch
-                    process(args, path, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder)
+                    process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
 
     # Empty the tmp dir to avoid residual file
-    recursive_delete(tmpFolder, Log)
+    recursive_delete(tmp_folder, log)
 
-    if Separator.enabled == 'True':
-        recursive_delete(Separator.output_dir, Log)
-        recursive_delete(Separator.output_dir_pdfa, Log)
+    if separator.enabled == 'True':
+        recursive_delete(separator.output_dir, log)
+        recursive_delete(separator.output_dir_pdfa, log)
 
     end = time.time()
-    Log.info('Process end after ' + timer(start, end) + '')
+    log.info('Process end after ' + timer(start, end) + '')

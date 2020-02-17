@@ -19,50 +19,66 @@ import os
 import shutil
 from threading import Thread
 
-def runQueue(q, Config, Image, Log, WebService, Ocr):
-    numberOfThreads = int(Config.cfg['GLOBAL']['nbthreads'])
-    threads =  []
-    for i in range(numberOfThreads):
-        thread = ProcessQueue(q, Config, Image, Log, WebService, Ocr, i)
+
+def run_queue(q, config, image, log, web_service, ocr):
+    """
+
+    :param q: Queue fill with all the processes neede to be launched
+    :param config: Class Config instance
+    :param image: Class Image instance
+    :param log: Class Log instance
+    :param web_service: Class WebService instance
+    :param ocr: Class Ocr instance
+    """
+    number_of_threads = int(config.cfg['GLOBAL']['nbthreads'])
+    threads = []
+    for i in range(number_of_threads):
+        thread = ProcessQueue(q, config, image, log, web_service, ocr, i)
         thread.start()
         threads.append(thread)
 
     for t in threads:
         t.join()
 
+
 class ProcessQueue(Thread):
-    def __init__(self, q, Config, Image, Log, WebService, Ocr, cpt):
+    def __init__(self, q, config, image, log, web_service, ocr, cpt):
         Thread.__init__(self, name='processQueue ' + str(cpt))
-        self.queue      = q
-        self.Log        = Log
-        self.Ocr        = Ocr
-        self.Config     = Config
-        self.Image      = Image
-        self.WebService = WebService
+        self.queue = q
+        self.Ocr = ocr
+        self.Log = log
+        self.Image = image
+        self.Config = config
+        self.WebService = web_service
 
     def run(self):
+        """
+        Override the default run function of threading package
+        This will process the queue and insert documents in Maarch
+
+        """
         while not self.queue.empty():
-            queueInfo       = self.queue.get()
-            file            = queueInfo['file']
-            date            = queueInfo['date']
-            subject         = queueInfo['subject']
-            contact         = queueInfo['contact']
-            _process        = queueInfo['process']
-            fileToSend      = queueInfo['fileToSend']
-            destination     = queueInfo['destination']
-            resId           = queueInfo['resId']
-            chrono          = queueInfo['chrono']
-            isInternalNote  = queueInfo['isInternalNote']
-            custom_mail     = queueInfo[self.Config.cfg[_process]['custom_mail']]
+            queue_info = self.queue.get()
+            file = queue_info['file']
+            date = queue_info['date']
+            res_id = queue_info['resId']
+            chrono = queue_info['chrono']
+            subject = queue_info['subject']
+            contact = queue_info['contact']
+            _process = queue_info['process']
+            file_to_send = queue_info['fileToSend']
+            destination = queue_info['destination']
+            is_internal_note = queue_info['isInternalNote']
+            custom_mail = queue_info[self.Config.cfg[_process]['custom_mail']]
 
             # Send to Maarch
             if 'is_attachment' in self.Config.cfg[_process] and self.Config.cfg[_process]['is_attachment'] != '':
-                if isInternalNote:
-                    res = self.WebService.insert_attachment(fileToSend, self.Config, resId, _process)
+                if is_internal_note:
+                    res = self.WebService.insert_attachment(file_to_send, self.Config, res_id, _process)
                 else:
-                    res = self.WebService.insert_attachment_reconciliation(fileToSend, chrono, _process)
+                    res = self.WebService.insert_attachment_reconciliation(file_to_send, chrono, _process)
             else:
-                res = self.WebService.insert_with_args(fileToSend, self.Config, contact, subject, date, destination, _process, custom_mail)
+                res = self.WebService.insert_with_args(file_to_send, self.Config, contact, subject, date, destination, _process, custom_mail)
 
             if res:
                 self.Log.info("Insert OK : " + res)

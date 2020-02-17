@@ -21,130 +21,131 @@ from .FindDate import FindDate
 from .FindSubject import FindSubject
 from .FindContact import FindContact
 
-def process(args, file, Log, Separator, Config, Image, Ocr, Locale, WebService, tmpFolder, q = None):
-    Log.info('Processing file : ' + file)
+
+def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None):
+    log.info('Processing file : ' + file)
 
     # Check if the choosen process mode if available. If not take the default one
-    if args['process'] in Config.cfg['OCForMaarch']['processavailable'].split(','):
+    if args['process'] in config.cfg['OCForMaarch']['processavailable'].split(','):
         _process = 'OCForMaarch_' + args['process'].lower()
     else:
-        _process = 'OCForMaarch_' + Config.cfg['OCForMaarch']['defaultprocess'].lower()
+        _process = 'OCForMaarch_' + config.cfg['OCForMaarch']['defaultprocess'].lower()
 
-    Log.info('Using the following process : ' + _process)
+    log.info('Using the following process : ' + _process)
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
     if args['RDFF']:
-        fileName = os.path.basename(file)
-        if Separator.divider not in fileName:
-            destination = Config.cfg[_process]['destination']
+        file_name = os.path.basename(file)
+        if separator.divider not in file_name:
+            destination = config.cfg[_process]['destination']
         else:
-            destination = fileName.split(Separator.divider)[0]
+            destination = file_name.split(separator.divider)[0]
     # Or from the destination arguments
     elif args['destination']:
         destination = args['destination']
     else:
-        destination = Config.cfg[_process]['destination']
+        destination = config.cfg[_process]['destination']
 
     if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
-        res = Image.pdf_to_jpg(file + '[0]', True)
+        res = image.pdf_to_jpg(file + '[0]', True)
         if res is False:
-            os._exit(os.EX_IOERR)
+            exit(os.EX_IOERR)
 
         # Check if pdf is already OCR and searchable
-        checkOcr    = os.popen('pdffonts ' + file, 'r')
-        tmp         = ''
-        for line in checkOcr:
+        check_ocr = os.popen('pdffonts ' + file, 'r')
+        tmp = ''
+        for line in check_ocr:
             tmp += line
 
         if len(tmp.split('\n')) > 3:
-            isOcr = True
+            is_ocr = True
         else:
-            isOcr = False
+            is_ocr = False
     else:  # Open the picture
-        Image.open_img(file)
-        isOcr = False
+        image.open_img(file)
+        is_ocr = False
 
     if 'reconciliation' not in _process:
         # Get the OCR of the file as a string content
-        Ocr.text_builder(Image.img)
+        ocr.text_builder(image.img)
 
         # Find subject of document
-        subjectThread   = FindSubject(Ocr.text, Locale, Log)
+        subject_thread = FindSubject(ocr.text, locale, log)
 
         # Find date of document
-        dateThread      = FindDate(Ocr.text, Locale, Log, Config)
+        date_thread = FindDate(ocr.text, locale, log, config)
 
         # Find mail in document and check if the contact exist in Maarch
-        contactThread   = FindContact(Ocr.text, Log, Config, WebService, Locale)
+        contact_thread = FindContact(ocr.text, log, config, web_service, locale)
 
         # Launch all threads
-        dateThread.start()
-        subjectThread.start()
-        contactThread.start()
+        date_thread.start()
+        subject_thread.start()
+        contact_thread.start()
 
         # Wait for end of threads
-        dateThread.join()
-        subjectThread.join()
-        contactThread.join()
+        date_thread.join()
+        subject_thread.join()
+        contact_thread.join()
 
         # Get the returned values
-        date            = dateThread.date
-        subject         = subjectThread.subject
-        contact         = contactThread.contact
-        custom_mail     = contactThread.custom_mail
+        date = date_thread.date
+        subject = subject_thread.subject
+        contact = contact_thread.contact
+        custom_mail = contact_thread.custom_mail
 
     else:
-        date        = ''
-        subject     = ''
-        contact     = ''
+        date = ''
+        subject = ''
+        contact = ''
         custom_mail = ''
 
     try:
-        os.remove(Image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+        os.remove(image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
     except FileNotFoundError as e:
-        Log.error('Unable to delete first ocerised page ' + Image.jpgName + ' : ' + str(e))
+        log.error('Unable to delete first ocerised page ' + image.jpgName + ' : ' + str(e))
 
     # Create the searchable PDF if necessary
-    if isOcr is False:
-        Log.info('Start OCR on document before send it')
-        Ocr.generate_searchable_pdf(file, tmpFolder)
-        fileToSend = Ocr.searchablePdf
+    if is_ocr is False:
+        log.info('Start OCR on document before send it')
+        ocr.generate_searchable_pdf(file, tmp_folder)
+        file_to_send = ocr.searchablePdf
     else:
-        fileToSend = open(file, 'rb').read()
+        file_to_send = open(file, 'rb').read()
 
     if q is not None:
-        fileToStore = {
-            'fileToSend'    : fileToSend,
-            'file'          : file,
-            'date'          : date,
-            'subject'       : subject,
-            'contact'       : contact,
-            'destination'   : destination,
-            'process'       : _process,
-            'resId'         : args['resid'],
-            'chrono'        : args['chrono'],
+        file_to_store = {
+            'fileToSend': file_to_send,
+            'file': file,
+            'date': date,
+            'subject': subject,
+            'contact': contact,
+            'destination': destination,
+            'process': _process,
+            'resId': args['resid'],
+            'chrono': args['chrono'],
             'isInternalNote': args['isinternalnote'],
-            Config.cfg[_process]['custom_mail'] : custom_mail
+            config.cfg[_process]['custom_mail']: custom_mail
         }
 
-        q.put(fileToStore)
+        q.put(file_to_store)
 
         return q
     else:
-        if 'is_attachment' in Config.cfg[_process] and Config.cfg[_process]['is_attachment'] != '':
+        if 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
             if args['isinternalnote']:
-                res = WebService.insert_attachment(fileToSend, Config, args['resid'], _process)
+                res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
             else:
-                res = WebService.insert_attachment_reconciliation(fileToSend, args['chrono'], _process)
+                res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process)
         else:
-            res = WebService.insert_with_args(fileToSend, Config, contact, subject, date, destination, _process, custom_mail)
+            res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, _process, custom_mail)
 
         if res:
-            Log.info("Insert OK : " + res)
+            log.info("Insert OK : " + res)
             try:
                 os.remove(file)
             except FileNotFoundError as e:
-                Log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
+                log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
             return True
         else:
-            shutil.move(file, Config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
             return False

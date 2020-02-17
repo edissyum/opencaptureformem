@@ -18,15 +18,21 @@
 import ocrmypdf
 import pytesseract
 
+
 class PyTesseract:
-    def __init__(self, locale, Log):
-        self.Log                = Log
-        self.text               = ''
-        self.tool               = ''
-        self.lang               = locale
-        self.searchablePdf      = ''
+    def __init__(self, locale, log):
+        self.Log = log
+        self.text = ''
+        self.tool = ''
+        self.lang = locale
+        self.searchablePdf = ''
 
     def text_builder(self, img):
+        """
+        OCRise image to simple string contains all the text
+
+        :param img: Path to image file which will be ocresised
+        """
         try:
             self.text = pytesseract.image_to_string(
                 img,
@@ -35,9 +41,15 @@ class PyTesseract:
         except pytesseract.pytesseract.TesseractError as t:
             self.Log.error('Tesseract ERROR : ' + str(t))
 
-    def generate_searchable_pdf(self, pdf, tmpPath):
+    def generate_searchable_pdf(self, pdf, tmp_path):
+        """
+        Start from standard PDF, with no OCR, and create a searchable PDF, with OCR. Thanks to ocrmypdf python lib
+
+        :param pdf: Path to original pdf (not searchable, without OCR)
+        :param tmp_path: Path to store the final pdf, searchable with OCR
+        """
         try:
-            ocrmypdf.ocr(pdf, tmpPath + '/result.pdf', language=self.lang, skip_text = True, progress_bar = False)
-            self.searchablePdf = open(tmpPath + '/result.pdf', 'rb').read()
+            ocrmypdf.ocr(pdf, tmp_path + '/result.pdf', language=self.lang, skip_text=True, progress_bar=False)
+            self.searchablePdf = open(tmp_path + '/result.pdf', 'rb').read()
         except ocrmypdf.exceptions.PriorOcrFoundError as e:
             self.Log.error(e)

@@ -17,6 +17,7 @@
 
 from configparser import ConfigParser, ExtendedInterpolation
 
+
 class Config:
     def __init__(self, path):
         self.cfg = {}
