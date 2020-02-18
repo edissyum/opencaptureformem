@@ -54,6 +54,7 @@ Systemd is perfect for one instance
 
     $ sudo chmod u+x Makefile
     $ sudo ./Makefile
+        # Answer the few questions asked at launch
         # Go grab a coffee ;)
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
 
@@ -117,6 +118,13 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 > Replace : %/ICCProfile (srgb.icc) % Customise
 > By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
+# Update
+
+The process of update is very simple. But before you need to modify the file and change lines **34** to put the user and group you want instead of default (edissyum) :
+
+    $ cd /opt/maarch/OpenCapture/install/
+    $ chmod u+x update.sh
+    $ sudo ./update.sh
 
 # Informations
 ## QRCode separation

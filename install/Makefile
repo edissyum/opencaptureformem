@@ -41,9 +41,8 @@ fi
 
 ####################
 # Install package
-if [[ "$OS" = 'Debian' && "$VER" == *'9'* ]]
-then
-su -c 'cat > /etc/apt/sources.list.d/stretch-backports.list << EOF
+if [[ "$OS" = 'Debian' && "$VER" == *'9'* ]]; then
+  su -c 'cat > /etc/apt/sources.list.d/stretch-backports.list << EOF
 deb http://http.debian.net/debian stretch-backports main contrib non-free
 EOF'
   apt update
@@ -51,20 +50,19 @@ EOF'
   apt install -y -t stretch-backports tesseract-ocr-fra
   apt install -y -t stretch-backports tesseract-ocr-eng
 
-elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && $VER == *'10'* ]]
-then
+elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && $VER == *'10'* ]]; then
   apt update
   apt install -y tesseract-ocr
   apt install -y tesseract-ocr-fra
   apt install -y tesseract-ocr-eng
 fi
 
-cat apt-requirements.txt | xargs apt install -y
+xargs -a apt-requirements.txt apt install
 pip3 install --upgrade pip
 pip3 install -r pip-requirements.txt
 
 cd $defaultPath || exit 2
-find -name ".gitkeep" -delete
+find . -name ".gitkeep" -delete
 
 ####################
 # Makes scripts executable
