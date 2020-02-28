@@ -16,7 +16,6 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
-import sys
 from datetime import datetime
 from threading import Thread
 
@@ -69,6 +68,3 @@ class FindDate(Thread):
                 self.Log.info("Date wasn't in a good format : " + self.date)
                 self.date = ''
                 continue
-
-        # Stop the thread
-        sys.exit()

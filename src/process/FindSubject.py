@@ -16,7 +16,6 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
-import sys
 from threading import Thread
 
 
@@ -39,7 +38,7 @@ class FindSubject(Thread):
             if len(_subject.group()) > 3:
                 # Using the [:-2] to delete the ".*" of the regex
                 # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
-                subject_array.append( _subject.group())
+                subject_array.append(_subject.group())
 
         # If there is more than one subject found, prefer the "Object" one instead of "Ref"
         if len(subject_array) > 1:
@@ -57,9 +56,6 @@ class FindSubject(Thread):
 
         if self.subject is not '':
             self.Log.info("Find the following subject : " + self.subject)
-
-        # Stop the thread
-        sys.exit()
 
 
 def loop_find_subject(array, compile_pattern):
