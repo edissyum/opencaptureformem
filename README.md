@@ -118,6 +118,8 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 
 # IMAP Connector (MailCapture for Open-Capture For Maarch)
 You have the possibility to capture e-mail directly from your inbox.  
+
+    $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini 
 Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.

@@ -9,7 +9,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
-defaultPath=/opt/maarch/OpenCapture
+defaultPath=/opt/maarch/OpenCapture/
 
 ####################
 # User choice
