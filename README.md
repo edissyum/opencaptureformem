@@ -1,7 +1,8 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-# Open-Capture for Maarch  19.04
+Version 3.0
 
+# Open-Capture for Maarch  19.04
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of OC for Maarch are :
@@ -13,7 +14,7 @@ The functionnalities of OC for Maarch are :
  - OCR and text recognition :
     - Find a date and use it as metadata
     - Find a mail, phone or URL to reconciliate with an existing contact in Maarch
-    - Find an object and use it as metadata
+    - Find a subject and use it as metadata
  - Insert documents in Maarch with pre-qualified metadata :
     - Destination with QRCode
     - Date, contact, object with text recognition
@@ -22,14 +23,13 @@ The functionnalities of OC for Maarch are :
  - Fully logged, infos and errors
  - For now it deals only with **PDF** or **JPG** files
  - Check integrity of a file to avoid processing incomplete files
- - Handle different process type
+ - Handle different process type (List of default process in config.ini : <code>processAvailable</code>) 
  - QR Code recognition from a file to reconcile it with the original document
 
 # Installation
-
 ## Linux Distributions
-
 Tested with :
+- Ubuntu 18.04 with Python 3.7.4 & Tesseract v4.0.0-beta.1 (Used for development)
 - Ubuntu 18.10 with Python 3.7.1 & Tesseract v4.0.0-beta.1
 - Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0-beta.1
 - Ubuntu Server 18.04.3 with Python 3.6.9 & Tesseract v4.0.0-beta.1
@@ -39,15 +39,14 @@ Tested with :
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
 
 ## Install Open-Capture for Maarch
-
 Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 2.10 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 3.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
-The ./Makefile command create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **121**
+The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **121**
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
@@ -57,6 +56,7 @@ Systemd is perfect for one instance
         # Answer the few questions asked at launch
         # Go grab a coffee ;)
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
+    $ mv /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
   It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
@@ -65,7 +65,6 @@ Systemd is perfect for one instance
   Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
 ## Set up the incron & the cron to start the service
-
 We want to automatise the capture of document. For that, we'll use incrontab.
 First, add your user into the following file :
 
@@ -98,7 +97,6 @@ Here is some examples of possible usages in the launch_XX.sh script:
 
 
 ## WebServices for Maarch 19.04
-
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
@@ -113,13 +111,51 @@ Just report the modifications onto you Maarch installation
 ## Various
 If you want to generate PDF/A instead of PDF, you have to do the following :
 
-> cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/
-> nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps
-> Replace : %/ICCProfile (srgb.icc) % Customise
-> By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
+    $ cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/
+    $ nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps
+    Replace : %/ICCProfile (srgb.icc) % Customise
+    By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
-# Update
+# IMAP Connector (MailCapture for Open-Capture For Maarch)
+You have the possibility to capture e-mail directly from your inbox.  
+Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
+Add other process if you want to capture more than one mailbox or multiple folder,
+by copying <code>MAIL_1</code> and just change the name.
 
+I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>   
+Then edit <code>/opt/maarch/OpenCapture/scripts/launch_MAIL.sh</code> and copy the following line
+and change the <code>MAIL_1</code> with the new process name 
+
+    python3 "$OCPath"/launch_worker_mail.py -c "$OCPath"/src/config/config.ini -cm "$OCPath"/src/config/mail.ini --process MAIL_1    
+
+Here is a short list of options you have for mail process into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>
+
+  - hostname, port, login, password : All the informations about the inbox 
+  - isSSL : Choose between True or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>isSSL</code> is True, port must be 993
+  - folderToCrawl : Which folder needed to be crawl by connector to process email
+  - folderDestination : if <code>actionAfterProcess</code> is <code>move</code> specify in which folder we had to move the e-mail after process
+  - folderTrash : if <code>actionAfterProcess</code> is <code>delete</code>, specify the name of trash folder. If we use the IMAP delete function, the mail cannot be retrieve
+  - actionAfterProcess : <code>move</code>, <code>delete</code> or <code>none</code>
+  - importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
+
+Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCapture/check_folders.py</code> with your hosts informations
+
+To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script : 
+
+     */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/MailCapture/launch_MAIL.sh >/dev/null 2>&1
+
+By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
+
+## Clean MailCapture batches
+When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
+To avoid lack of memory on the server, do not forget to cron the <code>clean.sh</code> script : 
+
+    0 2 * * 1-5   /opt/maarch/OpenCapture/scripts/MailCapture/clean.sh >/dev/null 2>&1
+
+By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
+delete all the batch folder older than 7 days
+
+# Update Open-Capture For Maarch 19.04
 The process of update is very simple. But before you need to modify the file and change lines **34** to put the user and group you want instead of default (edissyum) :
 
     $ cd /opt/maarch/OpenCapture/install/
@@ -128,17 +164,15 @@ The process of update is very simple. But before you need to modify the file and
 
 # Informations
 ## QRCode separation
-
 Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
 
 ## Configuration
-
 The file <code>src/config/config.ini</code> is splitted in different categories
 
  - Global
     - Choose the number of threads used to multi-threads (5 by defaults)
     - Resolution and compressionQuality when PDF are converted to JPG
-    - String use to sanitize char when mail detection
+    - List of char to be remove to sanitize detected email
     - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
     - tmpPath, no need to modify
     - errorPath, no need to modify
@@ -157,16 +191,17 @@ The file <code>src/config/config.ini</code> is splitted in different categories
     - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
   - OCForMaarch
     - Link to **/rest** API of Maarch with User and Password
+    - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
+    - Uppercase the subject automatically
   - OCForMaarch_**process_name**
      - Default metadata to insert documents (type_id, status, typist, priority, format, category_id and destination)
 
 ## Apache modifications
-
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
-> /etc/php/7.X/apache2/php.ini
+
+>/etc/php/7.X/apache2/php.ini
 
 By default it is recommended to replace **8M** by **20M** or more if needed
 
 # LICENSE
-
 Open-Capture for Maarch is released under the GPL v3.

@@ -32,6 +32,7 @@ import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
 from src.process.OCForMaarch import process
+from src.classes.Mail import move_batch_to_error
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
 
@@ -44,7 +45,10 @@ OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 m = Manager(OCforMaarch)
 
 
-def run_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder):
+def fill_queue(
+        args: dict, path: str, log: logClass.Log, separator: separatorClass.Separator, config: configClass.Config,
+        image: imagesClass.Image, ocr: ocrClass.PyTesseract, locale: localeClass.Locale, web_service: webserviceClass.WebServices,
+        tmp_folder: str) -> None:
     """
     Run queue to handle multiple process running at the same time
 
@@ -70,7 +74,7 @@ def run_queue(args, path, log, separator, config, image, ocr, locale, web_servic
         run_queue(q, config, image, log, web_service, ocr)
 
 
-def check_file(image, path, config, log):
+def check_file(image: imagesClass.Image, path: str, config: configClass.Config, log: logClass.Log) -> bool:
     """
     Check integrity of file
 
@@ -87,25 +91,27 @@ def check_file(image, path, config, log):
         return True
 
 
-def recursive_delete(folder, log):
+def recursive_delete(list_folder: list, log: logClass.Log):
     """
     Delete recusively a folder (temporary folder)
 
-    :param folder: Folder to recursively delete
+    :param list_folder: list of folder to recursively delete
     :param log: Class Log instance
     """
-    for file in os.listdir(folder):
-        try:
-            os.remove(folder + '/' + file)
-        except FileNotFoundError as e:
-            log.error('Unable to delete ' + folder + '/' + file + ' on temp folder: ' + str(e))
-    try:
-        os.rmdir(folder)
-    except FileNotFoundError as e:
-        log.error('Unable to delete ' + folder + ' on temp folder: ' + str(e))
+    for folder in list_folder:
+        if os.path.exists(folder):
+            for file in os.listdir(folder):
+                try:
+                    os.remove(folder + '/' + file)
+                except FileNotFoundError as e:
+                    log.error('Unable to delete ' + folder + '/' + file + ' on temp folder: ' + str(e))
+            try:
+                os.rmdir(folder)
+            except FileNotFoundError as e:
+                log.error('Unable to delete ' + folder + ' on temp folder: ' + str(e))
 
 
-def timer(start_time, end_time):
+def timer(start_time: time.time(), end_time: time.time()):
     """
     Show how long the process takes
 
@@ -119,12 +125,18 @@ def timer(start_time, end_time):
 
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
-@OCforMaarch.task()
+# @OCforMaarch.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
-    config = configClass.Config(args['config'])
-    log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+    config = configClass.Config()
+    config.load_file(args['config'])
+
+    if args.get('isMail') is not None:
+        log = logClass.Log(args['log'])
+    else:
+        log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
     locale = localeClass.Locale(config)
@@ -145,7 +157,7 @@ def launch(args):
     )
 
     # Start process
-    if args['path'] is not None:
+    if args.get('path') is not None:
         path = args['path']
         if separator.enabled == 'True' and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
@@ -154,9 +166,9 @@ def launch(args):
             path = separator.output_dir_pdfa if separator.convert_to_pdfa == 'True' else separator.output_dir
 
         # Create the Queue to store files
-        run_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+        fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
 
-    elif args['file'] is not None:
+    elif args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
             if separator.enabled == 'True' and args['process'] == 'incoming':
@@ -167,18 +179,36 @@ def launch(args):
                     path = separator.output_dir_pdfa if separator.convert_to_pdfa == 'True' else separator.output_dir
 
                     # Create the Queue to store files
-                    run_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+                    fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
             else:
                 if check_file(image, path, config, log):
                     # Process the file and send it to Maarch
-                    process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+                    res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+                    if args.get('isMail') is not None and args.get('isMail') is True:
+                        # Process the attachments of mail
+                        if res:
+                            res_id = res['resId']
+                            if len(args['attachments']) > 0:
+                                log.info('Found ' + str(len(args['attachments'])) + ' attachments')
+                                for attachment in args['attachments']:
+                                    res = web_service.insert_attachment_from_mail(attachment, res_id)
+                                    if res:
+                                        log.info('Insert attachment OK : ' + str(res))
+                                        continue
+                                    else:
+                                        move_batch_to_error(args['batch_path'], args['error_path'])
+                                        log.error('Error while inserting attachment : ' + str(res))
+                            else:
+                                log.info('No attachments found')
+                        else:
+                            move_batch_to_error(args['batch_path'], args['path_without_time'] + '/_ERROR')
+                            log.error('Error while processing e-mail : ' + str(res))
+
+                        recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
+                        log.info('End process')
 
     # Empty the tmp dir to avoid residual file
-    recursive_delete(tmp_folder, log)
-
-    if separator.enabled == 'True':
-        recursive_delete(separator.output_dir, log)
-        recursive_delete(separator.output_dir_pdfa, log)
+    recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
 
     end = time.time()
     log.info('Process end after ' + timer(start, end) + '')

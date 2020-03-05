@@ -1,0 +1,27 @@
+[GLOBAL]
+batchPath             = /opt/maarch/OpenCapture/data/MailCapture/
+# True or False
+importOnlyAttachments = True
+
+[MAIL_1]
+host                = imap.gmail.com
+port                = 993
+login               = test@gmail.com
+password            = test
+# True or False
+isSSL               = True
+folderToCrawl       = _MAARCH
+folderDestination   = _MAARCH_ARCHIVES
+# If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
+folderTrash         = Trash
+# move, delete or none
+actionAfterProcess  = move
+category_id         = incoming
+priority            = poiuytre1357nbvc
+status              = MAQUAL
+type_id             = 103
+typist              = scan
+destination         = COU
+custom_mail_from    = custom_t10
+custom_mail_to      = custom_t11
+custom_mail_cc      = custom_t12

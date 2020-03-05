@@ -17,6 +17,8 @@
 
 import os
 import shutil
+import sys
+
 from .FindDate import FindDate
 from .FindSubject import FindSubject
 from .FindContact import FindContact
@@ -26,30 +28,36 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     log.info('Processing file : ' + file)
 
     # Check if the choosen process mode if available. If not take the default one
-    if args['process'] in config.cfg['OCForMaarch']['processavailable'].split(','):
-        _process = 'OCForMaarch_' + args['process'].lower()
+    if args.get('isMail') is not None and args.get('isMail') is True:
+        _process = args['process']
     else:
-        _process = 'OCForMaarch_' + config.cfg['OCForMaarch']['defaultprocess'].lower()
+        if args['process'] in config.cfg['OCForMaarch']['processavailable'].split(','):
+            _process = 'OCForMaarch_' + args['process'].lower()
+        else:
+            _process = 'OCForMaarch_' + config.cfg['OCForMaarch']['defaultprocess'].lower()
 
     log.info('Using the following process : ' + _process)
+
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
-    if args['RDFF']:
+    if args.get('RDFF') is not None:
         file_name = os.path.basename(file)
         if separator.divider not in file_name:
             destination = config.cfg[_process]['destination']
         else:
             destination = file_name.split(separator.divider)[0]
+
     # Or from the destination arguments
-    elif args['destination']:
+    elif args.get('destination') is not None:
         destination = args['destination']
+    elif args.get('isMail') is not None and args.get('isMail') is True:
+        destination = args['data']['destination']
     else:
         destination = config.cfg[_process]['destination']
 
-    if os.path.splitext(file)[1] == '.pdf':  # Open the pdf and convert it to JPG
+    if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
         res = image.pdf_to_jpg(file + '[0]', True)
         if res is False:
             exit(os.EX_IOERR)
-
         # Check if pdf is already OCR and searchable
         check_ocr = os.popen('pdffonts ' + file, 'r')
         tmp = ''
@@ -60,23 +68,31 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             is_ocr = True
         else:
             is_ocr = False
+    elif os.path.splitext(file)[1].lower() == '.html':
+        res = image.html_to_txt(file)
+        if res is False:
+            sys.exit(os.EX_IOERR)
+
+        ocr.text = res
+        is_ocr = True
+    elif os.path.splitext(file)[1].lower() == '.txt':
+        ocr.text = open(file, 'r').read()
+        is_ocr = True
     else:  # Open the picture
         image.open_img(file)
         is_ocr = False
 
     if 'reconciliation' not in _process:
         # Get the OCR of the file as a string content
-        ocr.text_builder(image.img)
+        if args.get('isMail') is None or args.get('isMail') is False and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+            ocr.text_builder(image.img)
 
         # Find subject of document
         subject_thread = FindSubject(ocr.text, locale, log)
-
         # Find date of document
         date_thread = FindDate(ocr.text, locale, log, config)
-
         # Find mail in document and check if the contact exist in Maarch
         contact_thread = FindContact(ocr.text, log, config, web_service, locale)
-
         # Launch all threads
         date_thread.start()
         subject_thread.start()
@@ -92,7 +108,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         subject = subject_thread.subject
         contact = contact_thread.contact
         custom_mail = contact_thread.custom_mail
-
     else:
         date = ''
         subject = ''
@@ -101,8 +116,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     try:
         os.remove(image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
-    except FileNotFoundError as e:
-        log.error('Unable to delete first ocerised page ' + image.jpgName + ' : ' + str(e))
+    except FileNotFoundError:
+        pass
 
     # Create the searchable PDF if necessary
     if is_ocr is False:
@@ -124,28 +139,50 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             'resId': args['resid'],
             'chrono': args['chrono'],
             'isInternalNote': args['isinternalnote'],
-            config.cfg[_process]['custom_mail']: custom_mail
+            config.cfg[_process]['custom_mail']: custom_mail,
         }
 
         q.put(file_to_store)
 
         return q
     else:
-        if 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
+        if args.get('isMail') is not None and args.get('isMail') is True:
+            if subject != '':
+                args['data']['subject'] = subject
+            if contact != '':
+                args['data']['address_id'] = contact['id']
+                args['data']['exp_contact_id'] = contact['contact_id']
+
+            res = web_service.insert_letterbox_from_mail(args['data'])
+            if res:
+                log.info('Insert email OK : ' + str(res))
+                return res
+            else:
+                try:
+                    shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                except shutil.Error as e:
+                    log.error('Moving file ' + file + ' error : ' + str(e))
+                return False
+
+        elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
             if args['isinternalnote']:
                 res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
             else:
                 res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process)
         else:
-            res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, _process, custom_mail)
+            res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 
         if res:
             log.info("Insert OK : " + res)
-            try:
-                os.remove(file)
-            except FileNotFoundError as e:
-                log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
+            if args.get('isMail') is None:
+                try:
+                    os.remove(file)
+                except FileNotFoundError as e:
+                    log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
             return True
         else:
-            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+            try:
+                shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+            except shutil.Error as e:
+                log.error('Moving file ' + file + ' error : ' + str(e))
             return False
