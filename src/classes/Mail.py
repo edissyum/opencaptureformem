@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import re
 import sys
 import shutil
 import base64
@@ -102,11 +103,16 @@ class Mail:
         if len(msg.html) == 0:
             file_format = 'txt'
             file = backup_path + '/mail_origin/body.txt'
-            # file_content = open(backup_path + '/mail_origin/body.txt', 'rb').read()
         else:
             file_format = 'html'
             file = backup_path + '/mail_origin/body.html'
-            # file_content = open(backup_path + '/mail_origin/body.html', 'rb').read()
+
+        pattern = "^[^<]+<([^>]+).*"
+        search = re.search(pattern, str(msg.obj['Reply-To']))
+        if search:
+            reply_to = search.group(1)
+        else:
+            reply_to = ''
 
         data = {
             'mail': {
@@ -115,6 +121,7 @@ class Mail:
                 'status': cfg['status'],
                 'type_id': cfg['type_id'],
                 'category_id': cfg['category_id'],
+                'nature_id': cfg['nature_id'],
                 'format': file_format,
                 'typist': cfg['typist'],
                 'subject': msg.subject,
@@ -122,7 +129,8 @@ class Mail:
                 'doc_date': str(msg.date),
                 cfg['custom_mail_from']: msg.from_[:254],  # 254 to avoid too long string (maarch custom is limited to 255 char)
                 cfg['custom_mail_to']: to_str[:-1][:254],  # 254 to avoid too long string (maarch custom is limited to 255 char)
-                cfg['custom_mail_cc']: cc_str[:-1][:254]   # 254 to avoid too long string (maarch custom is limited to 255 char)
+                cfg['custom_mail_cc']: cc_str[:-1][:254],   # 254 to avoid too long string (maarch custom is limited to 255 char)
+                cfg['custom_mail_reply_to']: reply_to[:254]   # 254 to avoid too long string (maarch custom is limited to 255 char)
             },
             'attachments': []
         }
