@@ -64,6 +64,9 @@ pip3 install -r pip-requirements.txt
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
 
+
+git config core.fileMode False
+
 ####################
 # Makes scripts executable
 chmod u+x scripts/*.sh

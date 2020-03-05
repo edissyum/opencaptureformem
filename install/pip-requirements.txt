@@ -5,6 +5,7 @@ pillow
 kuyruk
 ocrmypdf
 requests
+imap-tools
 pytesseract
 configparser
 kuyruk_manager

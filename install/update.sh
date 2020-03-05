@@ -21,6 +21,7 @@ git pull
 git stash # Remove custom code if needed
 latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
 git checkout "$latest_tag"
+git config core.fileMode False
 
 # Force launch of apt and pip requirements
 # in case of older version without somes packages/libs
