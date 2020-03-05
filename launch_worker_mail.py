@@ -80,7 +80,7 @@ if ConfigMail.cfg.get(process) is None:
 global_log = logClass.Log(Config.cfg['GLOBAL']['logfile'])
 
 now = datetime.datetime.now()
-path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + str('%02d' % now.day) + str('%02d' % now.month) + str('%02d' % now.year) + '/'
+path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
 path_without_time = ConfigMail.cfg['GLOBAL']['batchpath']
 
 Mail = mailClass.Mail(
@@ -124,7 +124,7 @@ if check:
             now = datetime.datetime.now()
             if not os.path.exists(path):
                 os.mkdir(path)
-            date_batch = str('%02d' % now.day) + str('%02d' % now.month) + str('%02d' % now.year) + '_' + str('%02d' % now.hour) + str('%02d' % now.minute) + str('%02d' % now.second) + str('%02d' % now.microsecond)
+            date_batch = str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '_' + str('%02d' % now.hour) + str('%02d' % now.minute) + str('%02d' % now.second) + str('%02d' % now.microsecond)
             batch_path = tempfile.mkdtemp(dir=path, prefix='BATCH_' + date_batch + '_')
 
             Log = logClass.Log(batch_path + '/' + date_batch + '.log')
@@ -146,26 +146,6 @@ if check:
                     'batch_path': batch_path,
                     'error_path': path_without_time + '/_ERROR'
                 })
-
-                # if res:
-                #     res_id = res['resId']
-                #     if len(ret['attachments']) > 0:
-                #         Log.info('Found ' + str(len(ret['attachments'])) + ' attachments')
-                #         for attachment in ret['attachments']:
-                #             res = web_service.insert_attachment_from_mail(attachment, res_id)
-                #             if res:
-                #                 Log.info('Insert attachment OK : ' + str(res))
-                #                 continue
-                #             else:
-                #                 Log.error('Error while inserting attachment. Exit...')
-                #                 sys.exit(0)
-                #     else:
-                #         Log.info('No attachments found')
-                # else:
-                #     # Mail.move_batch_to_error(batch_path, path_without_time + '/_ERROR')
-                #     Log.error('Error while processing e-mail : ' + str(res))
-                #     Log.error('Exit...')
-                #     sys.exit(0)
             else:
                 Log.info('Start to process only attachments')
                 if len(ret['attachments']) > 0:

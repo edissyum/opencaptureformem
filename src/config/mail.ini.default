@@ -1,7 +1,7 @@
 [GLOBAL]
 batchPath             = /opt/maarch/OpenCapture/data/MailCapture/
 # True or False
-importOnlyAttachments = True
+importOnlyAttachments = False
 
 [MAIL_1]
 host                = imap.gmail.com
@@ -20,8 +20,10 @@ category_id         = incoming
 priority            = poiuytre1357nbvc
 status              = MAQUAL
 type_id             = 103
+nature_id           = email
 typist              = scan
 destination         = COU
 custom_mail_from    = custom_t10
 custom_mail_to      = custom_t11
 custom_mail_cc      = custom_t12
+custom_mail_reply_to= custom_t13

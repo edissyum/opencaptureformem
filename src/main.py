@@ -125,7 +125,7 @@ def timer(start_time: time.time(), end_time: time.time()):
 
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
-# @OCforMaarch.task()
+@OCforMaarch.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
@@ -201,7 +201,7 @@ def launch(args):
                             else:
                                 log.info('No attachments found')
                         else:
-                            move_batch_to_error(args['batch_path'], args['path_without_time'] + '/_ERROR')
+                            move_batch_to_error(args['batch_path'], args['error_path'])
                             log.error('Error while processing e-mail : ' + str(res))
 
                         recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
