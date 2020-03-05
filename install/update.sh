@@ -16,7 +16,7 @@ cp -r "$OCPath" "$backupPath"
 # Retrieve the last tags from gitlab
 cd "$OCPath" || exit 1
 git config --global user.email "update@ocformaarch"
-git config --global user.name "Update OpenCapture"
+git config --global user.name "Update Open-Capture"
 git pull
 git stash # Remove custom code if needed
 latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")

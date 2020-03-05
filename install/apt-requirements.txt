@@ -7,6 +7,7 @@ zbar-tools
 pkg-config
 imagemagick
 python3-pip
+python3-lxml
 poppler-utils
 rabbitmq-server
 libtesseract-dev

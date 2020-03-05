@@ -1,3 +1,4 @@
+bs4
 wand
 pyPdf2
 pillow

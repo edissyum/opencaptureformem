@@ -108,12 +108,12 @@ class WebServices:
 
         data = {
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
-            'priority': config.cfg[_process]['priority'],
-            'status': config.cfg[_process]['status'],
-            'type_id': config.cfg[_process]['type_id'],
-            'format': config.cfg[_process]['format'],
-            'category_id': config.cfg[_process]['category_id'],
-            'typist': config.cfg[_process]['typist'],
+            'priority': _process['priority'],
+            'status': _process['status'],
+            'type_id': _process['type_id'],
+            'format': _process['format'],
+            'category_id': _process['category_id'],
+            'typist': _process['typist'],
             'subject': subject,
             'destination': destination,
             'address_id': contact['id'],
@@ -122,7 +122,7 @@ class WebServices:
         }
 
         if 'reconciliation' not in _process:
-            data[config.cfg[_process]['custom_mail']] = custom_mail[:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+            data[_process['custom_mail']] = custom_mail[:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
 
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
@@ -159,7 +159,7 @@ class WebServices:
                 {'column': 'res_id_master', 'value': res_id, 'type': 'string'}
             ],
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
-            'fileFormat': config.cfg[_process]['format'],
+            'format': config.cfg[_process]['format'],
         }
 
         try:
@@ -216,3 +216,56 @@ class WebServices:
             return False
         else:
             return json.loads(res.text)
+
+    def insert_letterbox_from_mail(self, args):
+        args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
+        del args['file']
+        try:
+            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMaarchError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
+            return False
+
+    def insert_attachment_from_mail(self, args, res_id):
+        """
+        Insert attachment into Maarch database
+
+        :param args: Arguments used to insert attachment
+        :param res_id: Res_id of the document to attach the new attachment
+        :return: res_id from Maarch
+        """
+
+        data = {
+            'resId': res_id,
+            'status': args['status'],
+            'collId': 'letterbox_coll',
+            'table': 'res_attachments',
+            'data': [
+                {'column': 'title', 'value': args['subject'], 'type': 'string'},
+                {'column': 'attachment_type', 'value': 'simple_attachment', 'type': 'string'},
+                {'column': 'coll_id', 'value': 'letterbox_coll', 'type': 'string'},
+                {'column': 'res_id_master', 'value': res_id, 'type': 'string'}
+            ],
+            'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
+            'format': args['format'],
+        }
+
+        try:
+            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMaarchError : ' + str(res.text))
+                return False
+            else:
+                return res.text
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
+            return False

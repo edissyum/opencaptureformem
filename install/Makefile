@@ -67,6 +67,7 @@ find . -name ".gitkeep" -delete
 ####################
 # Makes scripts executable
 chmod u+x scripts/*.sh
+chmod u+x scripts/MailCapture/*.sh
 
 ####################
 # Create the service systemd or supervisor

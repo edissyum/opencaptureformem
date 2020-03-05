@@ -15,16 +15,23 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-from configparser import ConfigParser, ExtendedInterpolation
+from configparser import ConfigParser, ExtendedInterpolation, Error
 
 
 class Config:
-    def __init__(self, path):
+    def __init__(self):
         self.cfg = {}
+
+    def load_file(self, path):
         # ExtendedInterpolation is needed to use var into the config.ini file
-        parser = ConfigParser(interpolation=ExtendedInterpolation())
-        parser.read(path)
-        for section in parser.sections():
-            self.cfg[section] = {}
-            for info in parser[section]:
-                self.cfg[section][info] = parser[section][info]
+        try:
+            parser = ConfigParser(interpolation=ExtendedInterpolation())
+            parser.read(path)
+            for section in parser.sections():
+                self.cfg[section] = {}
+                for info in parser[section]:
+                    self.cfg[section][info] = parser[section][info]
+            return True
+        except Error as e:
+            print('Error while parse .INI file : ' + str(e))
+            return False

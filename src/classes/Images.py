@@ -19,11 +19,12 @@ import os
 import time
 import shutil
 
+from bs4 import BeautifulSoup
 import PyPDF2
 from PIL import Image
 from wand.color import Color
 from wand.image import Image as Img
-from wand import exceptions as wandExcept
+from wand import exceptions as wand_except
 
 
 class Images:
@@ -36,7 +37,25 @@ class Images:
         self.Log = log
         self.Config = config.cfg
 
-    def pdf_to_jpg(self, pdf_name, open_img = True):
+    def html_to_txt(self, html_name):
+        """
+        Convert html to txt (do not OCRise HTML)
+
+        :param html_name: Path to the html
+        :return: Boolean to show if the process ended well
+        """
+
+        try:
+            html_content = open(html_name, 'r').read()
+            bs_content = BeautifulSoup(html_content, 'lxml')
+            html_content = bs_content.get_text('\n')
+        except (OSError, FileNotFoundError) as e:
+            self.Log.error('Error while converting HTML to raw text : ' + str(e))
+            return False
+
+        return html_content
+
+    def pdf_to_jpg(self, pdf_name, open_img=True):
         """
         Convert the first page of PDF to JPG and open the image
 
@@ -80,15 +99,15 @@ class Images:
                 pic.alpha_channel = 'remove'
                 pic.save(filename=output)
 
-        except wandExcept.WandRuntimeError as e:
+        except wand_except.WandRuntimeError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...Fix the issue and restart the service')
             return False
-        except wandExcept.CacheError as e:
+        except wand_except.CacheError as e:
             self.Log.error(e)
             self.Log.error('Exiting program...Fix the issue and restart the service')
             return False
-        except wandExcept.PolicyError as e:
+        except wand_except.PolicyError as e:
             self.Log.error(e)
             self.Log.error('Maybe you have to check the PDF rights in ImageMagick policy.xml file')
             self.Log.error('Exiting programm...Fix the issue and restart the service')
@@ -119,6 +138,8 @@ class Images:
                                 return False
                             else:
                                 return True
+                        elif file.endswith('.html') or file.endswith('.txt'):
+                            return True
                         elif file.endswith('.jpg'):
                             try:
                                 Image.open(file)
