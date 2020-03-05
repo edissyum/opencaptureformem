@@ -20,11 +20,11 @@ from socket import gaierror
 from imaplib import IMAP4_SSL
 from imap_tools import MailBox
 
-hostname = 'outlook.office365.com'
+hostname = ''
 port = 993
 isSSL = True
-login = 'nathan.cheval@outlook.fr'
-password = 'kqlcleavrtrgpdoi'
+login = ''
+password = ''
 
 try:
     conn = MailBox(host=hostname, port=port, ssl=isSSL)
