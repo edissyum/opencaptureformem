@@ -4,26 +4,28 @@ batchPath             = /opt/maarch/OpenCapture/data/MailCapture/
 importOnlyAttachments = False
 
 [MAIL_1]
-host                = imap.gmail.com
-port                = 993
-login               = test@gmail.com
-password            = test
+host                  = imap.gmail.com
+port                  = 993
+login                 = test@gmail.com
+password              = test
 # True or False
-isSSL               = True
-folderToCrawl       = _MAARCH
-folderDestination   = _MAARCH_ARCHIVES
+priorityToMailSubject = False
+# True or False
+isSSL                = True
+folderToCrawl        = _MAARCH
+folderDestination    = _MAARCH_ARCHIVES
 # If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
-folderTrash         = Trash
+folderTrash          = Trash
 # move, delete or none
-actionAfterProcess  = move
-category_id         = incoming
-priority            = poiuytre1357nbvc
-status              = MAQUAL
-type_id             = 103
-nature_id           = email
-typist              = scan
-destination         = COU
-custom_mail_from    = custom_t10
-custom_mail_to      = custom_t11
-custom_mail_cc      = custom_t12
-custom_mail_reply_to= custom_t13
+actionAfterProcess   = move
+category_id          = incoming
+priority             = poiuytre1357nbvc
+status               = MAQUAL
+type_id              = 103
+nature_id            = email
+typist               = scan
+destination          = COU
+custom_mail_from     = custom_t10
+custom_mail_to       = custom_t11
+custom_mail_cc       = custom_t12
+custom_mail_reply_to = custom_t13

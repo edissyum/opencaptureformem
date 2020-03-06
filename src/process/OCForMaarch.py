@@ -88,24 +88,36 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             ocr.text_builder(image.img)
 
         # Find subject of document
-        subject_thread = FindSubject(ocr.text, locale, log)
+        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
+            pass
+        else:
+            subject_thread = FindSubject(ocr.text, locale, log)
         # Find date of document
         date_thread = FindDate(ocr.text, locale, log, config)
         # Find mail in document and check if the contact exist in Maarch
         contact_thread = FindContact(ocr.text, log, config, web_service, locale)
         # Launch all threads
         date_thread.start()
-        subject_thread.start()
+        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
+            pass
+        else:
+            subject_thread.start()
         contact_thread.start()
 
         # Wait for end of threads
         date_thread.join()
-        subject_thread.join()
+        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
+            pass
+        else:
+            subject_thread.join()
         contact_thread.join()
 
         # Get the returned values
         date = date_thread.date
-        subject = subject_thread.subject
+        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
+            subject = ''
+        else:
+            subject = subject_thread.subject
         contact = contact_thread.contact
         custom_mail = contact_thread.custom_mail
     else:

@@ -104,6 +104,7 @@ action = cfg['actionafterprocess']
 folder_to_crawl = cfg['foldertocrawl']
 folder_destination = cfg['folderdestination']
 import_only_attachments = str2bool(ConfigMail.cfg['GLOBAL']['importonlyattachments'])
+priority_mail_subject = str2bool(ConfigMail.cfg[process]['prioritytomailsubject'])
 Mail.test_connection(isSSl)
 
 if action == 'delete':
@@ -144,7 +145,8 @@ if check:
                     'config': args['config'],
                     'attachments': ret['attachments'],
                     'batch_path': batch_path,
-                    'error_path': path_without_time + '/_ERROR'
+                    'error_path': path_without_time + '/_ERROR',
+                    'priority_mail_subject': priority_mail_subject
                 })
             else:
                 Log.info('Start to process only attachments')
