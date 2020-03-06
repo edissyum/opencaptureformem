@@ -258,7 +258,6 @@ def move_batch_to_error(batch_path, error_path):
     :param batch_path: Path to the actual batch
     :param error_path: path to the error path
     """
-    print(batch_path)
     try:
         os.mkdir(error_path)
     except FileExistsError:
