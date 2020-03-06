@@ -127,7 +127,8 @@ class Mail:
                 'subject': msg.subject,
                 'destination': cfg['destination'],
                 'doc_date': str(msg.date),
-                cfg['custom_mail_from']: msg.from_[:254],  # 254 to avoid too long string (maarch custom is limited to 255 char)
+                'from': msg.from_,
+                cfg['custom_mail_from']: msg.from_,
                 cfg['custom_mail_to']: to_str[:-1][:254],  # 254 to avoid too long string (maarch custom is limited to 255 char)
                 cfg['custom_mail_cc']: cc_str[:-1][:254],   # 254 to avoid too long string (maarch custom is limited to 255 char)
                 cfg['custom_mail_reply_to']: reply_to[:254]   # 254 to avoid too long string (maarch custom is limited to 255 char)

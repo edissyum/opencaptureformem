@@ -159,11 +159,19 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         return q
     else:
         if args.get('isMail') is not None and args.get('isMail') is True:
+            if date != '':
+                args['data']['doc_date'] = date
             if subject != '':
                 args['data']['subject'] = subject
             if contact != '':
                 args['data']['address_id'] = contact['id']
                 args['data']['exp_contact_id'] = contact['contact_id']
+            else:
+                # Search a contact id from Maarch database
+                contact = web_service.retrieve_contact_by_mail(args['data']['from'])
+                if contact:
+                    args['data']['address_id'] = contact['id']
+                    args['data']['exp_contact_id'] = contact['contact_id']
 
             res = web_service.insert_letterbox_from_mail(args['data'])
             if res:

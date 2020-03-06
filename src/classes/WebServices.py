@@ -220,6 +220,7 @@ class WebServices:
     def insert_letterbox_from_mail(self, args):
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
         del args['file']
+        del args['from']
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'})
 
