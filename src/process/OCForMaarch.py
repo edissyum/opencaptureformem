@@ -89,6 +89,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         # Find subject of document
         if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
+            subject_thread = ''
             pass
         else:
             subject_thread = FindSubject(ocr.text, locale, log)

@@ -17,7 +17,6 @@
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 import os
-import sys
 import uuid
 import shutil
 import subprocess

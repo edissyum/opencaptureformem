@@ -31,12 +31,13 @@ args = vars(ap.parse_args())
 
 if __name__ == '__main__':
     # Init all the var
-    Config = Config(args['config'])
-    Log = Log(Config.cfg['GLOBAL']['logfile'])
+    config = Config()
+    config.load_file(args['config'])
+    Log = Log(config.cfg['GLOBAL']['logfile'])
     WebService = WebServices(
-        Config.cfg['OCForMaarch']['host'],
-        Config.cfg['OCForMaarch']['user'],
-        Config.cfg['OCForMaarch']['password'],
+        config.cfg['OCForMaarch']['host'],
+        config.cfg['OCForMaarch']['user'],
+        config.cfg['OCForMaarch']['password'],
         Log
     )
     chrono = args['chrono']

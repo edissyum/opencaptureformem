@@ -124,7 +124,11 @@ if check:
         now = datetime.datetime.now()
         if not os.path.exists(path):
             os.mkdir(path)
-        date_batch = str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '_' + str('%02d' % now.hour) + str('%02d' % now.minute) + str('%02d' % now.second) + str('%02d' % now.microsecond)
+
+        year, month, day = [str('%02d' % now.year), str('%02d' % now.month), str('%02d' % now.day)]
+        hour, minute, second, microsecond = [str('%02d' % now.hour), str('%02d' % now.minute), str('%02d' % now.second), str('%02d' % now.microsecond)]
+
+        date_batch = year + month + day + '_' + hour + minute + second + microsecond
         batch_path = tempfile.mkdtemp(dir=path, prefix='BATCH_' + date_batch + '_')
 
         Log = logClass.Log(batch_path + '/' + date_batch + '.log')

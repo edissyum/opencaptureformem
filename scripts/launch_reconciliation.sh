@@ -81,7 +81,7 @@ then
         exit 0
 fi
 
-fileName=$(basename $1)
+fileName=$(basename "$1")
 # service is the parent folder name. e.g : /var/share/sortant/DGS/test.pdf --> $service will be DGS
 service=$(echo "$inputPath" | sed -e 's#/[^/]*$##' -e 's#.*/##')
 

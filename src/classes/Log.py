@@ -36,7 +36,7 @@ class Log:
         self.LOGGER = logging.getLogger('Open-Capture')
         if self.LOGGER.hasHandlers():
             self.LOGGER.handlers.clear()  # Clear the handlers to avoid double logs
-        log_file = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024, backupCount=2, encoding=None, delay=0)
+        log_file = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024, backupCount=2, encoding=None, delay=False)
         formatter = logging.Formatter('[%(threadName)-14s] [%(file)-15sline %(line_n)-4s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
         log_file.setFormatter(formatter)
         self.LOGGER.addHandler(log_file)
