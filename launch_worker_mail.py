@@ -121,32 +121,36 @@ if check:
     Mail.select_folder(folder_to_crawl)
     emails = Mail.retrieve_message()
     if len(emails) > 0:
+        now = datetime.datetime.now()
+        if not os.path.exists(path):
+            os.mkdir(path)
+        date_batch = str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '_' + str('%02d' % now.hour) + str('%02d' % now.minute) + str('%02d' % now.second) + str('%02d' % now.microsecond)
+        batch_path = tempfile.mkdtemp(dir=path, prefix='BATCH_' + date_batch + '_')
+
+        Log = logClass.Log(batch_path + '/' + date_batch + '.log')
+        Log.info('Start following batch : ' + os.path.basename(os.path.normpath(batch_path)))
+        Log.info('Import only attachments is : ' + str(import_only_attachments))
+        Log.info('Number of e-mail to process : ' + str(len(emails)))
+        i = 1
         for msg in emails:
-            now = datetime.datetime.now()
-            if not os.path.exists(path):
-                os.mkdir(path)
-            date_batch = str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '_' + str('%02d' % now.hour) + str('%02d' % now.minute) + str('%02d' % now.second) + str('%02d' % now.microsecond)
-            batch_path = tempfile.mkdtemp(dir=path, prefix='BATCH_' + date_batch + '_')
-
-            Log = logClass.Log(batch_path + '/' + date_batch + '.log')
-            Log.info('Start following batch : ' + os.path.basename(os.path.normpath(batch_path)))
-            Log.info('Import only attachments is : ' + str(import_only_attachments))
-
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path)
             ret, file = Mail.construct_dict_before_send_to_maarch(msg, ConfigMail.cfg[process], batch_path)
             if not import_only_attachments:
                 launch({
-                    'log': batch_path + '/' + date_batch + '.log',
+                    'cpt': str(i),
                     'file': file,
                     'isMail': True,
+                    'msg_uid': str(msg.uid),
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
-                    'attachments': ret['attachments'],
                     'batch_path': batch_path,
+                    'nb_of_mail': str(len(emails)),
+                    'attachments': ret['attachments'],
                     'error_path': path_without_time + '/_ERROR',
-                    'priority_mail_subject': priority_mail_subject
+                    'log': batch_path + '/' + date_batch + '.log',
+                    'priority_mail_subject': priority_mail_subject,
                 })
             else:
                 Log.info('Start to process only attachments')
@@ -174,6 +178,8 @@ if check:
             elif action == 'delete':
                 Log.info('Move mail to trash')
                 Mail.delete_mail(msg, folder_trash, Log)
+
+            i = i + 1
     else:
         sys.exit('Folder do not contain any e-mail. Exit...')
 else:
