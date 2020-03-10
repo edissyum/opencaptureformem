@@ -45,6 +45,15 @@ OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 m = Manager(OCforMaarch)
 
 
+def str2bool(value):
+    """
+    Function to convert string to boolean
+
+    :return: Boolean
+    """
+    return value.lower() in "true"
+
+
 def fill_queue(
         args: dict, path: str, log: logClass.Log, separator: separatorClass.Separator, config: configClass.Config,
         image: imagesClass.Image, ocr: ocrClass.PyTesseract, locale: localeClass.Locale, web_service: webserviceClass.WebServices,
@@ -161,11 +170,11 @@ def launch(args):
     # Start process
     if args.get('path') is not None:
         path = args['path']
-        if separator.enabled == 'True' and args['process'] == 'incoming':
+        if str2bool(separator.enabled) is True and args['process'] == 'incoming':
             for fileToSep in os.listdir(path):
                 if check_file(image, path + fileToSep, config, log):
                     separator.run(path + fileToSep)
-            path = separator.output_dir_pdfa if separator.convert_to_pdfa == 'True' else separator.output_dir
+            path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
 
         # Create the Queue to store files
         fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
@@ -173,12 +182,12 @@ def launch(args):
     elif args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
-            if separator.enabled == 'True' and args['process'] == 'incoming':
+            if str2bool(separator.enabled) is True and args['process'] == 'incoming':
                 separator.run(path)
                 if separator.error:  # in case the file is not a pdf or no qrcode was found, process as an image
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
                 else:
-                    path = separator.output_dir_pdfa if separator.convert_to_pdfa == 'True' else separator.output_dir
+                    path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
 
                     # Create the Queue to store files
                     fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
