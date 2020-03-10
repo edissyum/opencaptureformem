@@ -275,6 +275,7 @@ def move_batch_to_error(batch_path, error_path):
     except (FileNotFoundError, FileExistsError):
         pass
 
+
 def str2bool(value):
     """
     Function to convert string to boolean
