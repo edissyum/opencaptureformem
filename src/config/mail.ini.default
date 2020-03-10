@@ -25,6 +25,8 @@ type_id              = 103
 nature_id            = email
 typist               = scan
 destination          = COU
+# True or False
+from_is_reply_to     = False
 custom_mail_from     = custom_t10
 custom_mail_to       = custom_t11
 custom_mail_cc       = custom_t12

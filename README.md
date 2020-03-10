@@ -139,6 +139,8 @@ Here is a short list of options you have for mail process into <code>/opt/maarch
   - folderTrash : if <code>actionAfterProcess</code> is <code>delete</code>, specify the name of trash folder. If we use the IMAP delete function, the mail cannot be retrieve
   - actionAfterProcess : <code>move</code>, <code>delete</code> or <code>none</code>
   - importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
+  - from_is_reply_to : In some case, the <code>from</code> field is a no-reply email and the real from e-mail is in reply-to. Put <code>True</code> if it's the case
+    If this option is enabled but reply_to field is empty, the from field will be used
 
 Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCapture/check_folders.py</code> with your hosts informations
 

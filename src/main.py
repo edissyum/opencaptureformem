@@ -134,6 +134,8 @@ def launch(args):
 
     if args.get('isMail') is not None:
         log = logClass.Log(args['log'])
+        if args['isMail'] is True:
+            log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
         log = logClass.Log(config.cfg['GLOBAL']['logfile'])
 
@@ -211,4 +213,4 @@ def launch(args):
     recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
 
     end = time.time()
-    log.info('Process end after ' + timer(start, end) + '')
+    log.info('Process end after ' + timer(start, end) + '\n')

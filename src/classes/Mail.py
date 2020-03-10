@@ -16,11 +16,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import re
 import sys
 import shutil
-import base64
-import tempfile
 
 from socket import gaierror
 from imap_tools import utils
@@ -93,26 +90,20 @@ class Mail:
         :param backup_path: Path to backup of the e-mail
         :return: dict of Args and file path
         """
-        to_str = ''
-        cc_str = ''
-        for to in msg.to:
-            to_str += to + ';'
-        for cc in msg.cc:
-            cc_str += cc + ';'
+        to_str, cc_str, reply_to = ('', '', '')
+        for to in msg.to_values:
+            to_str += to['full'] + ';'
+        for cc in msg.cc_values:
+            cc_str += cc['full'] + ';'
+        for rp_to in msg.reply_to_values:
+            reply_to += rp_to['full'] + ';'
 
         if len(msg.html) == 0:
             file_format = 'txt'
-            file = backup_path + '/mail_origin/body.txt'
+            file = backup_path + '/mail_' + str(msg.uid) + '/mail_origin/body.txt'
         else:
             file_format = 'html'
-            file = backup_path + '/mail_origin/body.html'
-
-        pattern = "^[^<]+<([^>]+).*"
-        search = re.search(pattern, str(msg.obj['Reply-To']))
-        if search:
-            reply_to = search.group(1)
-        else:
-            reply_to = ''
+            file = backup_path + '/mail_' + str(msg.uid) + '/mail_origin/body.html'
 
         data = {
             'mail': {
@@ -128,16 +119,31 @@ class Mail:
                 'destination': cfg['destination'],
                 'doc_date': str(msg.date),
                 'from': msg.from_,
-                cfg['custom_mail_from']: msg.from_,
-                cfg['custom_mail_to']: to_str[:-1][:254],  # 254 to avoid too long string (maarch custom is limited to 255 char)
-                cfg['custom_mail_cc']: cc_str[:-1][:254],   # 254 to avoid too long string (maarch custom is limited to 255 char)
-                cfg['custom_mail_reply_to']: reply_to[:254]   # 254 to avoid too long string (maarch custom is limited to 255 char)
             },
             'attachments': []
         }
 
+        from_is_reply_to = str2bool(cfg['from_is_reply_to'])
+        if from_is_reply_to and len(msg.reply_to) > 0:
+            data['mail']['from'] = msg.reply_to[0]
+        else:
+            data['mail']['from'] = msg.from_
+
+        # Add custom if specified
+        if cfg.get('custom_mail_from') not in [None, '']:
+            data['mail'][cfg['custom_mail_from']] = msg.from_values['full']
+
+        if cfg.get('custom_mail_to') not in [None, ''] and to_str is not '':
+            data['mail'][cfg['custom_mail_to']] = to_str[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+
+        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str is not '':
+            data['mail'][cfg['custom_mail_cc']] = cc_str[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+
+        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to is not '':
+            data['mail'][cfg['custom_mail_reply_to']] = reply_to[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+
         attachments = self.retrieve_attachment(msg)
-        attachments_path = backup_path + '/attachments/'
+        attachments_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
         for pj in attachments:
             data['attachments'].append({
                 'status': 'TRA',
@@ -160,8 +166,8 @@ class Mail:
         :return: Boolean
         """
         # Backup mail
-        primary_mail_path = backup_path + '/mail_origin/'
-        os.mkdir(primary_mail_path)
+        primary_mail_path = backup_path + '/mail_' + str(msg.uid) + '/mail_origin/'
+        os.makedirs(primary_mail_path)
 
         # Start with headers
         fp = open(primary_mail_path + 'header.txt', 'w')
@@ -268,3 +274,11 @@ def move_batch_to_error(batch_path, error_path):
         shutil.move(batch_path, error_path)
     except (FileNotFoundError, FileExistsError):
         pass
+
+def str2bool(value):
+    """
+    Function to convert string to boolean
+
+    :return: Boolean
+    """
+    return value.lower() in "true"

@@ -123,7 +123,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         date = ''
         subject = ''
-        contact = ''
+        contact = {}
         custom_mail = ''
 
     try:
@@ -168,6 +168,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 args['data']['exp_contact_id'] = contact['contact_id']
             else:
                 # Search a contact id from Maarch database
+                log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])
                 contact = web_service.retrieve_contact_by_mail(args['data']['from'])
                 if contact:
                     args['data']['address_id'] = contact['id']
