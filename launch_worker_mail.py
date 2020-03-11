@@ -67,6 +67,7 @@ if not os.path.exists(args['config']) or not os.path.exists(args['config_mail'])
     sys.exit('Config file couldn\'t be found')
 
 process = args['process']
+print('Start process : ' + process)
 
 Config = configClass.Config()
 Config.load_file(args['config'])
@@ -80,7 +81,7 @@ if ConfigMail.cfg.get(process) is None:
 global_log = logClass.Log(Config.cfg['GLOBAL']['logfile'])
 
 now = datetime.datetime.now()
-path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
+path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
 path_without_time = ConfigMail.cfg['GLOBAL']['batchpath']
 
 Mail = mailClass.Mail(
@@ -123,13 +124,15 @@ if check:
     if len(emails) > 0:
         now = datetime.datetime.now()
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
         year, month, day = [str('%02d' % now.year), str('%02d' % now.month), str('%02d' % now.day)]
         hour, minute, second, microsecond = [str('%02d' % now.hour), str('%02d' % now.minute), str('%02d' % now.second), str('%02d' % now.microsecond)]
 
         date_batch = year + month + day + '_' + hour + minute + second + microsecond
         batch_path = tempfile.mkdtemp(dir=path, prefix='BATCH_' + date_batch + '_')
+
+        print('Batch name : ' + os.path.basename(batch_path))
 
         Log = logClass.Log(batch_path + '/' + date_batch + '.log')
         Log.info('Start following batch : ' + os.path.basename(os.path.normpath(batch_path)))
