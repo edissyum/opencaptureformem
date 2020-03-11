@@ -19,19 +19,20 @@
 
 script="IN"
 # Made 14 char for name, to have the same layout in log as OC application
-# Made 24 char for filename, to have the same layout in log as OC application
+# Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
 name="$script.sh"
 name=${name:0:14}${spaces:0:$((14-${#name}))}
 
-spaces="                        "
+spaces="                               "
 scriptName="launch_$script.sh"
-scriptName=${scriptName:0:24}${spaces:0:$((24-${#scriptName}))}
+scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
 OCPath="/opt/maarch/OpenCapture/"
+config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
-errFilepath="$OCPath/data/error/$script/"
-tmpFilepath="$OCPath/data/pdf/"
+errFilepath="$OCPath"/data/error/$script/
+tmpFilepath="$OCPath"/data/pdf/
 PID=/tmp/securite-$script-$$.pid
 
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
@@ -48,7 +49,7 @@ then
 
   mv "$filepath" "$tmpFilepath"
 
-  python3 "$OCPath"/launch_worker.py -c "$OCPath"/src/config/config.ini -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process incoming
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process incoming
 
   rm -f $PID
 

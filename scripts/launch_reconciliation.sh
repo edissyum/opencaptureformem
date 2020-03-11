@@ -21,20 +21,21 @@
 # Variables
 script="RECONCILIATION"
 # Made 14 char for name, to have the same layout in log as OC application
-# Made 24 char for filename, to have the same layout in log as OC application
+# Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
 name="$script"
 name=${name:0:14}${spaces:0:$((14-${#name}))}
 
-spaces="                        "
+spaces="                               "
 scriptName="launch_$script.sh"
-scriptName=${scriptName:0:24}${spaces:0:$((24-${#scriptName}))}
+scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-tmp_dir=/tmp
+OCPath="/opt/maarch/OpenCapture/"
+config_file="$OCPath"/src/config/config.ini
+logFile="$OCPath"/data/log/OCforMaarch.log
 process_pj=reconciliation_default
 process_attfnd=reconciliation_found
-dispatcher_path="/opt/maarch/OpenCapture/"
-logFile="$dispatcher_path/data/log/OCforMaarch.log"
+tmp_dir=/tmp
 
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
@@ -54,18 +55,18 @@ readBarCode(){
 
 check_attachment(){
     # Using Maarch WebService, check if the chrono number is related to an attachment
-    python3 ${dispatcher_path}/src/process/checkAttachment.py -c "$dispatcher_path/src/config/config.ini" -chrono "$1"
+    python3 ${OCPath}/src/process/checkAttachment.py -c "$config_file" -chrono "$1"
 }
 
 defaultProcess(){
     # If barcode couldn't be read or isn't present, use default process
     # Same if the barcode is read but the attachment doesn't exist on Maarch database
-    python3 ${dispatcher_path}/launch_worker.py -c "$dispatcher_path/src/config/config.ini" --read-destination-from-filename --process ${process_pj} -f "$1"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1"
 }
 
 reconciliationProcess(){
     # If all things went good, start the reconciliation process and insert the document as a Maarch attachment
-    python3 ${dispatcher_path}/launch_worker.py -c "$dispatcher_path/src/config/config.ini" --process "$process_attfnd" -f "$1" -resid "$2" -chrono "$3"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -resid "$2" -chrono "$3"
 }
 
 
