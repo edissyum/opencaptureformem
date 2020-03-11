@@ -124,11 +124,10 @@ Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add y
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.
 
-I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>   
-Then edit <code>/opt/maarch/OpenCapture/scripts/launch_MAIL.sh</code> and copy the following line
-and change the <code>MAIL_1</code> with the new process name 
+IMPORTANT : Do not put space into process name
 
-    python3 "$OCPath"/launch_worker_mail.py -c "$OCPath"/src/config/config.ini -cm "$OCPath"/src/config/mail.ini --process MAIL_1    
+I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and that's all. 
+The <code>launch_MAIL.sh</code> automatically loop into all the processes and launch them   
 
 Here is a short list of options you have for mail process into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>
 

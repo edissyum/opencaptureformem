@@ -18,16 +18,18 @@
 
 script="MAIL"
 # Made 14 char for name, to have the same layout in log as OC application
-# Made 24 char for filename, to have the same layout in log as OC application
+# Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
 name="$script.sh"
 name=${name:0:14}${spaces:0:$((14-${#name}))}
 
-spaces="                        "
+spaces="                               "
 scriptName="launch_$script.sh"
-scriptName=${scriptName:0:24}${spaces:0:$((24-${#scriptName}))}
+scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/home/nathan/PycharmProjects/oc_for_maarch/"
+OCPath="/opt/maarch/OpenCapture/"
+config_file="$OCPath"/src/config/config.ini
+config_mail_file="$OCPath"/src/config/mail.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
 PID=/tmp/securite-$script-$$.pid
 
@@ -38,7 +40,14 @@ then
   touch $PID
   echo $$ > $PID
 
-  python3 "$OCPath"/launch_worker_mail.py -c "$OCPath"/src/config/config.ini -cm "$OCPath"/src/config/mail.ini --process MAIL_1
+  # Retrieve all the processes and launch them instead of copy/paste X lines
+  while read -r process ; do
+    if [ "$process" != '[GLOBAL]' ];
+    then
+      process_name="${process//[][]/}"
+      python3 "$OCPath"/launch_worker_mail.py -c "$config_file" -cm "$config_mail_file" --process "$process_name"
+    fi
+  done < <(grep -o '^\[[^][]*]' "$config_mail_file")
 
   rm -f $PID
 else
