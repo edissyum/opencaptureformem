@@ -95,6 +95,8 @@ imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
 barcode=$(readBarCode "$imgFile")
 
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Barcode content : $barcode" >> "$logFile"
+
 rm "$imgFile"
 
 if [[ -z "$barcode" ]]
