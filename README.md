@@ -46,7 +46,7 @@ Nothing as simple as that :
     $ git clone -b 3.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
-The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **121**
+The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **123**
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
@@ -159,7 +159,7 @@ By default, run the script at 2 AM on every day-of-week from Monday through Frid
 delete all the batch folder older than 7 days
 
 # Update Open-Capture For Maarch 19.04
-The process of update is very simple. But before you need to modify the file and change lines **34** to put the user and group you want instead of default (edissyum) :
+The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     $ cd /opt/maarch/OpenCapture/install/
     $ chmod u+x update.sh
