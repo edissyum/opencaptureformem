@@ -120,4 +120,4 @@ fi
 ####################
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir /tmp/OpenCapture/
-chown -R your_user:your_group /tmp/OpenCapture
+chown -R edissyum:edissyum /tmp/OpenCapture
