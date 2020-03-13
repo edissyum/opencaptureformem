@@ -51,7 +51,7 @@ find . -name ".gitkeep" -delete
 
 # Fix right on folder
 chmod -R 775 $OCPath
-chown -R your_user:your_group $OCPath
+chown -R edissyum:edissyum $OCPath
 
 # Restart worker
 systemctl restart oc-worker.service
