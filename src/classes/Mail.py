@@ -110,8 +110,8 @@ class Mail:
                 'file': file,
                 'priority': cfg['priority'],
                 'status': cfg['status'],
-                'type_id': cfg['type_id'],
-                'category_id': cfg['category_id'],
+                'doctype': cfg['doctype'],
+                'modelId': cfg['model_id'],
                 'nature_id': cfg['nature_id'],
                 'format': file_format,
                 'typist': cfg['typist'],
@@ -272,7 +272,7 @@ def move_batch_to_error(batch_path, error_path):
 
     try:
         shutil.move(batch_path, error_path)
-    except (FileNotFoundError, FileExistsError):
+    except (FileNotFoundError, FileExistsError, shutil.Error):
         pass
 
 
