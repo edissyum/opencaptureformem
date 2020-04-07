@@ -28,9 +28,14 @@ password = ''
 
 try:
     conn = MailBox(host=hostname, port=port, ssl=isSSL)
-    conn.login(login, password)
 except (gaierror, IMAP4_SSL.error) as e:
     sys.exit('Error while connecting to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
+
+try:
+    conn.login(login, password)
+except (gaierror, IMAP4_SSL.error) as e:
+    sys.exit('Error while login to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
+
 
 folders = conn.folder.list()
 for f in folders:
