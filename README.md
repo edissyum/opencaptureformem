@@ -2,7 +2,7 @@
 
 Version 3.0
 
-# Open-Capture for Maarch  19.04
+# Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of OC for Maarch are :
@@ -58,6 +58,9 @@ Systemd is perfect for one instance
     $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
     $ mv /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
+Don't forget to modify the two config file with your specifics need. 
+Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
+
   It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
     $ sudo apt install tesseract-ocr-langcode
@@ -96,7 +99,7 @@ Here is some examples of possible usages in the launch_XX.sh script:
 -process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
-## WebServices for Maarch 19.04
+## WebServices for Maarch 20.03
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
@@ -117,9 +120,11 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
 # IMAP Connector (MailCapture for Open-Capture For Maarch)
+
 You have the possibility to capture e-mail directly from your inbox.  
 
     $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini 
+    
 Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.
@@ -128,6 +133,8 @@ IMPORTANT : Do not put space into process name
 
 I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and that's all. 
 The <code>launch_MAIL.sh</code> automatically loop into all the processes and launch them   
+
+Don't forget to fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
 
 Here is a short list of options you have for mail process into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>
 
@@ -139,7 +146,7 @@ Here is a short list of options you have for mail process into <code>/opt/maarch
   - actionAfterProcess : <code>move</code>, <code>delete</code> or <code>none</code>
   - importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
   - from_is_reply_to : In some case, the <code>from</code> field is a no-reply email and the real from e-mail is in reply-to. Put <code>True</code> if it's the case
-    If this option is enabled but reply_to field is empty, the from field will be used
+    If this option is enabled but `reply_to` field is empty, the `from` field will be used
 
 Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCapture/check_folders.py</code> with your hosts informations
 
@@ -158,7 +165,7 @@ To avoid lack of memory on the server, do not forget to cron the <code>clean.sh<
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
 
-# Update Open-Capture For Maarch 19.04
+# Update Open-Capture For Maarch 20.03
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     $ cd /opt/maarch/OpenCapture/install/
@@ -197,7 +204,7 @@ The file <code>src/config/config.ini</code> is splitted in different categories
     - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
     - Uppercase the subject automatically
   - OCForMaarch_**process_name**
-     - Default metadata to insert documents (type_id, status, typist, priority, format, category_id and destination)
+     - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
 ## Apache modifications
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
