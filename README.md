@@ -99,7 +99,7 @@ Here is some examples of possible usages in the launch_XX.sh script:
 -process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
-## WebServices for Maarch 20.03
+## WebServices for Maarch 19.04
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
@@ -109,7 +109,7 @@ The list of files needed to be modify is in install/Maarch with the correct stru
         some code...
     // END NCH01
 
-Just report the modifications onto you Maarch installation
+Just report the modifications onto you Maarch installation and copy paste the <code>src/app/attachments/controllers/ReconciliationController.php</code>
 
 ## Various
 If you want to generate PDF/A instead of PDF, you have to do the following :
@@ -152,7 +152,7 @@ Hint : To know the specific name of different folder, just launch the script <co
 
 To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script : 
 
-     */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/MailCapture/launch_MAIL.sh >/dev/null 2>&1
+     */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/launch_MAIL.sh >/dev/null 2>&1
 
 By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
 
@@ -165,7 +165,7 @@ To avoid lack of memory on the server, do not forget to cron the <code>clean.sh<
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
 
-# Update Open-Capture For Maarch 20.03
+# Update Open-Capture For Maarch 19.04
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     $ cd /opt/maarch/OpenCapture/install/

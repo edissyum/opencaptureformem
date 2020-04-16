@@ -68,22 +68,6 @@ class WebServices:
         else:
             return json.loads(res.text)
 
-    def retrieve_contact_by_url(self, url):
-        """
-        Search a contact into Maarch database using URL
-
-        :param url: URL to search
-        :return: Contact from Maarch
-        """
-        url = url.replace('http://', '').replace('https://', '').replace('www.', '')
-        res = requests.get(self.baseUrl + 'getContactByUrl', auth=self.auth, params={'url': url})
-
-        if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') GetContactByUrlError : ' + str(res.text))
-            return False
-        else:
-            return json.loads(res.text)
-
     def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail):
         """
         Insert document into Maarch Database
@@ -99,7 +83,7 @@ class WebServices:
         :return: res_id from Maarch
         """
         if not contact:
-            contact = {'id': '', 'contact_id': ''}
+            contact = {'id': ''}
         if not subject:
             subject = ''
         else:
@@ -110,15 +94,14 @@ class WebServices:
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
             'priority': _process['priority'],
             'status': _process['status'],
-            'type_id': _process['type_id'],
+            'doctype': _process['doctype'],
             'format': _process['format'],
-            'category_id': _process['category_id'],
+            'modelId': _process['model_id'],
             'typist': _process['typist'],
             'subject': subject,
             'destination': destination,
-            'address_id': contact['id'],
-            'exp_contact_id': contact['contact_id'],
-            'doc_date': date,
+            'senders': [{'id': contact['id'], 'type': 'contact'}],
+            'documentDate': date,
         }
 
         if 'reconciliation' not in _process:
@@ -150,14 +133,9 @@ class WebServices:
         data = {
             'resId': res_id,
             'status': config.cfg[_process]['status'],
-            'collId': 'letterbox_coll',
-            'table': 'res_attachments',
-            'data': [
-                {'column': 'title', 'value': 'Rapprochement note interne', 'type': 'string'},
-                {'column': 'attachment_type', 'value': config.cfg[_process]['attachment_type'], 'type': 'string'},
-                {'column': 'coll_id', 'value': 'letterbox_coll', 'type': 'string'},
-                {'column': 'res_id_master', 'value': res_id, 'type': 'string'}
-            ],
+            'title': 'Rapprochement note interne',
+            'type': config.cfg[_process]['attachment_type'],
+            'resIdMaster': res_id,
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
             'format': config.cfg[_process]['format'],
         }
@@ -210,7 +188,7 @@ class WebServices:
         :param chrono: Chrono of the attachment to check
         :return: Info of attachment from Maarch database
         """
-        res = requests.get(self.baseUrl + 'reconciliation/check', auth=self.auth, params={'chrono': chrono})
+        res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono})
         if res.status_code != 200:
             self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
             return False
@@ -268,5 +246,31 @@ class WebServices:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
+            return False
+
+    def retrieve_entities(self):
+        try:
+            res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchEntitiesError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while retrieving Maarch entities')
+            self.Log.error('More information : ' + str(e))
+            return False
+
+    def retrieve_users(self):
+        try:
+            res = requests.get(self.baseUrl + 'users', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchUserError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while retrieving Maarch users')
             self.Log.error('More information : ' + str(e))
             return False

@@ -117,7 +117,7 @@ class Mail:
                 'typist': cfg['typist'],
                 'subject': msg.subject,
                 'destination': cfg['destination'],
-                'doc_date': str(msg.date),
+                'documentDate': str(msg.date),
                 'from': msg.from_,
             },
             'attachments': []
@@ -195,7 +195,7 @@ class Mail:
         # Backup attachments
         attachments = self.retrieve_attachment(msg)
         if len(attachments) > 0:
-            attachment_path = backup_path + '/attachments/'
+            attachment_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
                 file_path = os.path.join(attachment_path + file['filename'] + file['format'])
