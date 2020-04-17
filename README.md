@@ -119,7 +119,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     Replace : %/ICCProfile (srgb.icc) % Customise
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
-# IMAP Connector (MailCapture for Open-Capture For Maarch)
+# IMAP Connector (Open-Capture Email Collect Module)
 
 You have the possibility to capture e-mail directly from your inbox.  
     
