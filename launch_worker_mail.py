@@ -155,9 +155,9 @@ if check:
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],
-                    'error_path': path_without_time + '/_ERROR',
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
+                    'error_path': path_without_time + '/_ERROR/' + year + month + day,
                 })
             else:
                 Log.info('Start to process only attachments')
