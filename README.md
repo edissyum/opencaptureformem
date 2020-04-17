@@ -2,7 +2,7 @@
 
 Version 3.0
 
-# Open-Capture for Maarch  20.03
+# Open-Capture for Maarch  19.04
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of OC for Maarch are :
@@ -43,7 +43,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 3.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 3.0.1 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **123**
@@ -55,8 +55,8 @@ Systemd is perfect for one instance
     $ sudo ./Makefile
         # Answer the few questions asked at launch
         # Go grab a coffee ;)
-    $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
-    $ mv /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
+    $ cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
+    $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
 Don't forget to modify the two config file with your specifics need. 
 Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
@@ -99,7 +99,7 @@ Here is some examples of possible usages in the launch_XX.sh script:
 -process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
-## WebServices for Maarch 20.03
+## WebServices for Maarch 19.04
 In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
@@ -122,8 +122,6 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 # IMAP Connector (MailCapture for Open-Capture For Maarch)
 
 You have the possibility to capture e-mail directly from your inbox.  
-
-    $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini 
     
 Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
 Add other process if you want to capture more than one mailbox or multiple folder,
