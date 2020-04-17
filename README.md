@@ -150,7 +150,7 @@ Hint : To know the specific name of different folder, just launch the script <co
 
 To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script : 
 
-     */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/MailCapture/launch_MAIL.sh >/dev/null 2>&1
+     */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/launch_MAIL.sh >/dev/null 2>&1
 
 By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
 
