@@ -18,12 +18,12 @@ folderDestination    = _MAARCH_ARCHIVES
 folderTrash          = Trash
 # move, delete or none
 actionAfterProcess   = move
-category_id          = incoming
+model_id             = 1
 priority             = poiuytre1357nbvc
 status               = MAQUAL
-type_id              = 103
+doctype              = 103
 nature_id            = email
-typist               = scan
+typist               = bblier
 destination          = COU
 # True or False
 from_is_reply_to     = False

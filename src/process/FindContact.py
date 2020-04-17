@@ -68,7 +68,6 @@ class FindContact(Thread):
 
                 contact = self.WebService.retrieve_contact_by_mail(sanitized_mail)
                 if contact:
-                    found_contact = True
                     self.contact = contact
                     self.Log.info('Find E-MAIL in Maarch, attach it to the document')
                     break
@@ -76,16 +75,3 @@ class FindContact(Thread):
                     # Add the e-mail into a custom value (custom_t10 by default)
                     self.custom_mail += sanitized_mail + ';'
                     continue
-
-        # If no contact were found, search for URL
-        if not found_contact:
-            for url in re.finditer(
-                    r"" + self.Locale.URLRegex + "(" + self.Locale.URLPattern + ")",
-                    self.text
-            ):
-                self.Log.info('Find URL : ' + url.group())
-                contact = self.WebService.retrieve_contact_by_url(url.group())
-                if contact:
-                    self.contact = contact
-                    self.Log.info('Find URL in Maarch, get it : ' + url.group())
-                    break

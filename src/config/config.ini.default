@@ -43,40 +43,42 @@ upperCaseSubject    = False
 
 [OCForMaarch_incoming]
 status              = INIT
-type_id             = 1202
-typist              = scan
+doctype             = 1202
+typist              = bblier
 priority            = poiuytre1357nbvc
 format              = pdf
-category_id         = incoming
+model_id            = 1
 destination         = COU
 custom_mail         = custom_t10
 
 [OCForMaarch_outgoing]
 status              = INIT
-type_id             = 1202
-typist              = scan
+doctype             = 1202
+typist              = bblier
 priority            = poiuytre1357nbvc
 format              = pdf
-category_id         = outgoing
+model_id            = 2
 destination         = COU
 custom_mail         = custom_t10
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
-type_id             = 1202
-typist              = scan
+doctype             = 1202
+typist              = bblier
 priority            = poiuytre1357nbvc
 format              = pdf
-category_id         = attachment
+model_id            = 5
 destination         = COU
+reconciliation      =
 
 [OCForMaarch_reconciliation_found]
 is_attachment       = True
 attachment_type     = outgoing_mail_signed
 status              = TRA
-type_id             =
+doctype             =
 typist              =
 priority            =
 format              = pdf
-category_id         =
+model_id            =
 destination         =
+reconciliation      =
