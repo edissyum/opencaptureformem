@@ -110,8 +110,8 @@ class Mail:
                 'file': file,
                 'priority': cfg['priority'],
                 'status': cfg['status'],
-                'doctype': cfg['doctype'],
-                'modelId': cfg['model_id'],
+                'type_id': cfg['type_id'],
+                'category_id': cfg['category_id'],
                 'nature_id': cfg['nature_id'],
                 'format': file_format,
                 'typist': cfg['typist'],
@@ -178,7 +178,10 @@ class Mail:
         # Then body
         if len(msg.html) == 0:
             fp = open(primary_mail_path + 'body.txt', 'w')
-            fp.write(msg.text)
+            if len(msg.text) != 0:
+                fp.write(msg.text)
+            else:
+                fp.write(' ')
         else:
             fp = open(primary_mail_path + 'body.html', 'w')
             fp.write(msg.html)
@@ -195,7 +198,7 @@ class Mail:
         # Backup attachments
         attachments = self.retrieve_attachment(msg)
         if len(attachments) > 0:
-            attachment_path = backup_path + '/attachments/'
+            attachment_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
                 file_path = os.path.join(attachment_path + file['filename'] + file['format'])
@@ -266,7 +269,7 @@ def move_batch_to_error(batch_path, error_path):
     :param error_path: path to the error path
     """
     try:
-        os.mkdir(error_path)
+        os.makedirs(error_path)
     except FileExistsError:
         pass
 
