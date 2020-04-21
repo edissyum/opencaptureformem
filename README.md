@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 3.0
+Version 4.0
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -120,6 +120,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
 # IMAP Connector (Open-Capture MailCollect Module)
+![Logo Open-Capture MailCollect](https://edissyum.com/wp-content/uploads/2020/04/0_Open-Capture_MailCollect_Module.png)
 
 You have the possibility to capture e-mail directly from your inbox.  
     
