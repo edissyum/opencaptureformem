@@ -49,7 +49,7 @@ priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 1
 destination         = COU
-custom_mail         = custom_t10
+custom_mail         = 8
 
 [OCForMaarch_outgoing]
 status              = INIT
@@ -59,7 +59,7 @@ priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 2
 destination         = COU
-custom_mail         = custom_t10
+custom_mail         = 8
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
