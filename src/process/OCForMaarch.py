@@ -178,7 +178,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             'resId': args['resid'],
             'chrono': args['chrono'],
             'isInternalNote': args['isinternalnote'],
-            config.cfg[_process]['custom_mail']: custom_mail,
+            'custom_mail': custom_mail,
         }
 
         q.put(file_to_store)

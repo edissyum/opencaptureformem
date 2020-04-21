@@ -27,7 +27,7 @@ typist               = bblier
 destination          = COU
 # True or False
 from_is_reply_to     = False
-custom_mail_from     = custom_t10
-custom_mail_to       = custom_t11
-custom_mail_cc       = custom_t12
-custom_mail_reply_to = custom_t13
+custom_mail_from     = 8
+custom_mail_to       = 9
+custom_mail_cc       = 10
+custom_mail_reply_to = 11

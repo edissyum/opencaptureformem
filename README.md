@@ -119,11 +119,12 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     Replace : %/ICCProfile (srgb.icc) % Customise
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
-# IMAP Connector (Open-Capture Email Collect Module)
+# IMAP Connector (Open-Capture MailCollect Module)
 
 You have the possibility to capture e-mail directly from your inbox.  
     
 Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
+If you want to have the from, to, cc and replyTo metadatas you have to create the custom fields into Maarch superadmin dashboard and modify the ID into the config file (8, 9, 10, 11 by default) 
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.
 
@@ -173,6 +174,7 @@ The process of update is very simple. But before you need to modify the file and
 # Informations
 ## QRCode separation
 Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
+If you use the Maarch default separator, don't forget to report modification of <code>src/app/entity/controllers/EntitySeparatorController.php</code> into the Maarch installation.
 
 ## Configuration
 The file <code>src/config/config.ini</code> is splitted in different categories

@@ -74,16 +74,22 @@ class WebServices:
 
         :param file_content: Path to file, then it will be encoded it in b64
         :param config: Class Config instance
-        :param contact: contact content (id and contact_id, from Maarch database)
+        :param contact: contact content (id, from Maarch database)
         :param subject: Subject found with REGEX on OCR pdf
         :param date: Date found with REGEX on OCR pdf
         :param destination: Destination (default or found with QR Code or by reading the filename)
-        :param _process: Process we will use to insert on Maarch (from config file)
+        :param _process: Part of config file, only with process configuration
         :param custom_mail: custom to add all the e-mail found
         :return: res_id from Maarch
         """
         if not contact:
-            contact = {'id': ''}
+            contact = {}
+        else:
+            contact = [{'id': contact['id'], 'type': 'contact'}]
+
+        if not date:
+            date = None
+
         if not subject:
             subject = ''
         else:
@@ -100,12 +106,12 @@ class WebServices:
             'typist': _process['typist'],
             'subject': subject,
             'destination': destination,
-            'senders': [{'id': contact['id'], 'type': 'contact'}],
+            'senders': contact,
             'documentDate': date,
         }
 
-        if 'reconciliation' not in _process:
-            data[_process['custom_mail']] = custom_mail[:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+        if _process.get('reconciliation') is None and custom_mail is not '':
+            data['customFields'] = {_process['custom_mail']: custom_mail}
 
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
@@ -156,7 +162,7 @@ class WebServices:
     def insert_attachment_reconciliation(self, file_content, chrono, _process):
         """
         Insert attachment into Maarch database
-        Difference between this function and :insert_attachment() : this on will replace an attachment
+        Difference between this function and :insert_attachment() : this one will replace an attachment
 
         :param file_content: Path to file, then it will be encoded it in b64
         :param chrono: Chrono of the attachment to replace
@@ -188,14 +194,25 @@ class WebServices:
         :param chrono: Chrono of the attachment to check
         :return: Info of attachment from Maarch database
         """
-        res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono})
-        if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
+        try:
+            res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
             return False
-        else:
-            return json.loads(res.text)
 
     def insert_letterbox_from_mail(self, args):
+        """
+        Insert mail into Maarch Database
+
+        :param args: Array of argument, same as insert_with_args
+        :return: res_id or Boolean if issue happen
+        """
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
         del args['file']
         del args['from']
@@ -272,5 +289,18 @@ class WebServices:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while retrieving Maarch users')
+            self.Log.error('More information : ' + str(e))
+            return False
+
+    def retrieve_custom_fields(self):
+        try:
+            res = requests.get(self.baseUrl + 'customFields', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchCustomFieldsError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while retrieving Maarch custom fields')
             self.Log.error('More information : ' + str(e))
             return False
