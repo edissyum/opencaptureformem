@@ -112,7 +112,6 @@ class Mail:
                 'status': cfg['status'],
                 'type_id': cfg['type_id'],
                 'category_id': cfg['category_id'],
-                'nature_id': cfg['nature_id'],
                 'format': file_format,
                 'typist': cfg['typist'],
                 'subject': msg.subject,

@@ -23,7 +23,6 @@ category_id          = incoming
 priority             = poiuytre1357nbvc
 status               = MAQUAL
 type_id              = 103
-nature_id            = email
 typist               = scan
 destination          = COU
 # True or False
