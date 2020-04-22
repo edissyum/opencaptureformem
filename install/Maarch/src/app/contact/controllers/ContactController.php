@@ -389,42 +389,27 @@ class ContactController
         }
     }
 
-
-    // OBR01
+    // NCH01
     public function getByPhone(Request $request, Response $response)
     {
         $data = $request->getParams();
         $contact = ContactModel::getByPhone([
-            'select'    => ['id', 'contact_id'],
+            'select'    => ['id'],
             'phone'     => $data['phone'],
         ]);
 
         return $response->withJson($contact);
     }
-    // END OBR01
 
-    // NCH01
     public function getByMail(Request $request, Response $response)
     {
         $data = $request->getParams();
         $contact = ContactModel::getByMail([
-            'select'    => ['id', 'contact_id'],
+            'select'    => ['id'],
             'mail'      => $data['mail'],
         ]);
 
         return $response->withJson($contact);
     }
-
-    public function getByUrl(Request $request, Response $response)
-    {
-        $data = $request->getParams();
-        $contact = ContactModel::getByUrl([
-            'select'    => ['id', 'contact_id'],
-            'url'       => $data['url'],
-        ]);
-
-        return $response->withJson($contact);
-    }
-
     // END NCH01
 }

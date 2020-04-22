@@ -54,6 +54,32 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         destination = config.cfg[_process]['destination']
 
+    # Retrieve destination ID from Maarch 20 if destination is not an integer
+    if type(destination) is not int:
+        destinations = web_service.retrieve_entities()
+        for dest in destinations['entities']:
+            if destination == dest['id']:
+                destination = dest['serialId']
+                if args.get('isMail') is not None and args.get('isMail') is True:
+                    args['data']['destination'] = destination
+
+    # Retrieve user_id to use it as typist
+
+    if args.get('isMail') is not None and args.get('isMail') is True:
+        typist = args['data']['typist']
+    else:
+        typist = config.cfg[_process]['typist']
+
+    if type(typist) is not int:
+        list_of_users = web_service.retrieve_users()
+        for user in list_of_users['users']:
+            if typist == user['user_id']:
+                typist = user['id']
+                if args.get('isMail') is not None and args.get('isMail') is True:
+                    args['data']['typist'] = typist
+                else:
+                    config.cfg[_process]['typist'] = typist
+
     if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
         res = image.pdf_to_jpg(file + '[0]', True)
         if res is False:
@@ -152,7 +178,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             'resId': args['resid'],
             'chrono': args['chrono'],
             'isInternalNote': args['isinternalnote'],
-            config.cfg[_process]['custom_mail']: custom_mail,
+            'custom_mail': custom_mail,
         }
 
         q.put(file_to_store)
@@ -161,19 +187,17 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         if args.get('isMail') is not None and args.get('isMail') is True:
             if date != '':
-                args['data']['doc_date'] = date
+                args['data']['documentDate'] = date
             if subject != '':
                 args['data']['subject'] = subject
             if contact != '':
-                args['data']['address_id'] = contact['id']
-                args['data']['exp_contact_id'] = contact['contact_id']
+                args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
             else:
                 # Search a contact id from Maarch database
                 log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])
                 contact = web_service.retrieve_contact_by_mail(args['data']['from'])
                 if contact:
-                    args['data']['address_id'] = contact['id']
-                    args['data']['exp_contact_id'] = contact['contact_id']
+                    args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
             res = web_service.insert_letterbox_from_mail(args['data'])
             if res:

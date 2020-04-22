@@ -334,12 +334,10 @@ $app->post('/saveMessageExchangeReturn', \Sendmail\Controllers\ReceiveMessageExc
 $app->post('/saveMessageExchangeReview', \Sendmail\Controllers\MessageExchangeReviewController::class . ':saveMessageExchangeReview');
 
 // NCH01
+$app->post('/reconciliation/add', \Attachment\controllers\ReconciliationController::class . ':create');
+$app->post('/reconciliation/check', \Attachment\controllers\ReconciliationController::class . ':checkAttachment');
 $app->get('/getContactByMail', \Contact\controllers\ContactController::class . ':getByMail');
-$app->get('/getContactByUrl', \Contact\controllers\ContactController::class . ':getByUrl');
-// END NCH01
-
-// OBR01
 $app->get('/getContactByPhone', \Contact\controllers\ContactController::class . ':getByPhone');
-// END OBR01
+// END NCH01
 
 $app->run();
