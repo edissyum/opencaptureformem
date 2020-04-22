@@ -23,7 +23,6 @@ model_id             = 1
 priority             = poiuytre1357nbvc
 status               = MAQUAL
 doctype              = 103
-nature_id            = email
 typist               = bblier
 destination          = COU
 # True or False

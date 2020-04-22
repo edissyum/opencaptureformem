@@ -114,7 +114,6 @@ class Mail:
                 'status': cfg['status'],
                 'doctype': cfg['doctype'],
                 'modelId': cfg['model_id'],
-                'nature_id': cfg['nature_id'],
                 'format': file_format,
                 'typist': cfg['typist'],
                 'subject': msg.subject,
