@@ -222,7 +222,7 @@ class Mail:
             return True
         except utils.UnexpectedCommandStatusError as e:
             log.error('Error while moving mail to ' + destination + ' folder : ' + str(e))
-            sys.exit(0)
+            pass
 
     def delete_mail(self, msg, trash_folder, log):
         """
@@ -240,7 +240,7 @@ class Mail:
                 self.move_to_destination_folder(msg, trash_folder, log)
         except utils.UnexpectedCommandStatusError as e:
             log.error('Error while deleting mail : ' + str(e))
-            sys.exit(0)
+            pass
 
     @staticmethod
     def retrieve_attachment(msg):

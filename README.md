@@ -51,7 +51,7 @@ You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
 
-    $ sudo chmod u+x Makefile
+    $ chmod u+x Makefile
     $ sudo ./Makefile
         # Answer the few questions asked at launch
         # Go grab a coffee ;)
@@ -119,7 +119,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     Replace : %/ICCProfile (srgb.icc) % Customise
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
-# IMAP Connector (Open-Capture Email Collect Module)
+# IMAP Connector (Open-Capture MailCollect Module)
 
 You have the possibility to capture e-mail directly from your inbox.  
     
