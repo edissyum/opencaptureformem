@@ -120,6 +120,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
 # IMAP Connector (Open-Capture MailCollect Module)
+![Logo Open-Capture MailCollect](https://edissyum.com/wp-content/uploads/2020/04/0_Open-Capture_MailCollect_Module.png)
 
 You have the possibility to capture e-mail directly from your inbox.  
     
