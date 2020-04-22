@@ -51,7 +51,7 @@ You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
 
-    $ sudo chmod u+x Makefile
+    $ chmod u+x Makefile
     $ sudo ./Makefile
         # Answer the few questions asked at launch
         # Go grab a coffee ;)
