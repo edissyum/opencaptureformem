@@ -84,17 +84,19 @@ now = datetime.datetime.now()
 path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
 path_without_time = ConfigMail.cfg['GLOBAL']['batchpath']
 
-Mail = mailClass.Mail(
-    ConfigMail.cfg[process]['host'],
-    ConfigMail.cfg[process]['port'],
-    ConfigMail.cfg[process]['login'],
-    ConfigMail.cfg[process]['password'],
-)
 web_service = webserviceClass.WebServices(
     Config.cfg['OCForMaarch']['host'],
     Config.cfg['OCForMaarch']['user'],
     Config.cfg['OCForMaarch']['password'],
     global_log
+)
+
+Mail = mailClass.Mail(
+    ConfigMail.cfg[process]['host'],
+    ConfigMail.cfg[process]['port'],
+    ConfigMail.cfg[process]['login'],
+    ConfigMail.cfg[process]['password'],
+    web_service
 )
 
 cfg = ConfigMail.cfg[process]
@@ -142,7 +144,7 @@ if check:
         for msg in emails:
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path)
-            ret, file = Mail.construct_dict_before_send_to_maarch(msg, ConfigMail.cfg[process], batch_path)
+            ret, file = Mail.construct_dict_before_send_to_maarch(msg, ConfigMail.cfg[process], batch_path, Log)
             if not import_only_attachments:
                 launch({
                     'cpt': str(i),
@@ -155,9 +157,9 @@ if check:
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],
-                    'error_path': path_without_time + '/_ERROR',
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
+                    'error_path': path_without_time + '/_ERROR/' + year + month + day
                 })
             else:
                 Log.info('Start to process only attachments')

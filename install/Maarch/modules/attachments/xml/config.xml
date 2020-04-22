@@ -19,7 +19,7 @@
 	<TABLENAME>
 		<attach_res_attachments>res_attachments</attach_res_attachments>
 	</TABLENAME>
-	<!-- NCH01 -->
+<!--	NCH01-->
 	<RECONCILIATION>
 		<CONFIG>
 			<name>reconciliation</name>
@@ -30,7 +30,7 @@
 			<close_incoming>true</close_incoming> <!-- Setting allowing, or not, the possibility to close the incoming document, with a radio button-->
 		</CONFIG>
 	</RECONCILIATION>
-	<!-- END NCH01 -->
+<!--	END NCH01-->
 	<HISTORY>
 		<attachadd>true</attachadd>
 		<attachup>true</attachup>

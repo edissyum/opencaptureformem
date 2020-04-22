@@ -45,6 +45,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             destination = config.cfg[_process]['destination']
         else:
             destination = file_name.split(separator.divider)[0]
+
     # Or from the destination arguments
     elif args.get('destination') is not None:
         destination = args['destination']
@@ -177,7 +178,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             'resId': args['resid'],
             'chrono': args['chrono'],
             'isInternalNote': args['isinternalnote'],
-            config.cfg[_process]['custom_mail']: custom_mail,
+            'custom_mail': custom_mail,
         }
 
         q.put(file_to_store)

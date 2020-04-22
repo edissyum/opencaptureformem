@@ -76,7 +76,7 @@ def fill_queue(
 
     # Find file in the wanted folder (default or exported pdf after qrcode separation)
     for file in os.listdir(path):
-        if check_file(image, file, config, log):
+        if check_file(image, path + file, config, log):
             q = process(args, path + file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q)
 
     while not q.empty():

@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 3.0
+Version 4.0
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -13,7 +13,7 @@ The functionnalities of OC for Maarch are :
  - Split PDF using QRCode and rename splitted PDF file using QRCode content
  - OCR and text recognition :
     - Find a date and use it as metadata
-    - Find a mail, phone or URL to reconciliate with an existing contact in Maarch
+    - Find a mail or a phone to reconciliate with an existing contact in Maarch
     - Find a subject and use it as metadata
  - Insert documents in Maarch with pre-qualified metadata :
     - Destination with QRCode
@@ -43,7 +43,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 3.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 4.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **123**
@@ -51,12 +51,12 @@ You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
 
-    $ sudo chmod u+x Makefile
+    $ chmod u+x Makefile
     $ sudo ./Makefile
         # Answer the few questions asked at launch
         # Go grab a coffee ;)
-    $ mv /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
-    $ mv /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
+    $ cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
+    $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
 Don't forget to modify the two config file with your specifics need. 
 Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
@@ -99,8 +99,8 @@ Here is some examples of possible usages in the launch_XX.sh script:
 -process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
-## WebServices for Maarch 19.04
-In order to reconciliate a contact it's needed to contact the Maarch database. For that 2 little PHP web services were developed.
+## WebServices for Maarch 20.03
+In order to reconciliate a contact it's needed to contact the Maarch database. For that some PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
 The list of files needed to be modify is in install/Maarch with the correct structure. Each modifications on files are between the following tags :
@@ -119,13 +119,13 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     Replace : %/ICCProfile (srgb.icc) % Customise
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
-# IMAP Connector (MailCapture for Open-Capture For Maarch)
+# IMAP Connector (Open-Capture MailCollect Module)
+![Logo Open-Capture MailCollect](https://edissyum.com/wp-content/uploads/2020/04/0_Open-Capture_MailCollect_Module.png)
 
 You have the possibility to capture e-mail directly from your inbox.  
-
-    $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini 
     
 Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
+If you want to have the from, to, cc and replyTo metadatas you have to create the custom fields into Maarch superadmin dashboard and modify the ID into the config file (8, 9, 10, 11 by default) 
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.
 
@@ -165,7 +165,7 @@ To avoid lack of memory on the server, do not forget to cron the <code>clean.sh<
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
 
-# Update Open-Capture For Maarch 19.04
+# Update Open-Capture For Maarch 20.03
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     $ cd /opt/maarch/OpenCapture/install/
@@ -175,6 +175,7 @@ The process of update is very simple. But before you need to modify the file and
 # Informations
 ## QRCode separation
 Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
+If you use the Maarch default separator, don't forget to report modification of <code>src/app/entity/controllers/EntitySeparatorController.php</code> into the Maarch installation.
 
 ## Configuration
 The file <code>src/config/config.ini</code> is splitted in different categories

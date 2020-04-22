@@ -26,12 +26,13 @@ from imap_tools import MailBox
 
 
 class Mail:
-    def __init__(self, host, port, login, pwd):
+    def __init__(self, host, port, login, pwd, ws):
         self.pwd = pwd
         self.conn = None
         self.port = port
         self.host = host
         self.login = login
+        self.ws = ws
 
     def test_connection(self, ssl):
         """
@@ -81,13 +82,14 @@ class Mail:
             emails.append(mail)
         return emails
 
-    def construct_dict_before_send_to_maarch(self, msg, cfg, backup_path):
+    def construct_dict_before_send_to_maarch(self, msg, cfg, backup_path, log):
         """
         Construct a dict with all the data of a mail (body and attachments)
 
         :param msg: Mailbox object containing all the data of mail
         :param cfg: Config Object
         :param backup_path: Path to backup of the e-mail
+        :param log: Log object
         :return: dict of Args and file path
         """
         to_str, cc_str, reply_to = ('', '', '')
@@ -112,13 +114,13 @@ class Mail:
                 'status': cfg['status'],
                 'doctype': cfg['doctype'],
                 'modelId': cfg['model_id'],
-                'nature_id': cfg['nature_id'],
                 'format': file_format,
                 'typist': cfg['typist'],
                 'subject': msg.subject,
                 'destination': cfg['destination'],
                 'documentDate': str(msg.date),
                 'from': msg.from_,
+                'customFields': {},
             },
             'attachments': []
         }
@@ -130,17 +132,25 @@ class Mail:
             data['mail']['from'] = msg.from_
 
         # Add custom if specified
-        if cfg.get('custom_mail_from') not in [None, '']:
-            data['mail'][cfg['custom_mail_from']] = msg.from_values['full']
+        if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log):
+            data['mail']['customFields'].update({
+                cfg['custom_mail_from']: msg.from_values['full']
+            })
 
-        if cfg.get('custom_mail_to') not in [None, ''] and to_str is not '':
-            data['mail'][cfg['custom_mail_to']] = to_str[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+        if cfg.get('custom_mail_to') not in [None, ''] and to_str is not '' and self.check_custom_field(cfg['custom_mail_to'], log):
+            data['mail']['customFields'].update({
+                cfg['custom_mail_to']: to_str[:-1]
+            })
 
-        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str is not '':
-            data['mail'][cfg['custom_mail_cc']] = cc_str[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str is not '' and self.check_custom_field(cfg['custom_mail_cc'], log):
+            data['mail']['customFields'].update({
+                cfg['custom_mail_cc']: cc_str[:-1]
+            })
 
-        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to is not '':
-            data['mail'][cfg['custom_mail_reply_to']] = reply_to[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
+        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to is not '' and self.check_custom_field(cfg['custom_mail_reply_to'], log):
+            data['mail']['customFields'].update({
+                cfg['custom_mail_reply_to']: reply_to[:-1]
+            })
 
         attachments = self.retrieve_attachment(msg)
         attachments_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
@@ -178,7 +188,10 @@ class Mail:
         # Then body
         if len(msg.html) == 0:
             fp = open(primary_mail_path + 'body.txt', 'w')
-            fp.write(msg.text)
+            if len(msg.text) != 0:
+                fp.write(msg.text)
+            else:
+                fp.write(' ')
         else:
             fp = open(primary_mail_path + 'body.html', 'w')
             fp.write(msg.html)
@@ -219,7 +232,7 @@ class Mail:
             return True
         except utils.UnexpectedCommandStatusError as e:
             log.error('Error while moving mail to ' + destination + ' folder : ' + str(e))
-            sys.exit(0)
+            pass
 
     def delete_mail(self, msg, trash_folder, log):
         """
@@ -237,7 +250,7 @@ class Mail:
                 self.move_to_destination_folder(msg, trash_folder, log)
         except utils.UnexpectedCommandStatusError as e:
             log.error('Error while deleting mail : ' + str(e))
-            sys.exit(0)
+            pass
 
     @staticmethod
     def retrieve_attachment(msg):
@@ -257,6 +270,14 @@ class Mail:
             })
         return args
 
+    def check_custom_field(self, field, log):
+        list_of_custom = self.ws.retrieve_custom_fields()
+        for custom in list_of_custom['customFields']:
+            if int(field) == int(custom['id']):
+                return True
+        log.error('The following custom field doesn\'t exist in Maarch database : ' + field)
+        return False
+
 
 def move_batch_to_error(batch_path, error_path):
     """
@@ -266,7 +287,7 @@ def move_batch_to_error(batch_path, error_path):
     :param error_path: path to the error path
     """
     try:
-        os.mkdir(error_path)
+        os.makedirs(error_path)
     except FileExistsError:
         pass
 
