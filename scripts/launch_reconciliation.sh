@@ -66,7 +66,7 @@ defaultProcess(){
 
 reconciliationProcess(){
     # If all things went good, start the reconciliation process and insert the document as a Maarch attachment
-    python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -resid "$2" -chrono "$3"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -chrono "$2"
 }
 
 
@@ -93,25 +93,23 @@ mv "$inputPath" "$tmpPath"
 
 imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
-barcode=$(readBarCode "$imgFile")
+chrono=$(readBarCode "$imgFile")
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Barcode content : $barcode" >> "$logFile"
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Barcode content : $chrono" >> "$logFile"
 
 rm "$imgFile"
 
-if [[ -z "$barcode" ]]
+if [[ -z "$chrono" ]]
 then
-	echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+	  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
     defaultProcess "$tmpPath"
 else
-    resid=${barcode%%#*}
-    chrono=${barcode/*#/}
-
     attachmentOK=$(check_attachment "$chrono")
+
     if [[ "$attachmentOK" == "OK" ]]
     then
         echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start RECONCILIATION process" >> "$logFile"
-        reconciliationProcess "$tmpPath" "$resid" "$chrono"
+        reconciliationProcess "$tmpPath" "$chrono"
     else
         echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
         defaultProcess "$tmpPath"
