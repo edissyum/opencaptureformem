@@ -33,6 +33,7 @@ import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
 from src.process.OCForMaarch import process
 from src.classes.Mail import move_batch_to_error
+from src.classes.SMTP import SMTP
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
 
@@ -140,10 +141,25 @@ def launch(args):
     # Init all the necessary classes
     config = configClass.Config()
     config.load_file(args['config'])
+    smtp = False
 
     if args.get('isMail') is not None:
         log = logClass.Log(args['log'])
         if args['isMail'] is True:
+            config_mail = configClass.Config()
+            config_mail.load_file(args['config_mail'])
+            smtp = SMTP(
+                config_mail.cfg['GLOBAL']['smtp_notif_on_error'],
+                config_mail.cfg['GLOBAL']['smtp_host'],
+                config_mail.cfg['GLOBAL']['smtp_port'],
+                config_mail.cfg['GLOBAL']['smtp_login'],
+                config_mail.cfg['GLOBAL']['smtp_pwd'],
+                config_mail.cfg['GLOBAL']['smtp_ssl'],
+                config_mail.cfg['GLOBAL']['smtp_starttls'],
+                config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
+                config_mail.cfg['GLOBAL']['smtp_delay'],
+            )
+
             log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
         log = logClass.Log(config.cfg['GLOBAL']['logfile'])
@@ -207,12 +223,12 @@ def launch(args):
                                         log.info('Insert attachment OK : ' + str(res))
                                         continue
                                     else:
-                                        move_batch_to_error(args['batch_path'], args['error_path'])
+                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['msg'])
                                         log.error('Error while inserting attachment : ' + str(res))
                             else:
                                 log.info('No attachments found')
                         else:
-                            move_batch_to_error(args['batch_path'], args['error_path'])
+                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['msg'])
                             log.error('Error while processing e-mail : ' + str(res))
 
                         recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
