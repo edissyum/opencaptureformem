@@ -1,5 +1,5 @@
 [GLOBAL]
-batchPath             = /opt/maarch/OpenCapture/data/MailCapture/
+batchPath             = /opt/maarch/OpenCapture/data/MailCollect/
 # True or False
 importOnlyAttachments = False
 # True or False

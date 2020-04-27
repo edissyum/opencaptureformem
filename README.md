@@ -156,7 +156,7 @@ For that, just fill the following informations :
   - smtp_dest_admin_mail : e-mail which receive notifications
   - smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago
 
-Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCapture/check_folders.py</code> with your hosts informations
+Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCollect/check_folders.py</code> with your hosts informations
 
 To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script : 
 
@@ -164,11 +164,11 @@ To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</co
 
 By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
 
-## Clean MailCapture batches
+## Clean MailCollect batches
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
 To avoid lack of memory on the server, do not forget to cron the <code>clean.sh</code> script : 
 
-    0 2 * * 1-5   /opt/maarch/OpenCapture/scripts/MailCapture/clean.sh >/dev/null 2>&1
+    0 2 * * 1-5   /opt/maarch/OpenCapture/scripts/MailCollect/clean.sh >/dev/null 2>&1
 
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
