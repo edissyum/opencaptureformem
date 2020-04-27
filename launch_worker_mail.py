@@ -22,6 +22,7 @@ import tempfile
 import datetime
 
 from src.main import launch
+from src.classes.SMTP import SMTP
 import src.classes.Log as logClass
 import src.classes.Mail as mailClass
 import src.classes.Config as configClass
@@ -84,12 +85,26 @@ now = datetime.datetime.now()
 path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
 path_without_time = ConfigMail.cfg['GLOBAL']['batchpath']
 
+SMTP = SMTP(
+    ConfigMail.cfg['GLOBAL']['smtp_notif_on_error'],
+    ConfigMail.cfg['GLOBAL']['smtp_host'],
+    ConfigMail.cfg['GLOBAL']['smtp_port'],
+    ConfigMail.cfg['GLOBAL']['smtp_login'],
+    ConfigMail.cfg['GLOBAL']['smtp_pwd'],
+    ConfigMail.cfg['GLOBAL']['smtp_ssl'],
+    ConfigMail.cfg['GLOBAL']['smtp_starttls'],
+    ConfigMail.cfg['GLOBAL']['smtp_dest_admin_mail'],
+    ConfigMail.cfg['GLOBAL']['smtp_delay'],
+)
+
 Mail = mailClass.Mail(
     ConfigMail.cfg[process]['host'],
     ConfigMail.cfg[process]['port'],
     ConfigMail.cfg[process]['login'],
     ConfigMail.cfg[process]['password'],
+    SMTP
 )
+
 web_service = webserviceClass.WebServices(
     Config.cfg['OCForMaarch']['host'],
     Config.cfg['OCForMaarch']['user'],
@@ -149,9 +164,11 @@ if check:
                     'file': file,
                     'isMail': True,
                     'msg_uid': str(msg.uid),
+                    'msg': msg,
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
+                    'config_mail': args['config_mail'],
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],

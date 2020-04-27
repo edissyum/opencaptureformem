@@ -70,7 +70,7 @@ git config core.fileMode False
 ####################
 # Makes scripts executable
 chmod u+x scripts/*.sh
-chmod u+x scripts/MailCapture/*.sh
+chmod u+x scripts/MailCollect/*.sh
 
 ####################
 # Create the service systemd or supervisor

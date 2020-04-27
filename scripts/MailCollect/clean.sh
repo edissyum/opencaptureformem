@@ -16,9 +16,9 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-# Bash script to clean MailCapture batches and log
+# Bash script to clean MailCollect batches and log
 
-batch_path='/opt/maarch/OpenCapture/data/MailCapture/'
+batch_path='/opt/maarch/OpenCapture/data/MailCollect/'
 conservation_time=7
 
 find $batch_path -mindepth 1 -maxdepth 1 -type d -not -name '_ERROR' -ctime +$conservation_time -exec echo {} ';'
