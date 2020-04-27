@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.0
+Version 4.1
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -43,7 +43,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 4.0 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 4.1 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **123**
@@ -147,6 +147,14 @@ Here is a short list of options you have for mail process into <code>/opt/maarch
   - importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
   - from_is_reply_to : In some case, the <code>from</code> field is a no-reply email and the real from e-mail is in reply-to. Put <code>True</code> if it's the case
     If this option is enabled but `reply_to` field is empty, the `from` field will be used
+
+You could also set-up notifications if an error is thrown while collect mail with IMAP.
+For that, just fill the following informations : 
+  - smtp_notif_on_error : enable the notifications service, or not
+  - smtp_host, smtp_port, smtp_login, smtp_pwd : SMTP server informations
+  - smtp_ssl, smtp_starttls : Enable SSL AND/OR STARTTLS
+  - smtp_dest_admin_mail : e-mail which receive notifications
+  - smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago
 
 Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCapture/check_folders.py</code> with your hosts informations
 

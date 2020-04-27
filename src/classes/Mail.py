@@ -26,13 +26,18 @@ from imap_tools import MailBox
 
 
 class Mail:
-    def __init__(self, host, port, login, pwd, ws):
+    def __init__(self, host, port, login, pwd, ws, smtp):
         self.pwd = pwd
         self.conn = None
         self.port = port
         self.host = host
         self.login = login
         self.ws = ws
+        self.SMTP = smtp
+
+    def send_notif(self, msg, step):
+        if self.SMTP.isUp:
+            self.SMTP.send_email(message=msg, step=step)
 
     def test_connection(self, ssl):
         """
@@ -43,12 +48,18 @@ class Mail:
         try:
             self.conn = MailBox(host=self.host, port=self.port, ssl=ssl)
         except gaierror as e:
-            sys.exit('IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e))
+            error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e)
+            print(error)
+            self.send_notif(error, 'de la connexion IMAP')
+            sys.exit()
 
         try:
             self.conn.login(self.login, self.pwd)
         except IMAP4_SSL.error as err:
-            sys.exit('Error while trying to login to ' + self.host + ' using ' + self.login + '/' + self.pwd + ' as login/password : ' + str(err))
+            error = 'Error while trying to login to ' + self.host + ' using ' + self.login + '/' + self.pwd + ' as login/password : ' + str(err)
+            print(error)
+            self.send_notif(error, 'de l\'authentification IMAP')
+            sys.exit()
 
     def check_if_folder_exist(self, folder):
         """
@@ -279,13 +290,16 @@ class Mail:
         return False
 
 
-def move_batch_to_error(batch_path, error_path):
+def move_batch_to_error(batch_path, error_path, smtp, msg):
     """
     If error in batch process, move the batch folder into error folder
 
+    :param msg: Contain the msg metadata
+    :param smtp: instance of SMTP class
     :param batch_path: Path to the actual batch
     :param error_path: path to the error path
     """
+
     try:
         os.makedirs(error_path)
     except FileExistsError:
@@ -293,6 +307,14 @@ def move_batch_to_error(batch_path, error_path):
 
     try:
         shutil.move(batch_path, error_path)
+        if smtp is not False:
+            smtp.send_email(
+                message='    - N° de batch : ' + os.path.basename(batch_path) + '/ \n' +
+                '    - Chemin vers le batch en erreur : _ERROR/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + '/ \n' +
+                '    - Sujet du mail : ' + msg.subject + '\n' +
+                '    - Date du mail : ' + msg.date.strftime('%d/%m/%Y %H:%M:%S') + '\n' +
+                '    - UID du mail : ' + msg.uid + '\n',
+                step='du traitement du mail suivant')
     except (FileNotFoundError, FileExistsError, shutil.Error):
         pass
 

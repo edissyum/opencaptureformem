@@ -22,6 +22,7 @@ import tempfile
 import datetime
 
 from src.main import launch
+from src.classes.SMTP import SMTP
 import src.classes.Log as logClass
 import src.classes.Mail as mailClass
 import src.classes.Config as configClass
@@ -91,12 +92,25 @@ web_service = webserviceClass.WebServices(
     global_log
 )
 
+SMTP = SMTP(
+    ConfigMail.cfg['GLOBAL']['smtp_notif_on_error'],
+    ConfigMail.cfg['GLOBAL']['smtp_host'],
+    ConfigMail.cfg['GLOBAL']['smtp_port'],
+    ConfigMail.cfg['GLOBAL']['smtp_login'],
+    ConfigMail.cfg['GLOBAL']['smtp_pwd'],
+    ConfigMail.cfg['GLOBAL']['smtp_ssl'],
+    ConfigMail.cfg['GLOBAL']['smtp_starttls'],
+    ConfigMail.cfg['GLOBAL']['smtp_dest_admin_mail'],
+    ConfigMail.cfg['GLOBAL']['smtp_delay'],
+)
+
 Mail = mailClass.Mail(
     ConfigMail.cfg[process]['host'],
     ConfigMail.cfg[process]['port'],
     ConfigMail.cfg[process]['login'],
     ConfigMail.cfg[process]['password'],
-    web_service
+    web_service,
+    SMTP
 )
 
 cfg = ConfigMail.cfg[process]
@@ -139,6 +153,7 @@ if check:
         Log = logClass.Log(batch_path + '/' + date_batch + '.log')
         Log.info('Start following batch : ' + os.path.basename(os.path.normpath(batch_path)))
         Log.info('Import only attachments is : ' + str(import_only_attachments))
+        Log.info('Action after processing e-mail is : ' + action)
         Log.info('Number of e-mail to process : ' + str(len(emails)))
         i = 1
         for msg in emails:
@@ -151,9 +166,11 @@ if check:
                     'file': file,
                     'isMail': True,
                     'msg_uid': str(msg.uid),
+                    'msg': msg,
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
+                    'config_mail': args['config_mail'],
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],

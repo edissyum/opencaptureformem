@@ -2,6 +2,19 @@
 batchPath             = /opt/maarch/OpenCapture/data/MailCapture/
 # True or False
 importOnlyAttachments = False
+# True or False
+smtp_notif_on_error   = True
+smtp_host             = smtp.gmail.com
+smtp_port             = 587
+smtp_login            = test@gmail.com
+smtp_pwd              = test
+#True or False
+smtp_ssl              = False
+#True or False
+smtp_starttls         = True
+smtp_dest_admin_mail  =
+# Delay between send another email, in minutes
+smtp_delay            = 30
 
 [MAIL_1]
 host                  = imap.gmail.com
