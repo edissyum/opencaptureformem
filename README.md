@@ -87,6 +87,37 @@ We use worker and jobs to enqueue process. The worker is encapsulated into a ser
    And add
 
     @reboot systemctl start oc-worker.service
+    
+## Configuration
+The file <code>src/config/config.ini</code> is splitted in different categories
+
+ - Global
+    - Choose the number of threads used to multi-threads (5 by defaults)
+    - Resolution and compressionQuality when PDF are converted to JPG
+    - List of char to be remove to sanitize detected email
+    - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
+    - tmpPath, no need to modify
+    - errorPath, no need to modify
+    - Path to the logFile, no need to modify
+ - Locale
+    - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
+    - Choose the locale of OCR (see the langcodes of Tesseract)
+    - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
+ - Regex
+    - Add extensions to detect URL during text detection
+ - Separator_QR
+    - Enable or disable
+    - Choose to export PDF or PDF/A
+    - Path to export PDF or PDF/A, no need to modify
+    - Tmp path, no need to modify
+    - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
+  - OCForMaarch
+    - Link to **/rest** API of Maarch with User and Password
+    - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
+    - Uppercase the subject automatically
+  - OCForMaarch_**process_name**
+     - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
+
 
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
@@ -187,36 +218,6 @@ The process of update is very simple. But before you need to modify the file and
 ## QRCode separation
 Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
 If you use the Maarch default separator, don't forget to report modification of <code>src/app/entity/controllers/EntitySeparatorController.php</code> into the Maarch installation.
-
-## Configuration
-The file <code>src/config/config.ini</code> is splitted in different categories
-
- - Global
-    - Choose the number of threads used to multi-threads (5 by defaults)
-    - Resolution and compressionQuality when PDF are converted to JPG
-    - List of char to be remove to sanitize detected email
-    - Set the default path of the project (default : **/opt/maarch/OpenCapture/**)
-    - tmpPath, no need to modify
-    - errorPath, no need to modify
-    - Path to the logFile, no need to modify
- - Locale
-    - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
-    - Choose the locale of OCR (see the langcodes of Tesseract)
-    - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
- - Regex
-    - Add extensions to detect URL during text detection
- - Separator_QR
-    - Enable or disable
-    - Choose to export PDF or PDF/A
-    - Path to export PDF or PDF/A, no need to modify
-    - Tmp path, no need to modify
-    - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
-  - OCForMaarch
-    - Link to **/rest** API of Maarch with User and Password
-    - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
-    - Uppercase the subject automatically
-  - OCForMaarch_**process_name**
-     - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
 ## Apache modifications
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
