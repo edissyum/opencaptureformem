@@ -152,6 +152,7 @@ if check:
         Log = logClass.Log(batch_path + '/' + date_batch + '.log')
         Log.info('Start following batch : ' + os.path.basename(os.path.normpath(batch_path)))
         Log.info('Import only attachments is : ' + str(import_only_attachments))
+        Log.info('Action after processing e-mail is : ' + action)
         Log.info('Number of e-mail to process : ' + str(len(emails)))
         i = 1
         for msg in emails:
@@ -164,7 +165,7 @@ if check:
                     'file': file,
                     'isMail': True,
                     'msg_uid': str(msg.uid),
-                    'msg': msg,
+                    'msg': {'date': msg.date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg.subject, 'uid': msg.uid},
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
@@ -174,7 +175,7 @@ if check:
                     'attachments': ret['attachments'],
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
-                    'error_path': path_without_time + '/_ERROR/' + year + month + day,
+                    'error_path': path_without_time + '/_ERROR/' + process + '/' + year + month + day
                 })
             else:
                 Log.info('Start to process only attachments')
