@@ -13,7 +13,7 @@ smtp_ssl              = False
 #True or False
 smtp_starttls         = True
 smtp_dest_admin_mail  =
-# Delay between send another email, in minutes
+# Delay between send another email, in minutes. 0 to disable it
 smtp_delay            = 30
 
 [MAIL_1]
