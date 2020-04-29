@@ -7,13 +7,14 @@ smtp_notif_on_error   = True
 smtp_host             = smtp.gmail.com
 smtp_port             = 587
 smtp_login            = test@gmail.com
+# If you have $ in your password, you must double it
 smtp_pwd              = test
 #True or False
 smtp_ssl              = False
 #True or False
 smtp_starttls         = True
 smtp_dest_admin_mail  =
-# Delay between send another email, in minutes
+# Delay between send another email, in minutes. 0 to disable it
 smtp_delay            = 30
 
 [MAIL_1]
