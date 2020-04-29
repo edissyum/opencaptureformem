@@ -118,7 +118,6 @@ The file <code>src/config/config.ini</code> is splitted in different categories
   - OCForMaarch_**process_name**
      - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
-
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
@@ -188,9 +187,10 @@ For that, just fill the following informations :
   - smtp_host, smtp_port, smtp_login, smtp_pwd : SMTP server informations
   - smtp_ssl, smtp_starttls : Enable SSL AND/OR STARTTLS
   - smtp_dest_admin_mail : e-mail which receive notifications
-  - smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago
+  - smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago. 0 to disable it
 
-Hint : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCollect/check_folders.py</code> with your hosts informations
+Hint : If you need to test the SMTP settings, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCollect/smtp_test.py</code> with your hosts informations
+Hint2 : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCollect/check_folders.py</code> with your hosts informations
 
 To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script : 
 
