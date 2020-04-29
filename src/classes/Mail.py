@@ -271,7 +271,7 @@ class Mail:
         return args
 
 
-def move_batch_to_error(batch_path, error_path, smtp, msg):
+def move_batch_to_error(batch_path, error_path, smtp, process, msg):
     """
     If error in batch process, move the batch folder into error folder
 
@@ -291,10 +291,11 @@ def move_batch_to_error(batch_path, error_path, smtp, msg):
         if smtp is not False:
             smtp.send_email(
                 message='    - N° de batch : ' + os.path.basename(batch_path) + '/ \n' +
-                '    - Chemin vers le batch en erreur : _ERROR/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + '/ \n' +
-                '    - Sujet du mail : ' + msg.subject + '\n' +
-                '    - Date du mail : ' + msg.date.strftime('%d/%m/%Y %H:%M:%S') + '\n' +
-                '    - UID du mail : ' + msg.uid + '\n',
+                        '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + '/ \n' +
+                        '    - Nom du process : ' + process + '\n' +
+                        '    - Sujet du mail : ' + msg['subject'] + '\n' +
+                        '    - Date du mail : ' + msg['date'] + '\n' +
+                        '    - UID du mail : ' + msg['uid'] + '\n',
                 step='du traitement du mail suivant')
     except (FileNotFoundError, FileExistsError, shutil.Error):
         pass

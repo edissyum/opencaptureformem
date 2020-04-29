@@ -222,12 +222,12 @@ def launch(args):
                                         log.info('Insert attachment OK : ' + str(res))
                                         continue
                                     else:
-                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['msg'])
+                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'])
                                         log.error('Error while inserting attachment : ' + str(res))
                             else:
                                 log.info('No attachments found')
                         else:
-                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['msg'])
+                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'])
                             log.error('Error while processing e-mail : ' + str(res))
 
                         recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
