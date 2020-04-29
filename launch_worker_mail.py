@@ -166,7 +166,7 @@ if check:
                     'file': file,
                     'isMail': True,
                     'msg_uid': str(msg.uid),
-                    'msg': msg,
+                    'msg': {'date': msg.date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg.subject, 'uid': msg.uid},
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
@@ -176,7 +176,7 @@ if check:
                     'attachments': ret['attachments'],
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
-                    'error_path': path_without_time + '/_ERROR/' + year + month + day
+                    'error_path': path_without_time + '/_ERROR/' + process + '/' + year + month + day
                 })
             else:
                 Log.info('Start to process only attachments')
