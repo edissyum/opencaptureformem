@@ -35,7 +35,7 @@ git config --global user.email "update@ocformaarch"
 git config --global user.name "Update Open-Capture"
 git pull
 git stash # Remove custom code if needed
-latest_tag=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+latest_tag=$(git describe --tags "$(git rev-list --tags=*19.04 --max-count=1)")
 git checkout "$latest_tag"
 git config core.fileMode False
 
