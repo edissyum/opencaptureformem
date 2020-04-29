@@ -37,7 +37,7 @@ class SMTP:
         self.dest_mail = dest_mail
         self.starttls = str2bool(starttls)
         self.isUp = False
-        self.delay = delay
+        self.delay = int(delay)
 
         if self.enabled:
             self.test_connection()
@@ -97,12 +97,14 @@ class SMTP:
         msg['To'] = self.dest_mail
         msg['Subject'] = '[MailCollect] Erreur lors de la capture IMAP'
         message = 'Une erreur est arrivée lors ' + step + ' : \n' \
-                  + message + '\n\n' \
-                  'Attention, durant les ' + self.delay + ' dernières minutes, d\'autres erreurs ont pu arriver sans notifications.'
+                  + message
+        if self.delay != 0:
+            message += '\n\n Attention, durant les ' + str(self.delay) + ' dernières minutes, d\'autres erreurs ont pu arriver sans notifications.'
+
         msg.attach(MIMEText(message))
 
         try:
-            if diff_minutes is not False and diff_minutes < int(self.delay):
+            if diff_minutes is not False and self.delay != 0 and diff_minutes < self.delay:
                 pass
             else:
                 self.conn.sendmail(from_addr='MailCollect', to_addrs=self.dest_mail, msg=msg.as_string())
