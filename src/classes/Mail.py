@@ -193,7 +193,10 @@ class Mail:
         # Start with headers
         fp = open(primary_mail_path + 'header.txt', 'w')
         for header in msg.headers:
-            fp.write(header + ' : ' + msg.headers[header][0] + '\n')
+            try:
+                fp.write(header + ' : ' + msg.headers[header][0] + '\n')
+            except UnicodeEncodeError:
+                fp.write(header + ' : ' + msg.headers[header][0].encode('utf-8', 'surrogateescape').decode('utf-8', 'replace') + '\n')
         fp.close()
 
         # Then body
