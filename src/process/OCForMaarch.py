@@ -38,8 +38,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     log.info('Using the following process : ' + _process)
 
+    destination = ''
+
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
     if args.get('RDFF') is not None:
+        log.info('RDFF is enabled')
         file_name = os.path.basename(file)
         if separator.divider not in file_name:
             destination = config.cfg[_process]['destination']
@@ -51,8 +54,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         destination = args['destination']
     elif args.get('isMail') is not None and args.get('isMail') is True:
         destination = args['data']['destination']
-    else:
+
+    if not destination:
+        # Put default destination
         destination = config.cfg[_process]['destination']
+        log.info("Destination can't be found, using default destination : " + destination)
 
     if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
         res = image.pdf_to_jpg(file + '[0]', True)
