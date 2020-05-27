@@ -217,7 +217,7 @@ The process of update is very simple. But before you need to modify the file and
 # Informations
 ## QRCode separation
 Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
-If you use the Maarch default separator, don't forget to report modification of <code>src/app/entity/controllers/EntitySeparatorController.php</code> into the Maarch installation.
+On the new version 20.03 the separator now put entity ID instead of entity short label. But there is no issue
 
 ## Apache modifications
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
