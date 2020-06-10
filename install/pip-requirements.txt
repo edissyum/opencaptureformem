@@ -1,7 +1,7 @@
 bs4
 wand
 pyPdf2
-pillow
+pillow>=6.2.0
 kuyruk
 ocrmypdf
 requests

@@ -57,7 +57,7 @@ elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && $VER == *'10'* ]]; then
   apt install -y tesseract-ocr-eng
 fi
 
-xargs -a apt-requirements.txt apt install
+xargs -a apt-requirements.txt apt install -y
 pip3 install --upgrade pip
 pip3 install -r pip-requirements.txt
 
