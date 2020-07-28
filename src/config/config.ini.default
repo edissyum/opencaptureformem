@@ -50,6 +50,7 @@ format              = pdf
 model_id            = 1
 destination         = COU
 custom_mail         = 8
+custom_fields		= {}
 
 [OCForMaarch_outgoing]
 status              = INIT

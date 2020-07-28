@@ -108,10 +108,14 @@ class WebServices:
             'destination': destination,
             'senders': contact,
             'documentDate': date,
+            'customFields': {},
         }
 
+        if _process.get('custom_fields') is not None:
+            data['customFields'] = json.loads(_process.get('custom_fields'))
+
         if _process.get('reconciliation') is None and custom_mail is not '':
-            data['customFields'] = {_process['custom_mail']: custom_mail}
+            data['customFields'][_process['custom_mail']] = custom_mail
 
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
