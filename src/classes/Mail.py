@@ -14,7 +14,7 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-
+import mimetypes
 import os
 import sys
 import shutil
@@ -215,18 +215,24 @@ class Mail:
         fp = open(primary_mail_path + 'orig.txt', 'w')
 
         for payload in msg.obj.get_payload():
-            fp.write(str(payload))
+            try:
+                fp.write(str(payload))
+            except KeyError:
+                pass
 
         fp.close()
 
         # Backup attachments
         attachments = self.retrieve_attachment(msg)
+
         if len(attachments) > 0:
             attachment_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
                 file_path = os.path.join(attachment_path + file['filename'] + file['format'])
-                if not os.path.isfile(file_path):
+                if not file['format']:
+                    file['format'] = mimetypes.guess_extension(file['mime_type'])
+                if not os.path.isfile(file_path) and file['format']:
                     fp = open(file_path, 'wb')
                     fp.write(file['content'])
                     fp.close()
