@@ -218,7 +218,7 @@ class Mail:
             try:
                 fp.write(str(payload))
             except KeyError:
-                pass
+                break
 
         fp.close()
 
