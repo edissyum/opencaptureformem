@@ -61,6 +61,7 @@ format              = pdf
 model_id            = 2
 destination         = COU
 custom_mail         = 8
+custom_fields		= {}
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
