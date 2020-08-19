@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.1.3_20.03
+Version 4.1.4_20.03
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -43,10 +43,12 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 4.1.3_20.03 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 4.1.4_20.03 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
-The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **123**
+The ./Makefile install all the necessary packages and create the service, but you have to change the User and Group.
+So just open the ./Makefile and add your user and group on line **13** and **14**
+
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
@@ -61,6 +63,12 @@ Systemd is perfect for one instance
 Don't forget to modify the two config file with your specifics need. If you need help, you have more informations about the <code>src/config/config.ini</code> settings into the **_Configuration_** section.
 For the <code>src/config/mail.ini</code> just check the **_IMAP Connector (Open-Capture MailCollect Module)_** section.
 
+In most cases you had to modify the <code>/etc/ImageMagick-6/policy.xml</code> file to comment the following line (~ line 94) and then restart the oc-worker:
+
+    <policy domain="coder" rights="none" pattern="PDF" />
+
+
+    $ sudo systemctl restart oc-worker.service
 
 Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
 
