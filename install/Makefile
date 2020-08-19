@@ -10,6 +10,20 @@ normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
 defaultPath=/opt/maarch/OpenCapture/
+user=
+group=
+if [ -z "$user" ]
+then
+ echo "The user variable is empty. Please fill it with your current user before run Makefile"
+ exit
+fi
+
+if [ -z "$group" ]
+then
+ echo "The group variable is empty. Please fill it with the group of your choice (yours or www-data) before run Makefile"
+ exit
+fi
+
 
 ####################
 # User choice
@@ -82,8 +96,8 @@ Description=Daemon for Open-Capture for Maarch
 [Service]
 Type=simple
 
-User=edissyum
-Group=edissyum
+User=$user
+Group=$group
 UMask=0022
 
 ExecStart=$defaultPath/scripts/service.sh
@@ -119,4 +133,4 @@ fi
 ####################
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir /tmp/OpenCapture/
-chown -R edissyum:edissyum /tmp/OpenCapture
+chown -R $user:$group /tmp/OpenCapture
