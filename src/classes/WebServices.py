@@ -255,6 +255,8 @@ class WebServices:
             ],
             'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
             'format': args['format'],
+            'resIdMaster': res_id,
+            'type': 'simple_attachment'
         }
 
         try:
