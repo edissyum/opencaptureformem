@@ -38,7 +38,7 @@ class WebServices:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error connecting to the host. Exiting program..')
             self.Log.error('More information : ' + str(e))
-            sys.exit('Connection error')
+            exit()
 
     def retrieve_contact_by_mail(self, mail):
         """
