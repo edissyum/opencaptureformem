@@ -47,9 +47,7 @@ Nothing as simple as that :
     $ git clone -b 4.1.5_20.03 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
-The ./Makefile install all the necessary packages and create the service, but you have to change the User and Group.
-So just open the ./Makefile and add your user and group on line **13** and **14**
-
+The ./Makefile install all the necessary packages and create the service
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
