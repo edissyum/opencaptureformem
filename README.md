@@ -61,6 +61,13 @@ Systemd is perfect for one instance
     $ cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
     $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
+
+It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
+
+    $ sudo apt install tesseract-ocr-<langcode>
+
+  Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
+
 Don't forget to modify the two config file with your specifics need. If you need help, you have more informations about the <code>src/config/config.ini</code> settings into the **_Configuration_** section.
 For the <code>src/config/mail.ini</code> just check the **_IMAP Connector (Open-Capture MailCollect Module)_** section.
 
@@ -72,12 +79,6 @@ In most cases you had to modify the <code>/etc/ImageMagick-6/policy.xml</code> f
     $ sudo systemctl restart oc-worker.service
 
 Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
-
-  It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
-
-    $ sudo apt install tesseract-ocr-langcode
-
-  Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
 ## Set up the incron & the cron to start the service
 We want to automatise the capture of document. For that, we'll use incrontab.
