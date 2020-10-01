@@ -41,7 +41,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     destination = ''
 
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
-    if args.get('RDFF') is not None:
+    if args.get('RDFF') not in [None, False]:
         log.info('RDFF is enabled')
         file_name = os.path.basename(file)
         if separator.divider not in file_name:
