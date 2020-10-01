@@ -220,7 +220,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             if args['isinternalnote']:
                 res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
             else:
-                res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process)
+                res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
         else:
             res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 
