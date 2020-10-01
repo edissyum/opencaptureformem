@@ -101,6 +101,7 @@ Group=$group
 UMask=0022
 
 ExecStart=$defaultPath/scripts/service.sh
+KillSignal=SIGQUIT
 
 Restart=on-failure
 
@@ -121,6 +122,11 @@ else
 command=$defaultPath/scripts/service.sh
 process_name=%(program_name)s_%(process_num)02d
 numprocs=$nbProcess
+socket_owner=$user
+stopsignal=QUIT
+stopasgroup=true
+killasgroup=true
+stopwaitsecs=10
 stderr_logfile=/tmp/OC_%(process_num)02d_error.log
 EOF
   "
