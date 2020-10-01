@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.1.4_20.03
+Version 4.1.5_20.03
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -37,13 +37,14 @@ Tested with :
 - Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
+- Ubuntu 20.04 LTS with Python 3.7.3 Tesseract V4.1.1
 
 ## Install Open-Capture for Maarch
 Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 4.1.4_20.03 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 4.1.5_20.03 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service, but you have to change the User and Group.
@@ -60,6 +61,13 @@ Systemd is perfect for one instance
     $ cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
     $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
+
+It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
+
+    $ sudo apt install tesseract-ocr-<langcode>
+
+  Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
+
 Don't forget to modify the two config file with your specifics need. If you need help, you have more informations about the <code>src/config/config.ini</code> settings into the **_Configuration_** section.
 For the <code>src/config/mail.ini</code> just check the **_IMAP Connector (Open-Capture MailCollect Module)_** section.
 
@@ -71,12 +79,6 @@ In most cases you had to modify the <code>/etc/ImageMagick-6/policy.xml</code> f
     $ sudo systemctl restart oc-worker.service
 
 Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
-
-  It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
-
-    $ sudo apt install tesseract-ocr-langcode
-
-  Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
 ## Set up the incron & the cron to start the service
 We want to automatise the capture of document. For that, we'll use incrontab.
