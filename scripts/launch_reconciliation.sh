@@ -17,6 +17,10 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
+if [[ -d "$1" ]]
+then
+        exit 0
+fi
 
 # Variables
 script="RECONCILIATION"
