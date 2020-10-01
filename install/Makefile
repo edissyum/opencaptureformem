@@ -10,20 +10,19 @@ normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
 defaultPath=/opt/maarch/OpenCapture/
-user=
-group=
+user=$(who am i | awk '{print $1}')
+group=www-data
+
 if [ -z "$user" ]
 then
- echo "The user variable is empty. Please fill it with your current user before run Makefile"
- exit
+ printf "The user variable is empty. Please fill it with your desired user : "
+ read -r user
+ if [ -z "$user" ]
+ then
+   echo 'User remain empty, exiting...'
+   exit
+ fi
 fi
-
-if [ -z "$group" ]
-then
- echo "The group variable is empty. Please fill it with the group of your choice (yours or www-data) before run Makefile"
- exit
-fi
-
 
 ####################
 # User choice
@@ -139,4 +138,4 @@ fi
 ####################
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir /tmp/OpenCapture/
-chown -R $user:$group /tmp/OpenCapture
+chown -R "$user":"$group" /tmp/OpenCapture
