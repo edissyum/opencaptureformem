@@ -26,6 +26,8 @@ fi
 OCPath="/opt/maarch/OpenCapture/"
 backupPath="/opt/maarch/OpenCapture.bck/"
 
+user=$(who am i | awk '{print $1}')
+
 # Backup all the Open-Capture path
 cp -r "$OCPath" "$backupPath"
 
@@ -51,7 +53,7 @@ find . -name ".gitkeep" -delete
 
 # Fix right on folder
 chmod -R 775 $OCPath
-chown -R edissyum:edissyum $OCPath
+chown -R "$user":"$user" $OCPath
 
 # Restart worker
 systemctl restart oc-worker.service
