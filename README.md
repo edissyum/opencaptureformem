@@ -150,6 +150,11 @@ The list of files needed to be modify is in install/Maarch with the correct stru
         some code...
     // END NCH01
 
+    <!-- NCH01 -->
+        some code...
+    <!-- END NCH01 -->
+
+
 Just report the modifications onto you Maarch installation and copy paste the <code>src/app/attachments/controllers/ReconciliationController.php</code>
 
 ## Various

@@ -63,8 +63,9 @@ class ReconciliationController
 
         $title           = $info['title'];
         $fileFormat      = 'pdf';
-        $attachment_type = 'outgoing_mail_signed';
+        $attachment_type = isset($aArgs['attachment_type']) ? $aArgs['attachment_type'] : 'signed_response';
         $res_id_master   = $info['res_id_master'];
+        $status          = isset($aArgs['status']) ? $aArgs['status'] : 'SIGN';
 
         $aArgs = [
             'title'        => $title,
@@ -74,7 +75,8 @@ class ReconciliationController
             'resIdMaster'  => $res_id_master,
             'type'         => $attachment_type,
             'identifier'   => $identifier,
-            'recipientId'  => $info['recipient_id']
+            'recipientId'  => $info['recipient_id'],
+            'status'       => $status
         ];
 
         $resId = StoreController::storeAttachment($aArgs);
@@ -134,4 +136,4 @@ class ReconciliationController
         }
     }
 }
-// END NCH01 
+// END NCH01
