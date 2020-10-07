@@ -44,7 +44,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 4.1.5_20.03 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 4.1.5_20.03 https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service
