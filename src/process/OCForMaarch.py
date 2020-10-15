@@ -69,8 +69,20 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 if args.get('isMail') is not None and args.get('isMail') is True:
                     args['data']['destination'] = destination
 
-    # Retrieve user_id to use it as typist
+    # If destination still not good, try with default destination
+    if type(destination) is not int:
+        if args.get('isMail') is not None and args.get('isMail') is True:
+            destination = args['data']['destination']
+        else:
+            destination = config.cfg[_process]['destination']
+        destinations = web_service.retrieve_entities()
+        for dest in destinations['entities']:
+            if destination == dest['id']:
+                destination = dest['serialId']
+                if args.get('isMail') is not None and args.get('isMail') is True:
+                    args['data']['destination'] = destination
 
+    # Retrieve user_id to use it as typist
     if args.get('isMail') is not None and args.get('isMail') is True:
         typist = args['data']['typist']
     else:
@@ -214,7 +226,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                 except shutil.Error as e:
                     log.error('Moving file ' + file + ' error : ' + str(e))
-                return False
+                return False, res
 
         elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
             if args['isinternalnote']:

@@ -15,7 +15,6 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-import sys
 import json
 import base64
 import requests
@@ -228,9 +227,9 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMaarchError : ' + str(res.text))
-                return False
+                return False, json.loads(res.text)
             else:
-                return json.loads(res.text)
+                return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while inserting in Maarch')
             self.Log.error('More information : ' + str(e))

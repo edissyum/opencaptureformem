@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.1.5_20.03
+Version 4.1.6_20.03
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -44,7 +44,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 4.1.5_20.03 https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 4.1.6_20.03 https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service
@@ -184,7 +184,7 @@ Don't forget to fill the `typist` with the user_id who scan document (in the def
 Here is a short list of options you have for mail process into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>
 
   - hostname, port, login, password : All the informations about the inbox 
-  - isSSL : Choose between True or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>isSSL</code> is True, port must be 993
+  - securedConnection : Choose between True or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is True, port must be a secured port (e.g : 993)
   - folderToCrawl : Which folder needed to be crawl by connector to process email
   - folderDestination : if <code>actionAfterProcess</code> is <code>move</code> specify in which folder we had to move the e-mail after process
   - folderTrash : if <code>actionAfterProcess</code> is <code>delete</code>, specify the name of trash folder. If we use the IMAP delete function, the mail cannot be retrieve
