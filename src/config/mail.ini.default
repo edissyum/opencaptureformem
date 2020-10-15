@@ -26,7 +26,7 @@ password              = test
 # True or False
 priorityToMailSubject = False
 # True or False
-isSSL                = True
+securedConnection    = True
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES
 # If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
