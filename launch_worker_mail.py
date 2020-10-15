@@ -115,14 +115,14 @@ Mail = mailClass.Mail(
 
 cfg = ConfigMail.cfg[process]
 
-isSSl = str2bool(cfg['isssl'])
+secured_connection = str2bool(cfg['securedconnection'])
 folder_trash = cfg['foldertrash']
 action = cfg['actionafterprocess']
 folder_to_crawl = cfg['foldertocrawl']
 folder_destination = cfg['folderdestination']
 import_only_attachments = str2bool(ConfigMail.cfg['GLOBAL']['importonlyattachments'])
 priority_mail_subject = str2bool(ConfigMail.cfg[process]['prioritytomailsubject'])
-Mail.test_connection(isSSl)
+Mail.test_connection(secured_connection)
 
 if action == 'delete':
     if folder_trash != '':
