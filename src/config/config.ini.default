@@ -19,8 +19,6 @@ localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
 [SEPARATOR_QR]
 # True or False
-enabled             = False
-# True or False
 exportPdfa          = False
 outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
 outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
@@ -51,6 +49,8 @@ model_id            = 1
 destination         = COU
 custom_mail         = 8
 custom_fields		= {}
+# True or False
+separator_qr        = False
 
 [OCForMaarch_outgoing]
 status              = INIT
@@ -62,6 +62,8 @@ model_id            = 2
 destination         = COU
 custom_mail         = 8
 custom_fields		= {}
+# True or False
+separator_qr        = False
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
@@ -72,6 +74,8 @@ format              = pdf
 model_id            = 5
 destination         = COU
 reconciliation      =
+# True or False
+separator_qr        = False
 
 [OCForMaarch_reconciliation_found]
 is_attachment       = True
