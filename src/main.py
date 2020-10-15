@@ -31,7 +31,7 @@ import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
-from src.process.OCForMaarch import process
+from src.process.OCForMaarch import process, get_process_name
 from src.classes.Mail import move_batch_to_error
 from src.classes.SMTP import SMTP
 import src.classes.Separator as separatorClass
@@ -184,9 +184,13 @@ def launch(args):
     )
 
     # Start process
+    _process = get_process_name(args, config)
+    args['process_name'] = _process
+    separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
+
     if args.get('path') is not None:
         path = args['path']
-        if str2bool(separator.enabled) is True and args['process'] == 'incoming':
+        if separator.enabled:
             for fileToSep in os.listdir(path):
                 if check_file(image, path + fileToSep, config, log):
                     separator.run(path + fileToSep)
@@ -198,7 +202,7 @@ def launch(args):
     elif args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
-            if str2bool(separator.enabled) is True and args['process'] == 'incoming':
+            if separator.enabled:
                 separator.run(path)
                 if separator.error:  # in case the file is not a pdf or no qrcode was found, process as an image
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
