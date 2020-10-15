@@ -211,25 +211,26 @@ def launch(args):
                 if check_file(image, path, config, log):
                     # Process the file and send it to Maarch
                     res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+
                     if args.get('isMail') is not None and args.get('isMail') is True:
                         # Process the attachments of mail
-                        if res:
-                            res_id = res['resId']
+                        if res[0]:
+                            res_id = res[1]['resId']
                             if len(args['attachments']) > 0:
                                 log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                                 for attachment in args['attachments']:
                                     res = web_service.insert_attachment_from_mail(attachment, res_id)
-                                    if res:
-                                        log.info('Insert attachment OK : ' + str(res))
+                                    if res[0]:
+                                        log.info('Insert attachment OK : ' + str(res[1]))
                                         continue
                                     else:
-                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'])
-                                        log.error('Error while inserting attachment : ' + str(res))
+                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                                        log.error('Error while inserting attachment : ' + str(res[1]))
                             else:
                                 log.info('No attachments found')
                         else:
-                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'])
-                            log.error('Error while processing e-mail : ' + str(res))
+                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                            log.error('Error while processing e-mail : ' + str(res[1]))
 
                         recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
                         log.info('End process')
