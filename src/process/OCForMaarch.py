@@ -69,8 +69,17 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 if args.get('isMail') is not None and args.get('isMail') is True:
                     args['data']['destination'] = destination
 
-    # Retrieve user_id to use it as typist
+    # If destination still not good, try with default destination
+    if type(destination) is not int:
+        destination = config.cfg[_process]['destination']
+        destinations = web_service.retrieve_entities()
+        for dest in destinations['entities']:
+            if destination == dest['id']:
+                destination = dest['serialId']
+                if args.get('isMail') is not None and args.get('isMail') is True:
+                    args['data']['destination'] = destination
 
+    # Retrieve user_id to use it as typist
     if args.get('isMail') is not None and args.get('isMail') is True:
         typist = args['data']['typist']
     else:
