@@ -24,10 +24,7 @@ from .FindSubject import FindSubject
 from .FindContact import FindContact
 
 
-def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None):
-    log.info('Processing file : ' + file)
-
-    # Check if the choosen process mode if available. If not take the default one
+def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') is True:
         _process = args['process']
     else:
@@ -36,6 +33,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             _process = 'OCForMaarch_' + config.cfg['OCForMaarch']['defaultprocess'].lower()
 
+    return _process
+
+
+def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None):
+    log.info('Processing file : ' + file)
+
+    # Check if the choosen process mode if available. If not take the default one
+    _process = args['process_name']
     log.info('Using the following process : ' + _process)
 
     destination = ''
