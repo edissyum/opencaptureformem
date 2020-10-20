@@ -22,7 +22,7 @@ host                  = imap.gmail.com
 port                  = 993
 login                 = test@gmail.com
 # True or False
-forceUtf8             = True
+forceUtf8             = False
 # If you have $ in your password, you must double it
 password              = test
 # True or False
