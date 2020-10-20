@@ -21,6 +21,8 @@ smtp_delay            = 30
 host                  = imap.gmail.com
 port                  = 993
 login                 = test@gmail.com
+# True or False
+forceUtf8             = True
 # If you have $ in your password, you must double it
 password              = test
 # True or False
@@ -45,3 +47,6 @@ custom_mail_from     = 8
 custom_mail_to       = 9
 custom_mail_cc       = 10
 custom_mail_reply_to = 11
+# Double quote on both side of the json. eg : {"1": "NO"}
+custom_fields        = {}
+

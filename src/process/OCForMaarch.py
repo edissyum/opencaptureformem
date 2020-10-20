@@ -36,7 +36,7 @@ def get_process_name(args, config):
     return _process
 
 
-def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None):
+def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None, config_mail=None):
     log.info('Processing file : ' + file)
 
     # Check if the choosen process mode if available. If not take the default one
@@ -222,7 +222,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 if contact:
                     args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
-            res = web_service.insert_letterbox_from_mail(args['data'])
+            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
             if res:
                 log.info('Insert email OK : ' + str(res))
                 return res
