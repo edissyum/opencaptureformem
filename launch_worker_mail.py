@@ -65,63 +65,64 @@ ap.add_argument('-p', "--process", required=True, default='MAIL_1')
 args = vars(ap.parse_args())
 
 if not os.path.exists(args['config']) or not os.path.exists(args['config_mail']):
-    sys.exit('Config file couldn\'t be found')
+    sys.exit('config file couldn\'t be found')
 
 process = args['process']
 print('Start process : ' + process)
 
-Config = configClass.Config()
-Config.load_file(args['config'])
+config = configClass.Config()
+config.load_file(args['config'])
 
-ConfigMail = configClass.Config()
-ConfigMail.load_file(args['config_mail'])
+config_mail = configClass.Config()
+config_mail.load_file(args['config_mail'])
 
-if ConfigMail.cfg.get(process) is None:
+if config_mail.cfg.get(process) is None:
     sys.exit('Process ' + process + ' is not set into ' + args['config_mail'] + ' file')
 
-global_log = logClass.Log(Config.cfg['GLOBAL']['logfile'])
+global_log = logClass.Log(config.cfg['GLOBAL']['logfile'])
 
 now = datetime.datetime.now()
-path = ConfigMail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
-path_without_time = ConfigMail.cfg['GLOBAL']['batchpath']
+path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
+path_without_time = config_mail.cfg['GLOBAL']['batchpath']
 
 web_service = webserviceClass.WebServices(
-    Config.cfg['OCForMaarch']['host'],
-    Config.cfg['OCForMaarch']['user'],
-    Config.cfg['OCForMaarch']['password'],
+    config.cfg['OCForMaarch']['host'],
+    config.cfg['OCForMaarch']['user'],
+    config.cfg['OCForMaarch']['password'],
     global_log
 )
 
 SMTP = SMTP(
-    ConfigMail.cfg['GLOBAL']['smtp_notif_on_error'],
-    ConfigMail.cfg['GLOBAL']['smtp_host'],
-    ConfigMail.cfg['GLOBAL']['smtp_port'],
-    ConfigMail.cfg['GLOBAL']['smtp_login'],
-    ConfigMail.cfg['GLOBAL']['smtp_pwd'],
-    ConfigMail.cfg['GLOBAL']['smtp_ssl'],
-    ConfigMail.cfg['GLOBAL']['smtp_starttls'],
-    ConfigMail.cfg['GLOBAL']['smtp_dest_admin_mail'],
-    ConfigMail.cfg['GLOBAL']['smtp_delay'],
+    config_mail.cfg['GLOBAL']['smtp_notif_on_error'],
+    config_mail.cfg['GLOBAL']['smtp_host'],
+    config_mail.cfg['GLOBAL']['smtp_port'],
+    config_mail.cfg['GLOBAL']['smtp_login'],
+    config_mail.cfg['GLOBAL']['smtp_pwd'],
+    config_mail.cfg['GLOBAL']['smtp_ssl'],
+    config_mail.cfg['GLOBAL']['smtp_starttls'],
+    config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
+    config_mail.cfg['GLOBAL']['smtp_delay'],
 )
 
 Mail = mailClass.Mail(
-    ConfigMail.cfg[process]['host'],
-    ConfigMail.cfg[process]['port'],
-    ConfigMail.cfg[process]['login'],
-    ConfigMail.cfg[process]['password'],
+    config_mail.cfg[process]['host'],
+    config_mail.cfg[process]['port'],
+    config_mail.cfg[process]['login'],
+    config_mail.cfg[process]['password'],
     web_service,
     SMTP
 )
 
-cfg = ConfigMail.cfg[process]
+cfg = config_mail.cfg[process]
 
 secured_connection = str2bool(cfg['securedconnection'])
 folder_trash = cfg['foldertrash']
 action = cfg['actionafterprocess']
 folder_to_crawl = cfg['foldertocrawl']
 folder_destination = cfg['folderdestination']
-import_only_attachments = str2bool(ConfigMail.cfg['GLOBAL']['importonlyattachments'])
-priority_mail_subject = str2bool(ConfigMail.cfg[process]['prioritytomailsubject'])
+import_only_attachments = str2bool(config_mail.cfg['GLOBAL']['importonlyattachments'])
+priority_mail_subject = str2bool(config_mail.cfg[process]['prioritytomailsubject'])
+force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
 Mail.test_connection(secured_connection)
 
 if action == 'delete':
@@ -158,8 +159,8 @@ if check:
         i = 1
         for msg in emails:
             # Backup all the e-mail into batch path
-            Mail.backup_email(msg, batch_path)
-            ret, file = Mail.construct_dict_before_send_to_maarch(msg, ConfigMail.cfg[process], batch_path, Log)
+            Mail.backup_email(msg, batch_path, force_utf8)
+            ret, file = Mail.construct_dict_before_send_to_maarch(msg, config_mail.cfg[process], batch_path, Log)
             if not import_only_attachments:
                 launch({
                     'cpt': str(i),
