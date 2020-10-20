@@ -255,7 +255,7 @@ class Mail:
                 file_path = os.path.join(attachment_path + file['filename'] + file['format'])
                 if not file['format']:
                     file['format'] = mimetypes.guess_extension(file['mime_type'])
-                if not os.path.isfile(file_path) and file['format']:
+                if not os.path.isfile(file_path) and file['format'] and not os.path.isdir(file_path):
                     fp = open(file_path, 'wb')
                     fp.write(file['content'])
                     fp.close()
