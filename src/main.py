@@ -143,26 +143,25 @@ def launch(args):
     config.load_file(args['config'])
     smtp = False
 
-    if args.get('isMail') is not None:
+    if args.get('isMail') is not None and args['isMail'] is True:
         log = logClass.Log(args['log'])
-        if args['isMail'] is True:
-            config_mail = configClass.Config()
-            config_mail.load_file(args['config_mail'])
-            smtp = SMTP(
-                config_mail.cfg['GLOBAL']['smtp_notif_on_error'],
-                config_mail.cfg['GLOBAL']['smtp_host'],
-                config_mail.cfg['GLOBAL']['smtp_port'],
-                config_mail.cfg['GLOBAL']['smtp_login'],
-                config_mail.cfg['GLOBAL']['smtp_pwd'],
-                config_mail.cfg['GLOBAL']['smtp_ssl'],
-                config_mail.cfg['GLOBAL']['smtp_starttls'],
-                config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
-                config_mail.cfg['GLOBAL']['smtp_delay'],
-            )
-
-            log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
+        config_mail = configClass.Config()
+        config_mail.load_file(args['config_mail'])
+        smtp = SMTP(
+            config_mail.cfg['GLOBAL']['smtp_notif_on_error'],
+            config_mail.cfg['GLOBAL']['smtp_host'],
+            config_mail.cfg['GLOBAL']['smtp_port'],
+            config_mail.cfg['GLOBAL']['smtp_login'],
+            config_mail.cfg['GLOBAL']['smtp_pwd'],
+            config_mail.cfg['GLOBAL']['smtp_ssl'],
+            config_mail.cfg['GLOBAL']['smtp_starttls'],
+            config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
+            config_mail.cfg['GLOBAL']['smtp_delay'],
+        )
+        log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
         log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+        config_mail = False
 
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
@@ -186,7 +185,9 @@ def launch(args):
     # Start process
     _process = get_process_name(args, config)
     args['process_name'] = _process
-    separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
+
+    if args.get('isMail') is None or args.get('isMail') is False:
+        separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
 
     if args.get('path') is not None:
         path = args['path']
@@ -214,7 +215,7 @@ def launch(args):
             else:
                 if check_file(image, path, config, log):
                     # Process the file and send it to Maarch
-                    res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+                    res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, None, config_mail)
 
                     if args.get('isMail') is not None and args.get('isMail') is True:
                         # Process the attachments of mail
