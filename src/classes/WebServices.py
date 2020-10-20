@@ -212,16 +212,21 @@ class WebServices:
             self.Log.error('More information : ' + str(e))
             return False
 
-    def insert_letterbox_from_mail(self, args):
+    def insert_letterbox_from_mail(self, args, _process):
         """
         Insert mail into Maarch Database
 
+        :param _process: Part of mail config file, only with process configuration
         :param args: Array of argument, same as insert_with_args
         :return: res_id or Boolean if issue happen
         """
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
         del args['file']
         del args['from']
+
+        if _process.get('custom_fields') is not None:
+            args['customFields'].update(json.loads(_process.get('custom_fields')))
+
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'})
 
