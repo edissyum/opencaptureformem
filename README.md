@@ -42,26 +42,27 @@ Tested with :
 ## Install Open-Capture for Maarch
 Nothing as simple as that :
 
-    $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
-    $ sudo apt install git
-    $ git clone -b 4.1.7_20.03 https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
-    $ cd /opt/maarch/OpenCapture/install/
+    sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
+    sudo apt install git
+    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformaarch.git *20.03 | tail -n1 |  sed 's/.*\///; s/\^{}//')
+    git clone -b $latest_tag https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
+    cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
 
-    $ chmod u+x Makefile
-    $ sudo ./Makefile
-        # Answer the few questions asked at launch
-        # Go grab a coffee ;)
-    $ cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
-    $ cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
+    chmod u+x Makefile
+    sudo ./Makefile
+      # Answer the few questions asked at launch
+      # Go grab a coffee ;)
+    cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
+    cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
 It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
-    $ sudo apt install tesseract-ocr-<langcode>
+    sudo apt install tesseract-ocr-<langcode>
 
   Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
@@ -73,7 +74,7 @@ In most cases you had to modify the <code>/etc/ImageMagick-6/policy.xml</code> f
     <policy domain="coder" rights="none" pattern="PDF" />
 
 
-    $ sudo systemctl restart oc-worker.service
+    sudo systemctl restart oc-worker.service
 
 Fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
 
@@ -89,7 +90,7 @@ Then use <code>incrontab -e</code> and put the following line :
 
 We use worker and jobs to enqueue process. The worker is encapsulated into a service who needs to be started in order to run the process. It's needed to cron the boot of the service at every restart, by the root user :
 
-    $ sudo crontab -e
+    sudo crontab -e
 
    And add
 
@@ -128,10 +129,10 @@ The file <code>src/config/config.ini</code> is splitted in different categories
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
-    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
-    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
-    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
-    $ python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
+    python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -f file.pdf -process incoming
+    python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/
+    python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+    python3 /opt/maarch/OpenCapture/launch_worker.py -c /opt/maarch/OpenCapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
@@ -159,8 +160,9 @@ Just report the modifications onto you Maarch installation and copy paste the <c
 ## Various
 If you want to generate PDF/A instead of PDF, you have to do the following :
 
-    $ cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/
-    $ nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps
+    cp install/sRGB_IEC61966-2-1_black_scaled.icc /usr/share/ghostscript/X.XX/
+    nano +8 /usr/share/ghostscript/X.XX/lib/PDFA_def.ps
+    
     Replace : %/ICCProfile (srgb.icc) % Customise
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
@@ -222,9 +224,9 @@ delete all the batch folder older than 7 days
 # Update Open-Capture For Maarch 20.03
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
-    $ cd /opt/maarch/OpenCapture/install/
-    $ chmod u+x update.sh
-    $ sudo ./update.sh
+    cd /opt/maarch/OpenCapture/install/
+    chmod u+x update.sh
+    sudo ./update.sh
 
 # Informations
 ## QRCode separation
