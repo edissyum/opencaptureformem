@@ -15,7 +15,6 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-import sys
 import json
 import base64
 import requests
@@ -38,7 +37,7 @@ class WebServices:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error connecting to the host. Exiting program..')
             self.Log.error('More information : ' + str(e))
-            sys.exit('Connection error')
+            return False
 
     def retrieve_contact_by_mail(self, mail):
         """
@@ -108,10 +107,14 @@ class WebServices:
             'destination': destination,
             'senders': contact,
             'documentDate': date,
+            'customFields': {},
         }
 
-        if _process.get('reconciliation') is None and custom_mail is not '':
-            data['customFields'] = {_process['custom_mail']: custom_mail}
+        if _process.get('custom_fields') is not None:
+            data['customFields'] = json.loads(_process.get('custom_fields'))
+
+        if _process.get('reconciliation') is None and custom_mail != '':
+            data['customFields'][_process['custom_mail']] = custom_mail
 
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
@@ -159,11 +162,12 @@ class WebServices:
             self.Log.error('More information : ' + str(e))
             return False
 
-    def insert_attachment_reconciliation(self, file_content, chrono, _process):
+    def insert_attachment_reconciliation(self, file_content, chrono, _process, config):
         """
         Insert attachment into Maarch database
         Difference between this function and :insert_attachment() : this one will replace an attachment
 
+        :param config:
         :param file_content: Path to file, then it will be encoded it in b64
         :param chrono: Chrono of the attachment to replace
         :param _process: Process we will use to insert on Maarch (from config file)
@@ -172,6 +176,8 @@ class WebServices:
         data = {
             'chrono': chrono,
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
+            'attachment_type': config.cfg[_process]['attachment_type'],
+            'status': config.cfg[_process]['status']
         }
 
         try:
@@ -206,24 +212,29 @@ class WebServices:
             self.Log.error('More information : ' + str(e))
             return False
 
-    def insert_letterbox_from_mail(self, args):
+    def insert_letterbox_from_mail(self, args, _process):
         """
         Insert mail into Maarch Database
 
+        :param _process: Part of mail config file, only with process configuration
         :param args: Array of argument, same as insert_with_args
         :return: res_id or Boolean if issue happen
         """
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
         del args['file']
         del args['from']
+
+        if _process.get('custom_fields') is not None:
+            args['customFields'].update(json.loads(_process.get('custom_fields')))
+
         try:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'})
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMaarchError : ' + str(res.text))
-                return False
+                return False, json.loads(res.text)
             else:
-                return json.loads(res.text)
+                return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while inserting in Maarch')
             self.Log.error('More information : ' + str(e))
@@ -251,6 +262,8 @@ class WebServices:
             ],
             'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
             'format': args['format'],
+            'resIdMaster': res_id,
+            'type': 'simple_attachment'
         }
 
         try:

@@ -10,6 +10,19 @@ normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
 defaultPath=/opt/maarch/OpenCapture/
+user=$(who am i | awk '{print $1}')
+group=www-data
+
+if [ -z "$user" ]
+then
+ printf "The user variable is empty. Please fill it with your desired user : "
+ read -r user
+ if [ -z "$user" ]
+ then
+   echo 'User remain empty, exiting...'
+   exit
+ fi
+fi
 
 ####################
 # User choice
@@ -64,7 +77,6 @@ pip3 install -r pip-requirements.txt
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
 
-
 git config core.fileMode False
 
 ####################
@@ -83,11 +95,12 @@ Description=Daemon for Open-Capture for Maarch
 [Service]
 Type=simple
 
-User=edissyum
-Group=edissyum
+User=$user
+Group=$group
 UMask=0022
 
 ExecStart=$defaultPath/scripts/service.sh
+KillSignal=SIGQUIT
 
 Restart=on-failure
 
@@ -108,6 +121,11 @@ else
 command=$defaultPath/scripts/service.sh
 process_name=%(program_name)s_%(process_num)02d
 numprocs=$nbProcess
+socket_owner=$user
+stopsignal=QUIT
+stopasgroup=true
+killasgroup=true
+stopwaitsecs=10
 stderr_logfile=/tmp/OC_%(process_num)02d_error.log
 EOF
   "
@@ -120,4 +138,4 @@ fi
 ####################
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir /tmp/OpenCapture/
-chown -R edissyum:edissyum /tmp/OpenCapture
+chown -R "$user":"$group" /tmp/OpenCapture

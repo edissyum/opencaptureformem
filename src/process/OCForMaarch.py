@@ -24,10 +24,7 @@ from .FindSubject import FindSubject
 from .FindContact import FindContact
 
 
-def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None):
-    log.info('Processing file : ' + file)
-
-    # Check if the choosen process mode if available. If not take the default one
+def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') is True:
         _process = args['process']
     else:
@@ -36,12 +33,20 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             _process = 'OCForMaarch_' + config.cfg['OCForMaarch']['defaultprocess'].lower()
 
+    return _process
+
+
+def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None, config_mail=None):
+    log.info('Processing file : ' + file)
+
+    # Check if the choosen process mode if available. If not take the default one
+    _process = args['process_name']
     log.info('Using the following process : ' + _process)
 
     destination = ''
 
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
-    if args.get('RDFF') is not None:
+    if args.get('RDFF') not in [None, False]:
         log.info('RDFF is enabled')
         file_name = os.path.basename(file)
         if separator.divider not in file_name:
@@ -69,8 +74,20 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 if args.get('isMail') is not None and args.get('isMail') is True:
                     args['data']['destination'] = destination
 
-    # Retrieve user_id to use it as typist
+    # If destination still not good, try with default destination
+    if type(destination) is not int:
+        if args.get('isMail') is not None and args.get('isMail') is True:
+            destination = args['data']['destination']
+        else:
+            destination = config.cfg[_process]['destination']
+        destinations = web_service.retrieve_entities()
+        for dest in destinations['entities']:
+            if destination == dest['id']:
+                destination = dest['serialId']
+                if args.get('isMail') is not None and args.get('isMail') is True:
+                    args['data']['destination'] = destination
 
+    # Retrieve user_id to use it as typist
     if args.get('isMail') is not None and args.get('isMail') is True:
         typist = args['data']['typist']
     else:
@@ -205,7 +222,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 if contact:
                     args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
-            res = web_service.insert_letterbox_from_mail(args['data'])
+            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
             if res:
                 log.info('Insert email OK : ' + str(res))
                 return res
@@ -214,13 +231,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                 except shutil.Error as e:
                     log.error('Moving file ' + file + ' error : ' + str(e))
-                return False
+                return False, res
 
         elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
             if args['isinternalnote']:
                 res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
             else:
-                res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process)
+                res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
         else:
             res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 

@@ -14,15 +14,17 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-
+import mimetypes
 import os
+import re
 import sys
 import shutil
 
+from ssl import SSLError
 from socket import gaierror
 from imap_tools import utils
 from imaplib import IMAP4_SSL
-from imap_tools import MailBox
+from imap_tools import MailBox, MailBoxUnencrypted
 
 
 class Mail:
@@ -39,15 +41,17 @@ class Mail:
         if self.SMTP.isUp:
             self.SMTP.send_email(message=msg, step=step)
 
-    def test_connection(self, ssl):
+    def test_connection(self, secured_connection):
         """
         Test the connection to the IMAP server
 
-        :param ssl: Boolean, if SSL is needed or not
         """
         try:
-            self.conn = MailBox(host=self.host, port=self.port, ssl=ssl)
-        except gaierror as e:
+            if secured_connection:
+                self.conn = MailBox(host=self.host, port=self.port)
+            else:
+                self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
+        except (gaierror, SSLError) as e:
             error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e)
             print(error)
             self.send_notif(error, 'de la connexion IMAP')
@@ -104,12 +108,23 @@ class Mail:
         :return: dict of Args and file path
         """
         to_str, cc_str, reply_to = ('', '', '')
-        for to in msg.to_values:
-            to_str += to['full'] + ';'
-        for cc in msg.cc_values:
-            cc_str += cc['full'] + ';'
-        for rp_to in msg.reply_to_values:
-            reply_to += rp_to['full'] + ';'
+        try:
+            for to in msg.to_values:
+                to_str += to['full'] + ';'
+        except TypeError:
+            pass
+
+        try:
+            for cc in msg.cc_values:
+                cc_str += cc['full'] + ';'
+        except TypeError:
+            pass
+
+        try:
+            for rp_to in msg.reply_to_values:
+                reply_to += rp_to['full'] + ';'
+        except TypeError:
+            pass
 
         if len(msg.html) == 0:
             file_format = 'txt'
@@ -148,17 +163,17 @@ class Mail:
                 cfg['custom_mail_from']: msg.from_values['full']
             })
 
-        if cfg.get('custom_mail_to') not in [None, ''] and to_str is not '' and self.check_custom_field(cfg['custom_mail_to'], log):
+        if cfg.get('custom_mail_to') not in [None, ''] and to_str != '' and self.check_custom_field(cfg['custom_mail_to'], log):
             data['mail']['customFields'].update({
                 cfg['custom_mail_to']: to_str[:-1]
             })
 
-        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str is not '' and self.check_custom_field(cfg['custom_mail_cc'], log):
+        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str != '' and self.check_custom_field(cfg['custom_mail_cc'], log):
             data['mail']['customFields'].update({
                 cfg['custom_mail_cc']: cc_str[:-1]
             })
 
-        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to is not '' and self.check_custom_field(cfg['custom_mail_reply_to'], log):
+        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to != '' and self.check_custom_field(cfg['custom_mail_reply_to'], log):
             data['mail']['customFields'].update({
                 cfg['custom_mail_reply_to']: reply_to[:-1]
             })
@@ -178,10 +193,11 @@ class Mail:
 
         return data, file
 
-    def backup_email(self, msg, backup_path):
+    def backup_email(self, msg, backup_path, force_utf8):
         """
         Backup e-mail into path before send it to Maarch
 
+        :param force_utf8: Force HTML UTF-8 encoding
         :param msg: Mail data
         :param backup_path: Backup path
         :return: Boolean
@@ -208,6 +224,13 @@ class Mail:
                 fp.write(' ')
         else:
             fp = open(primary_mail_path + 'body.html', 'w')
+
+            if force_utf8:
+                utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
+                if not re.search(utf_8_charset.lower(), msg.html.lower()):
+                    fp.write(utf_8_charset)
+                    fp.write('\n')
+
             fp.write(msg.html)
         fp.close()
 
@@ -215,18 +238,24 @@ class Mail:
         fp = open(primary_mail_path + 'orig.txt', 'w')
 
         for payload in msg.obj.get_payload():
-            fp.write(str(payload))
+            try:
+                fp.write(str(payload))
+            except KeyError:
+                break
 
         fp.close()
 
         # Backup attachments
         attachments = self.retrieve_attachment(msg)
+
         if len(attachments) > 0:
             attachment_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
                 file_path = os.path.join(attachment_path + file['filename'] + file['format'])
-                if not os.path.isfile(file_path):
+                if not file['format']:
+                    file['format'] = mimetypes.guess_extension(file['mime_type'])
+                if not os.path.isfile(file_path) and file['format'] and not os.path.isdir(file_path):
                     fp = open(file_path, 'wb')
                     fp.write(file['content'])
                     fp.close()
@@ -293,17 +322,17 @@ class Mail:
         return False
 
 
-def move_batch_to_error(batch_path, error_path, smtp, process, msg):
+def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
     """
     If error in batch process, move the batch folder into error folder
 
+    :param res: return of Maarch WS
     :param process: Process name
     :param msg: Contain the msg metadata
     :param smtp: instance of SMTP class
     :param batch_path: Path to the actual batch
     :param error_path: path to the error path
     """
-
     try:
         os.makedirs(error_path)
     except FileExistsError:
@@ -312,13 +341,18 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg):
     try:
         shutil.move(batch_path, error_path)
         if smtp is not False:
+            error = ''
+            if res:
+                error = res['errors']
             smtp.send_email(
                 message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
                 '    - Nom du process : ' + process + '\n' +
                 '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + ' \n' +
                 '    - Sujet du mail : ' + msg['subject'] + '\n' +
                 '    - Date du mail : ' + msg['date'] + '\n' +
-                '    - UID du mail : ' + msg['uid'] + '\n',
+                '    - UID du mail : ' + msg['uid'] + '\n' +
+                '\n\n'
+                '    - Informations sur l\'erreur : ' + error + '\n',
                 step='du traitement du mail suivant')
     except (FileNotFoundError, FileExistsError, shutil.Error):
         pass

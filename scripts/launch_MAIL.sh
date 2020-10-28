@@ -33,8 +33,6 @@ config_mail_file="$OCPath"/src/config/mail.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
 PID=/tmp/securite-$script-$$.pid
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
-
 if ! test -e $PID;
 then
   touch $PID

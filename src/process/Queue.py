@@ -76,7 +76,7 @@ class ProcessQueue(Thread):
                 if is_internal_note:
                     res = self.WebService.insert_attachment(file_to_send, self.Config, res_id, queue_info['process'])
                 else:
-                    res = self.WebService.insert_attachment_reconciliation(file_to_send, chrono, queue_info['process'])
+                    res = self.WebService.insert_attachment_reconciliation(file_to_send, chrono, queue_info['process'], self.Config)
             else:
                 res = self.WebService.insert_with_args(file_to_send, self.Config, contact, subject, date, destination, _process, custom_mail)
 

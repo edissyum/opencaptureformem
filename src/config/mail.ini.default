@@ -21,12 +21,14 @@ smtp_delay            = 30
 host                  = imap.gmail.com
 port                  = 993
 login                 = test@gmail.com
+# True or False
+forceUtf8             = False
 # If you have $ in your password, you must double it
 password              = test
 # True or False
 priorityToMailSubject = False
 # True or False
-isSSL                = True
+securedConnection    = True
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES
 # If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
@@ -45,3 +47,6 @@ custom_mail_from     = 8
 custom_mail_to       = 9
 custom_mail_cc       = 10
 custom_mail_reply_to = 11
+# Double quote on both side of the json. eg : {"1": "NO"}
+custom_fields        = {}
+

@@ -31,7 +31,7 @@ import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
-from src.process.OCForMaarch import process
+from src.process.OCForMaarch import process, get_process_name
 from src.classes.Mail import move_batch_to_error
 from src.classes.SMTP import SMTP
 import src.classes.Separator as separatorClass
@@ -143,26 +143,25 @@ def launch(args):
     config.load_file(args['config'])
     smtp = False
 
-    if args.get('isMail') is not None:
+    if args.get('isMail') is not None and args['isMail'] is True:
         log = logClass.Log(args['log'])
-        if args['isMail'] is True:
-            config_mail = configClass.Config()
-            config_mail.load_file(args['config_mail'])
-            smtp = SMTP(
-                config_mail.cfg['GLOBAL']['smtp_notif_on_error'],
-                config_mail.cfg['GLOBAL']['smtp_host'],
-                config_mail.cfg['GLOBAL']['smtp_port'],
-                config_mail.cfg['GLOBAL']['smtp_login'],
-                config_mail.cfg['GLOBAL']['smtp_pwd'],
-                config_mail.cfg['GLOBAL']['smtp_ssl'],
-                config_mail.cfg['GLOBAL']['smtp_starttls'],
-                config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
-                config_mail.cfg['GLOBAL']['smtp_delay'],
-            )
-
-            log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
+        config_mail = configClass.Config()
+        config_mail.load_file(args['config_mail'])
+        smtp = SMTP(
+            config_mail.cfg['GLOBAL']['smtp_notif_on_error'],
+            config_mail.cfg['GLOBAL']['smtp_host'],
+            config_mail.cfg['GLOBAL']['smtp_port'],
+            config_mail.cfg['GLOBAL']['smtp_login'],
+            config_mail.cfg['GLOBAL']['smtp_pwd'],
+            config_mail.cfg['GLOBAL']['smtp_ssl'],
+            config_mail.cfg['GLOBAL']['smtp_starttls'],
+            config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
+            config_mail.cfg['GLOBAL']['smtp_delay'],
+        )
+        log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
         log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+        config_mail = False
 
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
@@ -184,9 +183,15 @@ def launch(args):
     )
 
     # Start process
+    _process = get_process_name(args, config)
+    args['process_name'] = _process
+
+    if args.get('isMail') is None or args.get('isMail') is False:
+        separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
+
     if args.get('path') is not None:
         path = args['path']
-        if str2bool(separator.enabled) is True and args['process'] == 'incoming':
+        if separator.enabled:
             for fileToSep in os.listdir(path):
                 if check_file(image, path + fileToSep, config, log):
                     separator.run(path + fileToSep)
@@ -198,7 +203,7 @@ def launch(args):
     elif args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
-            if str2bool(separator.enabled) is True and args['process'] == 'incoming':
+            if separator.enabled:
                 separator.run(path)
                 if separator.error:  # in case the file is not a pdf or no qrcode was found, process as an image
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
@@ -210,26 +215,27 @@ def launch(args):
             else:
                 if check_file(image, path, config, log):
                     # Process the file and send it to Maarch
-                    res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+                    res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, None, config_mail)
+
                     if args.get('isMail') is not None and args.get('isMail') is True:
                         # Process the attachments of mail
-                        if res:
-                            res_id = res['resId']
+                        if res[0]:
+                            res_id = res[1]['resId']
                             if len(args['attachments']) > 0:
                                 log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                                 for attachment in args['attachments']:
                                     res = web_service.insert_attachment_from_mail(attachment, res_id)
-                                    if res:
-                                        log.info('Insert attachment OK : ' + str(res))
+                                    if res[0]:
+                                        log.info('Insert attachment OK : ' + str(res[1]))
                                         continue
                                     else:
-                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'])
-                                        log.error('Error while inserting attachment : ' + str(res))
+                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                                        log.error('Error while inserting attachment : ' + str(res[1]))
                             else:
                                 log.info('No attachments found')
                         else:
-                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'])
-                            log.error('Error while processing e-mail : ' + str(res))
+                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                            log.error('Error while processing e-mail : ' + str(res[1]))
 
                         recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
                         log.info('End process')

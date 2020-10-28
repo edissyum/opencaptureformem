@@ -17,6 +17,10 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
+if [[ -d "$1" ]]
+then
+        exit 0
+fi
 
 # Variables
 script="RECONCILIATION"
@@ -35,7 +39,7 @@ config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
 process_pj=reconciliation_default
 process_attfnd=reconciliation_found
-tmp_dir=/tmp
+tmp_dir="$OCPath"/data/tmp/
 
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
