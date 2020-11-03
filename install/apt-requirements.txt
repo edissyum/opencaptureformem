@@ -12,4 +12,3 @@ poppler-utils
 rabbitmq-server
 libtesseract-dev
 libleptonica-dev
-libmagickwand-dev
