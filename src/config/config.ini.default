@@ -51,6 +51,7 @@ custom_mail         = 8
 custom_fields		= {}
 # True or False
 separator_qr        = False
+generate_chrono           = True
 
 [OCForMaarch_outgoing]
 status              = INIT
@@ -64,6 +65,7 @@ custom_mail         = 8
 custom_fields		= {}
 # True or False
 separator_qr        = False
+generate_chrono           = True
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
@@ -76,6 +78,7 @@ destination         = COU
 reconciliation      =
 # True or False
 separator_qr        = False
+generate_chrono           = True
 
 [OCForMaarch_reconciliation_found]
 is_attachment       = True
@@ -88,3 +91,5 @@ format              = pdf
 model_id            =
 destination         =
 reconciliation      =
+separator_qr        = False
+generate_chrono           = False

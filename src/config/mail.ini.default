@@ -21,19 +21,22 @@ smtp_delay            = 30
 host                  = imap.gmail.com
 port                  = 993
 login                 = test@gmail.com
-# True or False
-forceUtf8             = False
-# If you have $ in your password, you must double it
+; If you have $ in your password, you must double it
 password              = test
-# True or False
+
+; True or False
+generate_chrono             = True
+; True or False
+forceUtf8             = False
+; True or False
 priorityToMailSubject = False
-# True or False
+; True or False
 securedConnection    = True
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES
-# If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
+; If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
 folderTrash          = Trash
-# move, delete or none
+; move, delete or none
 actionAfterProcess   = move
 model_id             = 1
 priority             = poiuytre1357nbvc
@@ -41,12 +44,12 @@ status               = MAQUAL
 doctype              = 103
 typist               = bblier
 destination          = COU
-# True or False
+; True or False
 from_is_reply_to     = False
 custom_mail_from     = 8
 custom_mail_to       = 9
 custom_mail_cc       = 10
 custom_mail_reply_to = 11
-# Double quote on both side of the json. eg : {"1": "NO"}
+; Double quote on both side of the json. eg : {"1": "NO"}
 custom_fields        = {}
 
