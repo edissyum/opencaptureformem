@@ -138,6 +138,7 @@ class Mail:
                 'file': file,
                 'priority': cfg['priority'],
                 'status': cfg['status'],
+                'chrono': True if cfg['generate_chrono'] == 'True' else '',
                 'doctype': cfg['doctype'],
                 'modelId': cfg['model_id'],
                 'format': file_format,

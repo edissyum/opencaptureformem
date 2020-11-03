@@ -99,6 +99,7 @@ class WebServices:
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
             'priority': _process['priority'],
             'status': _process['status'],
+            'chrono': True if _process['generate_chrono'] == 'True' else '',
             'doctype': _process['doctype'],
             'format': _process['format'],
             'modelId': _process['model_id'],
@@ -221,6 +222,7 @@ class WebServices:
         :return: res_id or Boolean if issue happen
         """
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
+
         del args['file']
         del args['from']
 
@@ -271,9 +273,9 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMaarchError : ' + str(res.text))
-                return False
+                return False, json.loads(res.text)
             else:
-                return res.text
+                return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while inserting in Maarch')
             self.Log.error('More information : ' + str(e))

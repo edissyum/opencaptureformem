@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.1.7_20.03
+Version 4.1.8_20.03
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -87,14 +87,6 @@ First, add your user into the following file :
 Then use <code>incrontab -e</code> and put the following line :
 
     /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO /opt/maarch/OpenCapture/scripts/launch_IN.sh $@/$#
-
-We use worker and jobs to enqueue process. The worker is encapsulated into a service who needs to be started in order to run the process. It's needed to cron the boot of the service at every restart, by the root user :
-
-    sudo crontab -e
-
-   And add
-
-    @reboot systemctl start oc-worker.service
     
 ## Configuration
 The file <code>src/config/config.ini</code> is splitted in different categories
