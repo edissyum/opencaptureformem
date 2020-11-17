@@ -122,7 +122,8 @@ class Images:
         :return: Boolean to show if all the processes ended well
         """
         is_full = False
-        while not is_full:
+        count = 0
+        while not is_full and count < 5:
             try:
                 with open(file, 'rb') as doc:
                     # size and size2 allow to check if file is full (to avoid process truncate file while files was send over network)
@@ -132,7 +133,7 @@ class Images:
                     if size2 == size:
                         if file.endswith(".pdf"):
                             try:
-                                PyPDF2.PdfFileReader(doc)
+                                PyPDF2.PdfFileReader(doc, strict=False)
                             except PyPDF2.utils.PdfReadError:
                                 shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                                 return False
@@ -148,7 +149,9 @@ class Images:
                             else:
                                 return True
                     else:
+                        count = count + 1
                         continue
             except PermissionError as e:
                 self.Log.error(e)
                 return False
+        return False
