@@ -141,7 +141,6 @@ class WebServices:
         :return: res_id from Maarch
         """
         data = {
-            'resId': res_id,
             'status': config.cfg[_process]['status'],
             'title': 'Rapprochement note interne',
             'type': config.cfg[_process]['attachment_type'],
@@ -252,7 +251,6 @@ class WebServices:
         """
 
         data = {
-            'resId': res_id,
             'status': args['status'],
             'title': args['subject'],
             'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
