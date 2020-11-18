@@ -254,14 +254,7 @@ class WebServices:
         data = {
             'resId': res_id,
             'status': args['status'],
-            'collId': 'letterbox_coll',
-            'table': 'res_attachments',
-            'data': [
-                {'column': 'title', 'value': args['subject'], 'type': 'string'},
-                {'column': 'attachment_type', 'value': 'simple_attachment', 'type': 'string'},
-                {'column': 'coll_id', 'value': 'letterbox_coll', 'type': 'string'},
-                {'column': 'res_id_master', 'value': res_id, 'type': 'string'}
-            ],
+            'title': args['subject'],
             'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
             'format': args['format'],
             'resIdMaster': res_id,
