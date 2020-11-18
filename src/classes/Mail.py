@@ -225,13 +225,11 @@ class Mail:
                 fp.write(' ')
         else:
             fp = open(primary_mail_path + 'body.html', 'w')
-
             if force_utf8:
                 utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
                 if not re.search(utf_8_charset.lower(), msg.html.lower()):
                     fp.write(utf_8_charset)
                     fp.write('\n')
-
             fp.write(msg.html)
         fp.close()
 
