@@ -18,16 +18,19 @@
 import sys
 from socket import gaierror
 from imaplib import IMAP4_SSL
-from imap_tools import MailBox
+from imap_tools import MailBox, MailBoxUnencrypted
 
-hostname = ''
-port = 993
-isSSL = True
-login = ''
-password = ''
+hostname = 'mail.edissyum.com'
+port = 143
+isSSL = False
+login = 'nathan.cheval@edissyum.com'
+password = 'Zabeutiti84!'
 
 try:
-    conn = MailBox(host=hostname, port=port, ssl=isSSL)
+    if isSSL:
+        conn = MailBox(host=hostname, port=port)
+    else:
+        conn = MailBoxUnencrypted(host=hostname, port=port)
 except (gaierror, IMAP4_SSL.error) as e:
     sys.exit('Error while connecting to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
 
