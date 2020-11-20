@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.1.8_20.03
+Version 4.1.9_20.03
 
 # Open-Capture for Maarch  20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -38,6 +38,7 @@ Tested with :
 - Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
 - Ubuntu 20.04 LTS with Python 3.7.3 Tesseract V4.1.1
+- Ubuntu 20.10 LTS with Python 3.7.3 Tesseract V4.1.1
 
 ## Install Open-Capture for Maarch
 Nothing as simple as that :
