@@ -141,7 +141,6 @@ class WebServices:
         :return: res_id from Maarch
         """
         data = {
-            'resId': res_id,
             'status': config.cfg[_process]['status'],
             'title': 'Rapprochement note interne',
             'type': config.cfg[_process]['attachment_type'],
@@ -252,16 +251,8 @@ class WebServices:
         """
 
         data = {
-            'resId': res_id,
             'status': args['status'],
-            'collId': 'letterbox_coll',
-            'table': 'res_attachments',
-            'data': [
-                {'column': 'title', 'value': args['subject'], 'type': 'string'},
-                {'column': 'attachment_type', 'value': 'simple_attachment', 'type': 'string'},
-                {'column': 'coll_id', 'value': 'letterbox_coll', 'type': 'string'},
-                {'column': 'res_id_master', 'value': res_id, 'type': 'string'}
-            ],
+            'title': args['subject'],
             'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
             'format': args['format'],
             'resIdMaster': res_id,
@@ -279,7 +270,7 @@ class WebServices:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while inserting in Maarch')
             self.Log.error('More information : ' + str(e))
-            return False
+            return False, str(e)
 
     def retrieve_entities(self):
         try:
