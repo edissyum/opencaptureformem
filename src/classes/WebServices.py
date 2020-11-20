@@ -270,7 +270,7 @@ class WebServices:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error while inserting in Maarch')
             self.Log.error('More information : ' + str(e))
-            return False
+            return False, str(e)
 
     def retrieve_entities(self):
         try:
