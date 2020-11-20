@@ -3,7 +3,7 @@ batchPath             = /opt/maarch/OpenCapture/data/MailCollect/
 # True or False
 importOnlyAttachments = False
 # True or False
-smtp_notif_on_error   = True
+smtp_notif_on_error   = False
 smtp_host             = smtp.gmail.com
 smtp_port             = 587
 smtp_login            = test@gmail.com
@@ -25,11 +25,11 @@ login                 = test@gmail.com
 password              = test
 
 ; True or False
-generate_chrono             = True
+generate_chrono      = True
 ; True or False
-forceUtf8             = False
+forceUtf8            = False
 ; True or False
-priorityToMailSubject = False
+priorityToMailSubject= False
 ; True or False
 securedConnection    = True
 folderToCrawl        = _MAARCH
