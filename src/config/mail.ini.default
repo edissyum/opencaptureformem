@@ -32,6 +32,8 @@ generate_chrono      = True
 forceUtf8            = False
 ; True or False
 priorityToMailSubject= False
+priorityToMailDate   = False
+priorityToMailFrom   = False
 
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES
