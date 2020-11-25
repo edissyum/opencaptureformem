@@ -122,6 +122,8 @@ folder_to_crawl = cfg['foldertocrawl']
 folder_destination = cfg['folderdestination']
 import_only_attachments = str2bool(config_mail.cfg['GLOBAL']['importonlyattachments'])
 priority_mail_subject = str2bool(config_mail.cfg[process]['prioritytomailsubject'])
+priority_mail_date = str2bool(config_mail.cfg[process]['prioritytomaildate'])
+priority_mail_from = str2bool(config_mail.cfg[process]['prioritytomailfrom'])
 force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
 Mail.test_connection(secured_connection)
 
@@ -177,6 +179,8 @@ if check:
                     'attachments': ret['attachments'],
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
+                    'priority_mail_date': priority_mail_date,
+                    'priority_mail_from': priority_mail_from,
                     'error_path': path_without_time + '/_ERROR/' + process + '/' + year + month + day
                 })
             else:

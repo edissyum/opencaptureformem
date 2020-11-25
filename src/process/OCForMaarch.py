@@ -139,37 +139,53 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         # Find subject of document
         if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
             subject_thread = ''
-            pass
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
+
         # Find date of document
-        date_thread = FindDate(ocr.text, locale, log, config)
-        # Find mail in document and check if the contact exist in Maarch
-        contact_thread = FindContact(ocr.text, log, config, web_service, locale)
-        # Launch all threads
-        date_thread.start()
-        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
-            pass
+        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True:
+            date_thread = ''
         else:
+            date_thread = FindDate(ocr.text, locale, log, config)
+
+        # Find mail in document and check if the contact exist in Maarch
+        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True:
+            contact_thread = ''
+        else:
+            contact_thread = FindContact(ocr.text, log, config, web_service, locale)
+
+        # Launch all threads
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True):
+            date_thread.start()
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True):
             subject_thread.start()
-        contact_thread.start()
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+            contact_thread.start()
 
         # Wait for end of threads
-        date_thread.join()
-        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
-            pass
-        else:
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True):
+            date_thread.join()
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True):
             subject_thread.join()
-        contact_thread.join()
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+            contact_thread.join()
 
         # Get the returned values
-        date = date_thread.date
-        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
-            subject = ''
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True):
+            date = date_thread.date
         else:
+            date = ''
+
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True):
             subject = subject_thread.subject
-        contact = contact_thread.contact
-        custom_mail = contact_thread.custom_mail
+        else:
+            subject = ''
+        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+            contact = contact_thread.contact
+            custom_mail = contact_thread.custom_mail
+        else:
+            contact = ''
+            custom_mail = ''
     else:
         date = ''
         subject = ''
@@ -216,8 +232,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             if contact != '':
                 args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
             else:
-                # Search a contact id from Maarch database
-                log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])
+                if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+                    log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])
                 contact = web_service.retrieve_contact_by_mail(args['data']['from'])
                 if contact:
                     args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
