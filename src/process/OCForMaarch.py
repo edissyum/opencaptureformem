@@ -56,7 +56,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 destination = int(file_name.split(separator.divider)[0])
             except ValueError:
                 destination = file_name.split(separator.divider)[0]
-                pass
 
     # Or from the destination arguments
     elif args.get('destination') is not None:
