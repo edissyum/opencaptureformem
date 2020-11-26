@@ -1,8 +1,8 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.1.9_20.03
+Version 4.2.0_20.03
 
-# Open-Capture for Maarch  20.03
+# Open-Capture for Maarch 20.03
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of OC for Maarch are :
@@ -31,14 +31,14 @@ The functionnalities of OC for Maarch are :
 Tested with :
 - Ubuntu 18.04 with Python 3.7.4 & Tesseract v4.0.0-beta.1 (Used for development)
 - Ubuntu 18.10 with Python 3.7.1 & Tesseract v4.0.0-beta.1
-- Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0-beta.1
 - Ubuntu Server 18.04.3 with Python 3.6.9 & Tesseract v4.0.0-beta.1
+- Ubuntu Server 18.10 with Python 3.7.1 or Python 3.6.7 & Tesseract v4.0.0-beta.1
 - Ubuntu Server 19.10 with Python 3.7.5 & Tesseract v4.1.0
-- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
+- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
 - Ubuntu 20.04 LTS with Python 3.7.3 Tesseract V4.1.1
-- Ubuntu 20.10 LTS with Python 3.7.3 Tesseract V4.1.1
+- Ubuntu 20.10 with Python 3.8.5 Tesseract V4.1.1
 
 ## Install Open-Capture for Maarch
 Nothing as simple as that :
@@ -147,7 +147,6 @@ The list of files needed to be modify is in install/Maarch with the correct stru
         some code...
     <!-- END NCH01 -->
 
-
 Just report the modifications onto you Maarch installation and copy paste the <code>src/app/attachments/controllers/ReconciliationController.php</code>
 
 ## Various
@@ -159,7 +158,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
     Replace : %/ICCProfile (srgb.icc) % Customise
     By : /ICCProfile (/usr/share/ghostscript/X.XX/sRGB_IEC61966-2-1_black_scaled.icc)   % Customize
 
-# IMAP Connector (Open-Capture MailCollect Module)
+# Open-Capture MailCollect Module
 ![Logo Open-Capture MailCollect](https://edissyum.com/wp-content/uploads/2020/04/0_Open-Capture_MailCollect_Module.png)
 
 You have the possibility to capture e-mail directly from your inbox.  
@@ -172,7 +171,7 @@ by copying <code>MAIL_1</code> and just change the name.
 IMPORTANT : Do not put space into process name
 
 I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and that's all. 
-The <code>launch_MAIL.sh</code> automatically loop into all the processes and launch them   
+The <code>launch_MAIL.sh</code> automatically loop into all the processes and launch them
 
 Don't forget to fill the `typist` with the user_id who scan document (in the default Maarch installation it's `bblier`)
 
@@ -181,6 +180,11 @@ Here is a short list of options you have for mail process into <code>/opt/maarch
   - hostname, port, login, password : All the informations about the inbox 
   - securedConnection : Choose between True or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is True, port must be a secured port (e.g : 993)
   - folderToCrawl : Which folder needed to be crawl by connector to process email
+  - generate_chrono : If true, Maarch will generate a chrono number
+  - forceUtf8 : If true, force mail encoding into UTF8 to avoid problems
+  - priorityToMailSubject : If true, use the subject from mail and do not search subject into the mail
+  - priorityToMailDate : If true, use the date from mail and do not search subject into the mail
+  - priorityToMailFrom : If true, use the FROM field from mail and do not search subject into the mail
   - folderDestination : if <code>actionAfterProcess</code> is <code>move</code> specify in which folder we had to move the e-mail after process
   - folderTrash : if <code>actionAfterProcess</code> is <code>delete</code>, specify the name of trash folder. If we use the IMAP delete function, the mail cannot be retrieve
   - actionAfterProcess : <code>move</code>, <code>delete</code> or <code>none</code>
