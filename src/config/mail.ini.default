@@ -14,23 +14,22 @@ smtp_ssl              = False
 #True or False
 smtp_starttls         = True
 smtp_dest_admin_mail  =
-# Delay between send another email, in minutes. 0 to disable it
+# Delay before send another email, in minutes. 0 to disable it
 smtp_delay            = 30
 
 [MAIL_1]
-host                  = imap.gmail.com
-port                  = 993
+host                 = imap.gmail.com
+port                 = 993
 ; True or False
-securedConnection     = True
-login                 = test@gmail.com
+securedConnection    = True
+login                = test@gmail.com
 ; If you have $ in your password, you must double it
-password              = test
+password             = test
 
 ; True or False
+isForm               = False
 generate_chrono      = True
-; True or False
 forceUtf8            = False
-; True or False
 priorityToMailSubject= False
 priorityToMailDate   = False
 priorityToMailFrom   = False

@@ -2,7 +2,7 @@
 
 Version 4.2.0_20.03
 
-# Open-Capture for Maarch 20.03
+# Open-Capture for Maarch 20.03 & 20.10
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of OC for Maarch are :

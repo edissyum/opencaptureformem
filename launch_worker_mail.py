@@ -124,6 +124,7 @@ import_only_attachments = str2bool(config_mail.cfg['GLOBAL']['importonlyattachme
 priority_mail_subject = str2bool(config_mail.cfg[process]['prioritytomailsubject'])
 priority_mail_date = str2bool(config_mail.cfg[process]['prioritytomaildate'])
 priority_mail_from = str2bool(config_mail.cfg[process]['prioritytomailfrom'])
+is_form = str2bool(config_mail.cfg[process]['isform'])
 force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
 Mail.test_connection(secured_connection)
 
@@ -168,6 +169,7 @@ if check:
                     'cpt': str(i),
                     'file': file,
                     'isMail': True,
+                    'isForm': is_form,
                     'msg_uid': str(msg.uid),
                     'msg': {'date': msg.date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg.subject, 'uid': msg.uid},
                     'process': process,

@@ -22,6 +22,7 @@ import sys
 from .FindDate import FindDate
 from .FindSubject import FindSubject
 from .FindContact import FindContact
+from .OCForForms import process_form
 
 
 def get_process_name(args, config):
@@ -38,6 +39,17 @@ def get_process_name(args, config):
 
 def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None, config_mail=None):
     log.info('Processing file : ' + file)
+
+    if args.get('isMail') is not None and args.get('isMail') is True:
+        if args['isForm']:
+            log.info('Start searching form into e-mail')
+            form = process_form(args, config, log)
+            exit()
+            if form[1] != 'default':
+                return form
+            else:
+                print('here1')
+                exit()
 
     # Check if the choosen process mode if available. If not take the default one
     _process = args['process_name']
