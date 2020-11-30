@@ -40,17 +40,6 @@ def get_process_name(args, config):
 def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q=None, config_mail=None):
     log.info('Processing file : ' + file)
 
-    if args.get('isMail') is not None and args.get('isMail') is True:
-        if args['isForm']:
-            log.info('Start searching form into e-mail')
-            form = process_form(args, config, log)
-            exit()
-            if form[1] != 'default':
-                return form
-            else:
-                print('here1')
-                exit()
-
     # Check if the choosen process mode if available. If not take the default one
     _process = args['process_name']
     log.info('Using the following process : ' + _process)
@@ -117,6 +106,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     args['data']['typist'] = typist
                 else:
                     config.cfg[_process]['typist'] = typist
+
+    if args.get('isMail') is not None and args.get('isMail') is True:
+        if args['isForm']:
+            log.info('Start searching form into e-mail')
+            form = process_form(args, config, config_mail, log, web_service, _process, file)
+            if form[1] != 'default':
+                return form
 
     if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
         res = image.pdf_to_jpg(file + '[0]', True)
