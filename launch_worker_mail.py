@@ -152,7 +152,7 @@ if check:
         date_batch = year + month + day + '_' + hour + minute + second + microsecond
         batch_path = tempfile.mkdtemp(dir=path, prefix='BATCH_' + date_batch + '_')
 
-        print('Batch name : ' + os.path.basename(batch_path))
+        print('Batch name : data/MailCollect' + batch_path.split('/MailCollect')[1].replace('//', '/'))
 
         Log = logClass.Log(batch_path + '/' + date_batch + '.log')
         Log.info('Start following batch : ' + os.path.basename(os.path.normpath(batch_path)))
