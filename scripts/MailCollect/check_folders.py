@@ -20,11 +20,11 @@ from socket import gaierror
 from imaplib import IMAP4_SSL
 from imap_tools import MailBox, MailBoxUnencrypted
 
-hostname = 'mail.edissyum.com'
+hostname = ''
 port = 143
 isSSL = False
-login = 'nathan.cheval@edissyum.com'
-password = 'Zabeutiti84!'
+login = ''
+password = ''
 
 try:
     if isSSL:
