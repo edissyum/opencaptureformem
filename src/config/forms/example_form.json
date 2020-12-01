@@ -1,0 +1,58 @@
+{
+    "FIELDS": {
+        "CONTACT": {
+            "table": "contacts",
+            "data": {
+                "lastname": {
+                    "regex": "Nom\\s*:\\s*(.+)",
+                    "column": "lastname"
+                },
+                "firstname": {
+                    "regex": "Prenom\\s*:\\s*(.+)",
+                    "column": "firstname"
+                },
+                "email": {
+                    "regex": "Email\\s*:\\s*(.+)",
+                    "column": "email"
+                },
+                "phone": {
+                    "regex": "Telephone\\s*:\\s*(.+)",
+                    "column": "phone"
+                }
+            }
+        },
+        "LETTERBOX": {
+            "table": "res_letterbox",
+            "data": [
+                {
+                    "regex": "Votre demande\\s*:\\s*(.+)",
+                    "column": "custom",
+                    "mapping": [
+                        {
+                            "isCustom": "True",
+                            "column": "2"
+                        },
+                        {
+                            "isCustom": "True",
+                            "column": "3"
+                        }
+                    ]
+                },
+                {
+                    "regex": "Précisions\\s*:\\s*(.+)",
+                    "column": "subject"
+                },
+                {
+                    "regex": "Lieu d’intervention\\s*:\\s*(.+)",
+                    "column": "custom",
+                    "mapping": [
+                        {
+                            "isCustom": "True",
+                            "column": "7"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

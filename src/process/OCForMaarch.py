@@ -22,6 +22,7 @@ import sys
 from .FindDate import FindDate
 from .FindSubject import FindSubject
 from .FindContact import FindContact
+from .OCForForms import process_form
 
 
 def get_process_name(args, config):
@@ -52,7 +53,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if separator.divider not in file_name:
             destination = config.cfg[_process]['destination']
         else:
-            destination = file_name.split(separator.divider)[0]
+            try:
+                destination = int(file_name.split(separator.divider)[0])
+            except ValueError:
+                destination = file_name.split(separator.divider)[0]
 
     # Or from the destination arguments
     elif args.get('destination') is not None:
@@ -102,6 +106,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     args['data']['typist'] = typist
                 else:
                     config.cfg[_process]['typist'] = typist
+
+    if args.get('isMail') is not None and args.get('isMail') is True:
+        if args['isForm']:
+            log.info('Start searching form into e-mail')
+            form = process_form(args, config, config_mail, log, web_service, _process, file)
+            if form[1] != 'default':
+                return form
 
     if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
         res = image.pdf_to_jpg(file + '[0]', True)

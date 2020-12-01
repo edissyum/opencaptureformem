@@ -310,3 +310,11 @@ class WebServices:
             self.Log.error('Error while retrieving Maarch custom fields')
             self.Log.error('More information : ' + str(e))
             return False
+
+    def create_contact(self, contact):
+        res = requests.post(self.baseUrl + '/contacts', auth=self.auth, data=json.dumps(contact), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+        if res.status_code != 200:
+            return False, res.text
+        else:
+            return True, json.loads(res.text)
