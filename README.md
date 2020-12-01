@@ -133,7 +133,7 @@ Here is some examples of possible usages in the launch_XX.sh script:
 -process stands for process mode (incoming or outgoing. If none, incoming will be choose)
 
 
-## WebServices for Maarch 20.03
+## WebServices for Maarch 20.03 & 20.10
 In order to reconciliate a contact it's needed to contact the Maarch database. For that some PHP web services were developed.
 First, go into your Maarch installation (e.g : **/var/www/maarch_courrier**).
 
@@ -219,7 +219,7 @@ To avoid lack of memory on the server, do not forget to cron the <code>clean.sh<
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
 
-# Update Open-Capture For Maarch 20.03
+# Update Open-Capture For Maarch 20.03 & 20.10
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     cd /opt/maarch/OpenCapture/install/
