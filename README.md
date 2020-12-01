@@ -161,7 +161,7 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 # Open-Capture MailCollect Module
 ![Logo Open-Capture MailCollect](https://edissyum.com/wp-content/uploads/2020/04/0_Open-Capture_MailCollect_Module.png)
 
-You have the possibility to capture e-mail directly from your inbox.  
+You have the possibility to capture e-mail directly from your inbox.
     
 Just edit the <code>/opt/maarch/OpenCapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
 If you want to have the from, to, cc and replyTo metadatas you have to create the custom fields into Maarch superadmin dashboard and modify the ID into the config file (8, 9, 10, 11 by default) 
@@ -182,6 +182,7 @@ Here is a short list of options you have for mail process into <code>/opt/maarch
   - folderToCrawl : Which folder needed to be crawl by connector to process email
   - generate_chrono : If true, Maarch will generate a chrono number
   - forceUtf8 : If true, force mail encoding into UTF8 to avoid problems
+  - isForm : If True, check if e-mail contains a forms using <code>forms_identifier.json</code> file
   - priorityToMailSubject : If true, use the subject from mail and do not search subject into the mail
   - priorityToMailDate : If true, use the date from mail and do not search subject into the mail
   - priorityToMailFrom : If true, use the FROM field from mail and do not search subject into the mail
@@ -244,24 +245,7 @@ And in the json_file here is what you can do (ou can use the default one <code>s
             - isCustom --> if the data need to be in custom_fields column
             - column --> put the id of custom_fields (eg: "3") or a column of res_letterbox table
 
-If you want specific data you could use <code>[]</code> into your line. For example for the following line, we have this settings :
-
-    Votre demande : [101341] Autre danger
-
-     {
-        "regex": "Votre demande\\s*:\\s*(.+)",
-        "column": "custom",
-        "mapping": [
-            {
-                "isCustom": "True",
-                "column": "2"
-            },
-            {
-                "isCustom": "True",
-                "column": "3"
-            }
-        ]
-    },
+If you want specific data you could use <code>[]</code> into your line. For example you could check the <code>example_form.json</code> and <code>example_form.txt</code> to see the settings
 
 
 # Informations
