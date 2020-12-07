@@ -121,6 +121,7 @@ folder_to_crawl = cfg['foldertocrawl']
 folder_destination = cfg['folderdestination']
 import_only_attachments = str2bool(ConfigMail.cfg['GLOBAL']['importonlyattachments'])
 priority_mail_subject = str2bool(ConfigMail.cfg[process]['prioritytomailsubject'])
+force_utf8 = str2bool(ConfigMail.cfg[process]['forceutf8'])
 Mail.test_connection(isSSl)
 
 if action == 'delete':
@@ -157,7 +158,7 @@ if check:
         i = 1
         for msg in emails:
             # Backup all the e-mail into batch path
-            Mail.backup_email(msg, batch_path)
+            Mail.backup_email(msg, batch_path, force_utf8)
             ret, file = Mail.construct_dict_before_send_to_maarch(msg, ConfigMail.cfg[process], batch_path)
             if not import_only_attachments:
                 launch({

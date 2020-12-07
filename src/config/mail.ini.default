@@ -23,8 +23,8 @@ login                 = test@gmail.com
 # If you have $ in your password, you must double it
 password              = test
 # True or False
-priorityToMailSubject = False
-# True or False
+forceUtf8            =  True
+priorityToMailSubject= False
 isSSL                = True
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES
