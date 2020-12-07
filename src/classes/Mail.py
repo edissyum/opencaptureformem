@@ -20,9 +20,8 @@ import sys
 import shutil
 
 from socket import gaierror
-from imap_tools import utils
+from imap_tools import utils, MailBox, MailBoxUnencrypted
 from imaplib import IMAP4_SSL
-from imap_tools import MailBox
 
 
 class Mail:
@@ -38,14 +37,17 @@ class Mail:
         if self.SMTP.isUp:
             self.SMTP.send_email(message=msg, step=step)
 
-    def test_connection(self, ssl):
+    def test_connection(self, secured_connection):
         """
         Test the connection to the IMAP server
 
-        :param ssl: Boolean, if SSL is needed or not
+        :param secured_connection: Boolean, if SSL is needed or not
         """
         try:
-            self.conn = MailBox(host=self.host, port=self.port, ssl=ssl)
+            if secured_connection:
+                self.conn = MailBox(host=self.host, port=self.port)
+            else:
+                self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
         except gaierror as e:
             error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e)
             print(error)
