@@ -22,9 +22,8 @@ import shutil
 
 from ssl import SSLError
 from socket import gaierror
-from imap_tools import utils
 from imaplib import IMAP4_SSL
-from imap_tools import MailBox, MailBoxUnencrypted
+from imap_tools import utils, MailBox, MailBoxUnencrypted
 
 
 class Mail:
