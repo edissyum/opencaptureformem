@@ -169,6 +169,13 @@ class Mail:
         attachments = self.retrieve_attachment(msg)
         attachments_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
         for pj in attachments:
+            path = attachments_path + pj['filename'] + pj['format']
+            if not os.path.isfile(path):
+                pj['format'] = '.txt'
+                f = open(attachments_path + pj['filename'] + pj['format'], 'w')
+                f.write('Erreur lors de la remontée de cette pièce jointe')
+                f.close()
+
             data['attachments'].append({
                 'status': 'TRA',
                 'collId': 'letterbox_coll',
@@ -237,9 +244,8 @@ class Mail:
             os.mkdir(attachment_path)
             for file in attachments:
                 file_path = os.path.join(attachment_path + file['filename'] + file['format'])
-                if not file['format']:
-                    file['format'] = mimetypes.guess_extension(file['mime_type'])
-                if not os.path.isfile(file_path) and file['format']:
+
+                if not os.path.isfile(file_path) and file['format'] and not os.path.isdir(file_path):
                     fp = open(file_path, 'wb')
                     fp.write(file['content'])
                     fp.close()
@@ -289,9 +295,13 @@ class Mail:
         """
         args = []
         for att in msg.attachments:
+            file_format = os.path.splitext(att.filename)[1]
+            if not file_format:
+                file_format = mimetypes.guess_extension(att.content_type, strict=False)
+
             args.append({
                 'filename': os.path.splitext(att.filename)[0].replace(' ', '_'),
-                'format': os.path.splitext(att.filename)[1],
+                'format': file_format,
                 'content': att.payload,
                 'mime_type': att.content_type
             })
