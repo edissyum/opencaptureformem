@@ -5,7 +5,7 @@ pillow>=6.2.0
 kuyruk
 ocrmypdf
 requests
-imap-tools==0.14.2
+imap-tools
 pytesseract
 configparser
 kuyruk_manager
