@@ -43,7 +43,7 @@ Nothing as simple as that :
 
     $ sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
     $ sudo apt install git
-    $ git clone -b 3.1.5_19.04 https://gitlab.com/edissyum/opencapture/opencaptureformaarch /opt/maarch/OpenCapture/
+    $ git clone -b 3.1.5_19.04 https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
     $ cd /opt/maarch/OpenCapture/install/
 
 The ./Makefile install all the necessary packages and create the service, but you may want to change the User and Group (edissyum by default) so just open the ./Makefile and change lines **84**, **85** and **123**
