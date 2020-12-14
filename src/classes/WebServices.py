@@ -114,7 +114,7 @@ class WebServices:
         if _process.get('custom_fields') is not None:
             data['customFields'] = json.loads(_process.get('custom_fields'))
 
-        if _process.get('reconciliation') is None and custom_mail != '' and _process.get('custom_mail') is not None:
+        if _process.get('reconciliation') is None and custom_mail != '' and _process.get('custom_mail') not in [None, '']:
             data['customFields'][_process['custom_mail']] = custom_mail
 
         try:
