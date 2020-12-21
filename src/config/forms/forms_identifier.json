@@ -1,6 +1,6 @@
 {
     "Formulaire_1": {
-        "keyword_subject": "[formulaire-1]",
+        "keyword_subject": "[Formulaire_1]",
         "model_id": 1,
         "status": "END",
         "destination": "DGS",
@@ -10,7 +10,7 @@
         "json_file": "example_form.json"
     },
     "Formulaire_2": {
-        "keyword_subject": "[formulaire-2]",
+        "keyword_subject": "[Formulaire_2]",
         "model_id": 1,
         "status": "COU",
         "destination": 17,
