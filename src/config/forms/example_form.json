@@ -33,14 +33,10 @@
                             "column": "2"
                         },
                         {
-                            "isCustom": "True",
-                            "column": "3"
+                            "isCustom": "False",
+                            "column": "subject"
                         }
                     ]
-                },
-                {
-                    "regex": "Précisions\\s*:\\s*(.+)",
-                    "column": "subject"
                 },
                 {
                     "regex": "Lieu d’intervention\\s*:\\s*(.+)",
@@ -48,7 +44,7 @@
                     "mapping": [
                         {
                             "isCustom": "True",
-                            "column": "7"
+                            "column": "5"
                         }
                     ]
                 }

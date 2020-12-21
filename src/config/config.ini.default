@@ -48,7 +48,7 @@ priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 1
 destination         = COU
-custom_mail         = 8
+custom_mail         =
 custom_fields		= {}
 # True or False
 separator_qr        = False
@@ -62,7 +62,7 @@ priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 2
 destination         = COU
-custom_mail         = 8
+custom_mail         =
 custom_fields		= {}
 # True or False
 separator_qr        = False
@@ -77,7 +77,7 @@ format              = pdf
 model_id            = 5
 destination         = COU
 reconciliation      =
-custom_mail         = 8
+custom_mail         =
 # True or False
 separator_qr        = False
 generate_chrono     = True
