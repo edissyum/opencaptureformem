@@ -232,7 +232,11 @@ If you have a mailbox receiving only forms, there is this module. On the <code>s
 
     - The name of the process "Formulaire_1" in the default JSON file
     - keyword_subject --> The keyword we can find in the mail subject to detect the right process
-    - model_id --> Maarch model identifier ,
+    - model_id --> Maarch model identifier
+    - status --> Override the status set in mail.ini (optional)
+    - destination --> Override the destination set in mail.ini (optional)
+    - doctype --> Override the doctype set in mail.ini (optional)
+    - priority --> Override the priority set in mail.ini (optional)
     - json_file --> Name of the JSON file containing all the informations about the form
 
 And in the json_file here is what you can do (ou can use the default one <code>src/config/forms/default_form.json</code>) :
