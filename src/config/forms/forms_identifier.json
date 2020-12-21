@@ -1,7 +1,22 @@
 {
     "Formulaire_1": {
-        "keyword_subject": "[Formulaire_1]",
+        "keyword_subject": "[formulaire-1]",
         "model_id": 1,
+        "status": "END",
+        "destination": "DGS",
+        "doctype": "102",
+        "priority": "poiuytre1379nbvc",
+        "custom_fields": {"6":  "OUI", "7":  "TEST"},
+        "json_file": "example_form.json"
+    },
+    "Formulaire_2": {
+        "keyword_subject": "[formulaire-2]",
+        "model_id": 1,
+        "status": "COU",
+        "destination": 17,
+        "doctype": "105",
+        "priority": "poiuytre1391nbvc",
+        "custom_fields": {"6":  "NON", "7":  "BAH"},
         "json_file": "example_form.json"
     }
 }

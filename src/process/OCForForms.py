@@ -35,11 +35,39 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
             subject = args['data']['subject']
             keyword_subject = identifier[_process]['keyword_subject']
             args['data']['modelId'] = identifier[_process]['model_id']
+
             if keyword_subject in subject:
                 process_found = True
                 process = _process
+
+                if identifier[process].get('custom_fields') is not None:
+                    args['data']['customFields'].update(identifier[_process].get('custom_fields'))
+
+                if identifier[process].get('destination') is not None:
+                    destination = identifier[_process].get('destination')
+                    # Retrieve destination ID from Maarch 20 if destination is not an integer
+                    if type(destination) is not int:
+                        destinations = web_service.retrieve_entities()
+                        for dest in destinations['entities']:
+                            if destination == dest['id']:
+                                destination = dest['serialId']
+                                if args.get('isMail') is not None and args.get('isMail') is True:
+                                    args['data']['destination'] = destination
+                    else:
+                        args['data']['destination'] = destination
+
+                if identifier[process].get('doctype') is not None:
+                    args['data']['doctype'] = identifier[_process].get('doctype')
+
+                if identifier[process].get('priority') is not None:
+                    args['data']['priority'] = identifier[_process].get('priority')
+
+                if identifier[process].get('status') is not None:
+                    args['data']['status'] = identifier[_process].get('status')
+
                 log.info('The e-mail will use the "' + process + '" form process')
 
+        print(args['data']['destination'], args['data']['doctype'], args['data']['priority'], args['data']['status'])
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
             json_file = config.cfg['GLOBAL']['formpath'] + identifier[process]['json_file']
