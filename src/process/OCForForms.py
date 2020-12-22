@@ -67,7 +67,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
                 log.info('The e-mail will use the "' + process + '" form process')
 
-        print(args['data']['destination'], args['data']['doctype'], args['data']['priority'], args['data']['status'])
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
             json_file = config.cfg['GLOBAL']['formpath'] + identifier[process]['json_file']
