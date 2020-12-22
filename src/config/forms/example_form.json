@@ -39,6 +39,16 @@
                     ]
                 },
                 {
+                    "regex": "Précisions\\s*:\\s*(.+)",
+                    "column": "custom",
+                    "mapping": [
+                        {
+                            "isCustom": "True",
+                            "column": "12"
+                        }
+                    ]
+                },
+                {
                     "regex": "Lieu d’intervention\\s*:\\s*(.+)",
                     "column": "custom",
                     "mapping": [
