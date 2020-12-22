@@ -125,8 +125,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         args['data']['customFields'].update({column: text_without_brackets})
                                     else:
                                         args['data'][column] = text_without_brackets
-                print(args['data']['customFields'])
-                # exit()
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
