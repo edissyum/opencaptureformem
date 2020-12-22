@@ -67,7 +67,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
                 log.info('The e-mail will use the "' + process + '" form process')
 
-        print(args['data']['destination'], args['data']['doctype'], args['data']['priority'], args['data']['status'])
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
             json_file = config.cfg['GLOBAL']['formpath'] + identifier[process]['json_file']
@@ -97,7 +96,8 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                     for field in letterbox_fields:
                         regex = field['regex']
                         column = field['column']
-                        regex_return = re.findall(r'' + regex, line)
+                        regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
+
                         if regex_return:
                             if column != 'custom':
                                 args['data'][column] = regex_return[0]
@@ -125,7 +125,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         args['data']['customFields'].update({column: text_without_brackets})
                                     else:
                                         args['data'][column] = text_without_brackets
-
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
