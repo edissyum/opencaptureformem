@@ -9,12 +9,12 @@
             <id>response_project</id>
             <label>_RESPONSE_PROJECT</label>
         </type>
-        <!-- NCH01 -->
+        <!-- EDISSYUM - NCH01 -->
         <type show="true" with_chrono="true" attach_in_mail="true" icon="R" sign="true">
             <id>outgoing_mail_signed</id>
             <label>_OUTGOING_MAIL_SIGNED</label>
         </type> 
-        <!-- END NCH01 -->
+        <!-- END EDISSYUM - NCH01 -->
 		<type show="false" with_chrono="true" attach_in_mail="true" icon="" sign="false" select_in_reconciliation="true">
             <id>signed_response</id>
             <label>_SIGNED_RESPONSE</label>

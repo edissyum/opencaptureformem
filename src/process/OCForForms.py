@@ -112,6 +112,18 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if cpt < len(mapping):
                                         column = mapping[cpt]['column']
                                         if mapping[cpt]['isCustom'] == 'True':
+                                            if mapping[cpt]['isAddress'] == 'True':
+                                                ban_adr = web_service.get_ban(text_without_brackets)
+                                                value = [{
+                                                    'id': ban_adr['features'][0]['properties']['id'],
+                                                    'latitude': ban_adr['features'][0]['geometry']['coordinates'][1],
+                                                    'longitude': ban_adr['features'][0]['geometry']['coordinates'][0],
+                                                    'addressTown': ban_adr['features'][0]['properties']['city'],
+                                                    'addressNumber': ban_adr['features'][0]['properties']['housenumber'] if 'housenumber' in ban_adr['features'][0]['properties'] else '',
+                                                    'addressStreet': ban_adr['features'][0]['properties']['street'] if 'street' in ban_adr['features'][0]['properties'] else
+                                                    ban_adr['features'][0]['properties']['name'],
+                                                    'addressPostcode': ban_adr['features'][0]['properties']['citycode']
+                                                }]
                                             args['data']['customFields'].update({column: value})
                                         else:
                                             args['data'][column] = value
@@ -122,6 +134,18 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     last_map = mapping[len(mapping) - 1]
                                     column = last_map['column']
                                     if last_map['isCustom'] == 'True':
+                                        if mapping[cpt]['isAddress'] == 'True':
+                                            ban_adr = web_service.get_ban(text_without_brackets)
+                                            text_without_brackets = [{
+                                                'id': ban_adr['features'][0]['properties']['id'],
+                                                'latitude': ban_adr['features'][0]['geometry']['coordinates'][1],
+                                                'longitude': ban_adr['features'][0]['geometry']['coordinates'][0],
+                                                'addressTown': ban_adr['features'][0]['properties']['city'],
+                                                'addressNumber': ban_adr['features'][0]['properties']['housenumber'] if 'housenumber' in ban_adr['features'][0]['properties'] else '',
+                                                'addressStreet': ban_adr['features'][0]['properties']['street'] if 'street' in ban_adr['features'][0]['properties'] else
+                                                ban_adr['features'][0]['properties']['name'],
+                                                'addressPostcode': ban_adr['features'][0]['properties']['citycode']
+                                            }]
                                         args['data']['customFields'].update({column: text_without_brackets})
                                     else:
                                         args['data'][column] = text_without_brackets

@@ -247,6 +247,7 @@ And in the json_file here is what you can do (ou can use the default one <code>s
         - regex --> regex used to find the data you want
         - mapping --> If column is equal to custom or if you want to split one line into multiple column you have to fill this (you need as many block of mapping as columns you want) :
             - isCustom --> if the data need to be in custom_fields column
+            - isAddress --> If true, use the BAN API to jsonsify the value (need to be a custom value first)
             - column --> put the id of custom_fields (eg: "3") or a column of res_letterbox table
 
 If you want specific data you could use <code>[]</code> into your line. For example you could check the <code>example_form.json</code> and <code>example_form.txt</code> to see the settings

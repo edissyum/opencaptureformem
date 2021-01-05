@@ -19,18 +19,18 @@
 	<TABLENAME>
 		<attach_res_attachments>res_attachments</attach_res_attachments>
 	</TABLENAME>
-<!--	NCH01-->
+<!--	EDISSYUM - NCH01-->
 	<RECONCILIATION>
 		<CONFIG>
 			<name>reconciliation</name>
 			<comment>_RECONCILIATION_COMMENT</comment>
 			<multiple_res_id>true</multiple_res_id> <!-- Setting allowing, or not, the reconciliation of an attachment to multiple documents -->
 			<attach_to_empty>true</attach_to_empty> <!-- Setting allowing, or not, the reconciliation of an attachment to a document without response project -->
-			<delete_response_project>true</delete_response_project> <!-- Setting allowing, or not, the automatic deletion of the response project, thanks to his chrono number -->
+			<delete_response_project>false</delete_response_project> <!-- Setting allowing, or not, the automatic deletion of the response project, thanks to his chrono number -->
 			<close_incoming>true</close_incoming> <!-- Setting allowing, or not, the possibility to close the incoming document, with a radio button-->
 		</CONFIG>
 	</RECONCILIATION>
-<!--	END NCH01-->
+<!--	END EDISSYUM - NCH01-->
 	<HISTORY>
 		<attachadd>true</attachadd>
 		<attachup>true</attachup>
