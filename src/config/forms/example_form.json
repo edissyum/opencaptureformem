@@ -30,10 +30,12 @@
                     "mapping": [
                         {
                             "isCustom": "True",
+                            "isAddress": "False",
                             "column": "2"
                         },
                         {
                             "isCustom": "False",
+                            "isAddress": "False",
                             "column": "subject"
                         }
                     ]
@@ -44,6 +46,7 @@
                     "mapping": [
                         {
                             "isCustom": "True",
+                            "isAddress": "False",
                             "column": "12"
                         }
                     ]
@@ -54,7 +57,8 @@
                     "mapping": [
                         {
                             "isCustom": "True",
-                            "column": "5"
+                            "isAddress": "True",
+                            "column": "2"
                         }
                     ]
                 }

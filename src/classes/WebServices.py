@@ -318,3 +318,16 @@ class WebServices:
             return False, res.text
         else:
             return True, json.loads(res.text)
+
+    def get_ban(self, adr):
+        try:
+            res = requests.get("https://api-adresse.data.gouv.fr/search/?q=" + adr, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchUserError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while retrieving Maarch users')
+            self.Log.error('More information : ' + str(e))
+            return False

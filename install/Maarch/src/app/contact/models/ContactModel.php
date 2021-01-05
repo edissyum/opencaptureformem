@@ -503,7 +503,7 @@ abstract class ContactModelAbstract
         }
     }
 
-    // NCH01
+    // EDISSYUM - NCH01
     public static function getByPhone(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['phone']);
@@ -543,5 +543,5 @@ abstract class ContactModelAbstract
 
         return $aContact[0];
     }
-    // END NCH01
+    // END EDISSYUM - NCH01
 }
