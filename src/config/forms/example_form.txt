@@ -1,13 +1,15 @@
-Nom : EDISSYUM
+Objet : [Chaussée – trottoir dangereux] [263] 101341 - Intervention Rapide Lagaffe Gaston
 
-Prenom : nathan
+Nom : Lagaffe
 
-Email : nathan.cheval@edissyum.com
+Prenom : Gaston
 
-Telephone : 0606060606
+Email : pascal.presle@gmail.com
 
-Votre demande : [101341] Autre danger
+Telephone :
 
-Précisions : Voici les précisions par rapport à ma demande
+Votre demande : [Chaussée – trottoir dangereux] [263] 101341 - Intervention Rapide
 
-Lieu d’intervention : 21 bis avenue Pierre de Coubertin, 44600 Saint-Nazaire, France
+Précisions : TEST 5
+
+Lieu d’intervention : [47.28539703921441,-2.2149989128112835] 12 Boulevard Paul Perrin, 44600 Saint-Nazaire, France
