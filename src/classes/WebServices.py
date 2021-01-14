@@ -18,6 +18,7 @@
 import json
 import base64
 import requests
+from datetime import datetime
 from requests.auth import HTTPBasicAuth
 
 
@@ -108,6 +109,7 @@ class WebServices:
             'destination': destination,
             'senders': contact,
             'documentDate': date,
+            'arrivaldate': str(datetime.now()),
             'customFields': {},
         }
 
@@ -221,6 +223,7 @@ class WebServices:
         :return: res_id or Boolean if issue happen
         """
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
+        args['arrivalDate'] = str(datetime.now())
 
         del args['file']
         del args['from']
