@@ -138,6 +138,8 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if last_map['isCustom'] == 'True':
                                         if mapping[cpt]['isAddress'] == 'True':
                                             args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets
+                                        else:
+                                            args['data']['customFields'].update({column: text_without_brackets})
                                     else:
                                         args['data'][column] = text_without_brackets
                 res_contact = web_service.create_contact(results[contact_table])
