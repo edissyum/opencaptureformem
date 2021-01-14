@@ -25,20 +25,8 @@
             "table": "res_letterbox",
             "data": [
                 {
-                    "regex": "Votre demande\\s*:\\s*(.+)",
-                    "column": "custom",
-                    "mapping": [
-                        {
-                            "isCustom": "True",
-                            "isAddress": "False",
-                            "column": "2"
-                        },
-                        {
-                            "isCustom": "False",
-                            "isAddress": "False",
-                            "column": "subject"
-                        }
-                    ]
+                    "regex": "Objet\\s*:\\s*(.+)",
+                    "column": "subject"
                 },
                 {
                     "regex": "Précisions\\s*:\\s*(.+)",
@@ -58,7 +46,12 @@
                         {
                             "isCustom": "True",
                             "isAddress": "True",
-                            "column": "2"
+                            "column": "14"
+                        },
+                        {
+                            "isCustom": "True",
+                            "isAddress": "True",
+                            "column": "14"
                         }
                     ]
                 }

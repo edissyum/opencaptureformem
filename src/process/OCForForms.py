@@ -90,7 +90,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                         regex = contact_fields[field]['regex']
                         column = contact_fields[field]['column']
                         res = re.findall(r'' + regex, line)
-                        if res:
+                        if res and res[0].strip():
                             results[contact_table][column] = res[0]
 
                     for field in letterbox_fields:
@@ -113,18 +113,20 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         column = mapping[cpt]['column']
                                         if mapping[cpt]['isCustom'] == 'True':
                                             if mapping[cpt]['isAddress'] == 'True':
-                                                ban_adr = web_service.get_ban(text_without_brackets)
-                                                value = [{
-                                                    'id': ban_adr['features'][0]['properties']['id'],
-                                                    'latitude': ban_adr['features'][0]['geometry']['coordinates'][1],
-                                                    'longitude': ban_adr['features'][0]['geometry']['coordinates'][0],
-                                                    'addressTown': ban_adr['features'][0]['properties']['city'],
-                                                    'addressNumber': ban_adr['features'][0]['properties']['housenumber'] if 'housenumber' in ban_adr['features'][0]['properties'] else '',
-                                                    'addressStreet': ban_adr['features'][0]['properties']['street'] if 'street' in ban_adr['features'][0]['properties'] else
-                                                    ban_adr['features'][0]['properties']['name'],
-                                                    'addressPostcode': ban_adr['features'][0]['properties']['citycode']
-                                                }]
-                                            args['data']['customFields'].update({column: value})
+                                                latitude = value.split(',')[0]
+                                                longitude = value.split(',')[1]
+                                                args['data']['customFields'].update({
+                                                    column: [{
+                                                        'latitude': latitude,
+                                                        'longitude': longitude,
+                                                        "addressTown": "",
+                                                        "addressNumber": "",
+                                                        "addressStreet": "",
+                                                        "addressPostcode": "",
+                                                    }]
+                                                })
+                                            else:
+                                                args['data']['customFields'].update({column: value})
                                         else:
                                             args['data'][column] = value
                                     cpt = cpt + 1
@@ -135,23 +137,14 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     column = last_map['column']
                                     if last_map['isCustom'] == 'True':
                                         if mapping[cpt]['isAddress'] == 'True':
-                                            ban_adr = web_service.get_ban(text_without_brackets)
-                                            text_without_brackets = [{
-                                                'id': ban_adr['features'][0]['properties']['id'],
-                                                'latitude': ban_adr['features'][0]['geometry']['coordinates'][1],
-                                                'longitude': ban_adr['features'][0]['geometry']['coordinates'][0],
-                                                'addressTown': ban_adr['features'][0]['properties']['city'],
-                                                'addressNumber': ban_adr['features'][0]['properties']['housenumber'] if 'housenumber' in ban_adr['features'][0]['properties'] else '',
-                                                'addressStreet': ban_adr['features'][0]['properties']['street'] if 'street' in ban_adr['features'][0]['properties'] else
-                                                ban_adr['features'][0]['properties']['name'],
-                                                'addressPostcode': ban_adr['features'][0]['properties']['citycode']
-                                            }]
-                                        args['data']['customFields'].update({column: text_without_brackets})
+                                            args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets
                                     else:
                                         args['data'][column] = text_without_brackets
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
+                else:
+                    log.error('Error while creating contact : ' + str(res_contact[1]))
 
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[process_name])
                 if res:

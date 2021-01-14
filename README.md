@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.2.1_20.03
+Version 4.2.2_20.03
 
 # Open-Capture for Maarch 20.03 & 20.10
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -247,7 +247,7 @@ And in the json_file here is what you can do (ou can use the default one <code>s
         - regex --> regex used to find the data you want
         - mapping --> If column is equal to custom or if you want to split one line into multiple column you have to fill this (you need as many block of mapping as columns you want) :
             - isCustom --> if the data need to be in custom_fields column
-            - isAddress --> If true, use the BAN API to jsonsify the value (need to be a custom value first)
+            - isAddress --> If true, the bracket value need to be "LATITUDE,LONGITUDE" and the rest, the complete adress
             - column --> put the id of custom_fields (eg: "3") or a column of res_letterbox table
 
 If you want specific data you could use <code>[]</code> into your line. For example you could check the <code>example_form.json</code> and <code>example_form.txt</code> to see the settings
