@@ -46,12 +46,12 @@
                         {
                             "isCustom": "True",
                             "isAddress": "True",
-                            "column": "14"
+                            "column": "2"
                         },
                         {
                             "isCustom": "True",
                             "isAddress": "True",
-                            "column": "14"
+                            "column": "2"
                         }
                     ]
                 }
