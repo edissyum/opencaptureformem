@@ -309,7 +309,9 @@ class Mail:
         args = []
         for att in msg.attachments:
             file_format = os.path.splitext(att.filename)[1]
-            if not file_format:
+            if not att.filename and not file_format:
+                continue
+            elif not file_format:
                 file_format = mimetypes.guess_extension(att.content_type, strict=False)
 
             args.append({
@@ -353,13 +355,13 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
                 error = res['errors']
             smtp.send_email(
                 message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
-                '    - Nom du process : ' + process + '\n' +
-                '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + ' \n' +
-                '    - Sujet du mail : ' + msg['subject'] + '\n' +
-                '    - Date du mail : ' + msg['date'] + '\n' +
-                '    - UID du mail : ' + msg['uid'] + '\n' +
-                '\n\n'
-                '    - Informations sur l\'erreur : ' + error + '\n',
+                        '    - Nom du process : ' + process + '\n' +
+                        '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + ' \n' +
+                        '    - Sujet du mail : ' + msg['subject'] + '\n' +
+                        '    - Date du mail : ' + msg['date'] + '\n' +
+                        '    - UID du mail : ' + msg['uid'] + '\n' +
+                        '\n\n'
+                        '    - Informations sur l\'erreur : ' + error + '\n',
                 step='du traitement du mail suivant')
     except (FileNotFoundError, FileExistsError, shutil.Error):
         pass
