@@ -78,7 +78,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     # Retrieve destination ID from Maarch 20 if destination is not an integer
     if type(destination) is not int or not is_destination_valid:
-        destinations = web_service.retrieve_entities()
         for dest in destinations['entities']:
             if destination == dest['id']:
                 destination = dest['serialId']
@@ -91,7 +90,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             destination = args['data']['destination']
         else:
             destination = config.cfg[_process]['destination']
-        destinations = web_service.retrieve_entities()
         for dest in destinations['entities']:
             if destination == dest['id']:
                 destination = dest['serialId']
