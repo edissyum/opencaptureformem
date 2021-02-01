@@ -190,6 +190,8 @@ Here is a short list of options you have for mail process into <code>/opt/maarch
   - importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
   - from_is_reply_to : In some case, the <code>from</code> field is a no-reply email and the real from e-mail is in reply-to. Put <code>True</code> if it's the case
     If this option is enabled but `reply_to` field is empty, the `from` field will be used
+  - custom_fields : If you need to specify a static custom value, use this and fill it like this : "{"6": "VALUE"}"
+  - custom_mail : The id of the custom where the email(s) adress(es) will be stored
 
 You could also set-up notifications if an error is thrown while collect mail with IMAP.
 For that, just fill the following informations : 
