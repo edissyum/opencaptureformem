@@ -1,7 +1,5 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
 
-Version 4.2.3_20.03
-
 # Open-Capture for Maarch 20.03 & 20.10
 Open-Capture is a **free and Open Source** software under **GNU General Public License v3.0**.
 
