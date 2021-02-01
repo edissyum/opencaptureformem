@@ -69,8 +69,15 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         destination = config.cfg[_process]['destination']
         log.info("Destination can't be found, using default destination : " + destination)
 
+    # Check if the destination is valid
+    destinations = web_service.retrieve_entities()
+    is_destination_valid = False
+    for dest in destinations['entities']:
+        if destination == dest['serialId']:
+            is_destination_valid = True
+
     # Retrieve destination ID from Maarch 20 if destination is not an integer
-    if type(destination) is not int:
+    if type(destination) is not int or not is_destination_valid:
         destinations = web_service.retrieve_entities()
         for dest in destinations['entities']:
             if destination == dest['id']:
@@ -79,7 +86,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     args['data']['destination'] = destination
 
     # If destination still not good, try with default destination
-    if type(destination) is not int:
+    if type(destination) is not int or not is_destination_valid:
         if args.get('isMail') is not None and args.get('isMail') is True:
             destination = args['data']['destination']
         else:
