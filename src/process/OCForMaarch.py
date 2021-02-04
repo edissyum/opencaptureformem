@@ -81,6 +81,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         for dest in destinations['entities']:
             if destination == dest['id']:
                 destination = dest['serialId']
+                is_destination_valid = True
                 if args.get('isMail') is not None and args.get('isMail') is True:
                     args['data']['destination'] = destination
 
