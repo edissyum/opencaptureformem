@@ -181,10 +181,10 @@ class Mail:
         attachments = self.retrieve_attachment(msg)
         attachments_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
         for pj in attachments:
-            path = attachments_path + pj['filename'] + pj['format']
+            path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
             if not os.path.isfile(path):
                 pj['format'] = '.txt'
-                f = open(attachments_path + pj['filename'] + pj['format'], 'w')
+                f = open(path, 'w')
                 f.write('Erreur lors de la remontée de cette pièce jointe')
                 f.close()
 
@@ -193,9 +193,9 @@ class Mail:
                 'collId': 'letterbox_coll',
                 'table': 'res_attachments',
                 'subject': pj['filename'] + pj['format'],
-                'filename': pj['filename'],
+                'filename': sanitize_filename(pj['filename']),
                 'format': pj['format'][1:],
-                'file': attachments_path + pj['filename'] + pj['format'],
+                'file': path,
             })
 
         return data, file
@@ -257,7 +257,7 @@ class Mail:
             attachment_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
-                file_path = os.path.join(attachment_path + file['filename'] + file['format'])
+                file_path = os.path.join(attachment_path + sanitize_filename(file['filename']) + file['format'])
                 if not os.path.isfile(file_path) and file['format'] and not os.path.isdir(file_path):
                     fp = open(file_path, 'wb')
                     fp.write(file['content'])
@@ -374,3 +374,12 @@ def str2bool(value):
     :return: Boolean
     """
     return value.lower() in "true"
+
+
+def sanitize_filename(s):
+    def safe_char(c):
+        if c.isalnum():
+            return c
+        else:
+            return "_"
+    return "".join(safe_char(c) for c in s).rstrip("_")
