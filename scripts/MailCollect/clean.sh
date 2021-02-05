@@ -21,4 +21,4 @@
 batch_path='/opt/maarch/OpenCapture/data/MailCollect/'
 conservation_time=7
 
-find $batch_path -mindepth 1 -maxdepth 1 -type d -not -name '_ERROR' -ctime +$conservation_time -exec echo {} ';'
+find $batch_path -mindepth 1 -maxdepth 2 -type d -not -name '_ERROR' -ctime +$conservation_time -exec rm -rf {} ';'
