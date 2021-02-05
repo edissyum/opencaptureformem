@@ -47,6 +47,7 @@ cd install/ || exit 2
 xargs -a apt-requirements.txt apt install -y
 pip3 install --upgrade pip
 pip3 install -r pip-requirements.txt
+pip3 install --upgrade -r pip-requirements.txt
 
 cd $OCPath || exit 2
 find . -name ".gitkeep" -delete
