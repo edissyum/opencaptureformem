@@ -40,9 +40,9 @@ echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script
 filepath=$1
 filename=$(basename "$filepath")
 destination=$(basename "$(dirname "$filepath")")
-ext=$(file -b -i "$filepath")
+ext=$(file -b --mime-type "$filepath")
 
-if ! test -e $PID && test "$ext" = 'application/pdf; charset=binary' && test -f "$filepath";
+if ! test -e $PID && test "$ext" = 'application/pdf' && test -f "$filepath";
 then
   touch $PID
   echo $$ > $PID
@@ -51,7 +51,7 @@ then
 
   python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$OCPath"/data/pdf/"$filename" --destination "$destination" --process outgoing
 
-elif test -f "$filepath" && test "$ext" != 'application/pdf; charset=binary';
+elif test -f "$filepath" && test "$ext" != 'application/pdf';
 then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
   mkdir -p "$errFilepath"

@@ -134,6 +134,35 @@ def timer(start_time: time.time(), end_time: time.time()):
     return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
 
+def process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp):
+    if check_file(image, path, config, log):
+        # Process the file and send it to Maarch
+        res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, None, config_mail)
+
+        if args.get('isMail') is not None and args.get('isMail') is True:
+            # Process the attachments of mail
+            if res[0]:
+                res_id = res[1]['resId']
+                if len(args['attachments']) > 0:
+                    log.info('Found ' + str(len(args['attachments'])) + ' attachments')
+                    for attachment in args['attachments']:
+                        res = web_service.insert_attachment_from_mail(attachment, res_id)
+                        if res[0]:
+                            log.info('Insert attachment OK : ' + str(res[1]))
+                            continue
+                        else:
+                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                            log.error('Error while inserting attachment : ' + str(res[1]))
+                else:
+                    log.info('No attachments found')
+            else:
+                move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                log.error('Error while processing e-mail : ' + str(res[1]))
+
+            recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
+            log.info('End process')
+
+
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 @OCforMaarch.task()
 def launch(args):
@@ -197,8 +226,11 @@ def launch(args):
                     separator.run(path + fileToSep)
             path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
 
+        for file in os.listdir(path):
+            process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
+
         # Create the Queue to store files
-        fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+        # fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
 
     elif args.get('file') is not None:
         path = args['file']
@@ -209,36 +241,12 @@ def launch(args):
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
                 else:
                     path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
-
+                    for file in os.listdir(path):
+                        process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
                     # Create the Queue to store files
-                    fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
+                    # fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
             else:
-                if check_file(image, path, config, log):
-                    # Process the file and send it to Maarch
-                    res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, None, config_mail)
-
-                    if args.get('isMail') is not None and args.get('isMail') is True:
-                        # Process the attachments of mail
-                        if res[0]:
-                            res_id = res[1]['resId']
-                            if len(args['attachments']) > 0:
-                                log.info('Found ' + str(len(args['attachments'])) + ' attachments')
-                                for attachment in args['attachments']:
-                                    res = web_service.insert_attachment_from_mail(attachment, res_id)
-                                    if res[0]:
-                                        log.info('Insert attachment OK : ' + str(res[1]))
-                                        continue
-                                    else:
-                                        move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
-                                        log.error('Error while inserting attachment : ' + str(res[1]))
-                            else:
-                                log.info('No attachments found')
-                        else:
-                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
-                            log.error('Error while processing e-mail : ' + str(res[1]))
-
-                        recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
-                        log.info('End process')
+                process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
 
     # Empty the tmp dir to avoid residual file
     recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
