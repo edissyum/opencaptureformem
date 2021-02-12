@@ -26,6 +26,10 @@ outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
 tmpPath             = /tmp/
 # _ or - for exemple
 divider             = _
+# Enable blank page removal
+removeBlankPage     = True
+# Recognition threshold
+blobsratio          = 1E-6
 
 [OCForMaarch]
 # Dont forget to add the /rest at the end of the URL (Link to WS)

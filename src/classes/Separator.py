@@ -17,16 +17,21 @@
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 import os
+import cv2
 import uuid
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 import PyPDF2
+from wand.color import Color
+from wand.image import Image as Img
+from wand.api import library
 
 
 class Separator:
     def __init__(self, log, config, tmp_folder):
         self.Log = log
+        self.Config = config
         self.pages = []
         self.nb_doc = 0
         self.nb_pages = 0
@@ -43,6 +48,29 @@ class Separator:
         os.mkdir(self.output_dir)
         os.mkdir(self.output_dir_pdfa)
 
+    @staticmethod
+    def is_blank_page(image, config):
+        params = cv2.SimpleBlobDetector_Params()
+        params.minThreshold = 10
+        params.maxThreshold = 200
+        params.filterByArea = True
+        params.minArea = 20
+        params.filterByCircularity = True
+        params.minCircularity = 0.1
+        params.filterByConvexity = True
+        params.minConvexity = 0.87
+        params.filterByInertia = True
+        params.minInertiaRatio = 0.01
+
+        detector = cv2.SimpleBlobDetector_create(params)
+        im = cv2.imread(image)
+        keypoints = detector.detect(im)
+        rows, cols, channel = im.shape
+        blobs_ratio = len(keypoints) / (1.0 * rows * cols)
+        if blobs_ratio < float(config['SEPARATOR_QR']['blobsratio']):
+            return True
+        return False
+
     def run(self, file):
         """
         Function that runs all the subprocess in order to separate a document using splitter with QR Code
@@ -52,6 +80,8 @@ class Separator:
         self.Log.info('Start page separation using QR CODE')
         self.pages = []
         try:
+            if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
+                self.remove_blank_page(file)
             pdf = PyPDF2.PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
             self.get_xml_qr_code(file)
@@ -62,6 +92,37 @@ class Separator:
         except Exception as e:
             self.error = True
             self.Log.error("INIT : " + str(e))
+
+    def remove_blank_page(self, file):
+        with Img(filename=file, resolution=300) as pic:
+            library.MagickResetIterator(pic.wand)
+            pic.scene = 1  # Start cpt of filename at 1 instead of 0
+            pic.compression_quality = 100
+            pic.background_color = Color("white")
+            pic.alpha_channel = 'remove'
+            pic.save(filename=(self.output_dir + '/result.jpg'))
+
+        blank_page_exists = False
+        pages_to_keep = []
+        for _file in os.listdir(self.output_dir):
+            if _file.endswith('.jpg'):
+                if not self.is_blank_page(self.output_dir + '/' + _file, self.Config.cfg):
+                    blank_page_exists = True
+                    pages_to_keep.append(os.path.splitext(_file)[0].split('-')[1])
+                try:
+                    os.remove(self.output_dir + '/' + _file)
+                except FileNotFoundError:
+                    pass
+
+        if blank_page_exists:
+            infile = PyPDF2.PdfFileReader(file)
+            output = PyPDF2.PdfFileWriter()
+            for i in sorted(pages_to_keep):
+                p = infile.getPage(int(i) - 1)
+                output.addPage(p)
+
+            with open(file, 'wb') as f:
+                output.write(f)
 
     def get_xml_qr_code(self, file):
         """
@@ -79,6 +140,7 @@ class Separator:
                 file
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = xml.communicate()
+
             if err.decode('utf-8'):
                 self.Log.error('ZBARIMG : ' + str(err))
             self.qrList = ET.fromstring(out)
@@ -111,7 +173,6 @@ class Separator:
             page['pdf_filename'] = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
             page['pdfa_filename'] = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
             self.pages.append(page)
-
         self.nb_doc = len(self.pages)
 
     def check_empty_docs(self):
@@ -157,10 +218,10 @@ class Separator:
 
                     pages_to_keep = range(page['index_start'], page['index_end'] + 1)
                     split_pdf(file, page['pdf_filename'], pages_to_keep)
-
                     if self.convert_to_pdfa == 'True':
                         self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
-                os.remove(file)
+                # os.remove(file)
+                # exit()
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
 
