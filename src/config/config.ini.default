@@ -88,8 +88,8 @@ generate_chrono     = True
 
 [OCForMaarch_reconciliation_found]
 is_attachment       = True
-attachment_type     = outgoing_mail_signed
-status              = TRA
+attachment_type     = signed_response
+status              = A_TRA
 doctype             =
 typist              =
 priority            =
