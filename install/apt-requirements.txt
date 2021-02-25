@@ -10,5 +10,6 @@ python3-pip
 python3-lxml
 poppler-utils
 rabbitmq-server
+libgl1-mesa-glx
 libtesseract-dev
 libleptonica-dev
