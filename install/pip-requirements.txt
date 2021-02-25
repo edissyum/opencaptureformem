@@ -8,4 +8,5 @@ requests
 imap-tools
 pytesseract
 configparser
+opencv-python
 kuyruk_manager
