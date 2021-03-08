@@ -23,4 +23,4 @@ export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
 kuyruk_path=$(command -v kuyruk)
 
 cd /opt/maarch/OpenCapture/ || exit
-$kuyruk_path --app src.main.OCforMaarch worker --logging-level error
+$kuyruk_path --app src.main.OCforMaarch worker

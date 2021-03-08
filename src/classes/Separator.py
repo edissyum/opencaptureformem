@@ -220,8 +220,7 @@ class Separator:
                     split_pdf(file, page['pdf_filename'], pages_to_keep)
                     if self.convert_to_pdfa == 'True':
                         self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
-                # os.remove(file)
-                # exit()
+                os.remove(file)
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
 

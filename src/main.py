@@ -26,7 +26,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
 from kuyruk_manager import Manager
 import src.classes.Log as logClass
-from src.process.Queue import run_queue
 import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
 import src.classes.Config as configClass
@@ -53,35 +52,6 @@ def str2bool(value):
     :return: Boolean
     """
     return value.lower() in "true"
-
-
-def fill_queue(
-        args: dict, path: str, log: logClass.Log, separator: separatorClass.Separator, config: configClass.Config,
-        image: imagesClass.Image, ocr: ocrClass.PyTesseract, locale: localeClass.Locale, web_service: webserviceClass.WebServices,
-        tmp_folder: str) -> None:
-    """
-    Run queue to handle multiple process running at the same time
-
-    :param args: dict or argument (path to file, process to use etc..)
-    :param path: Direct path to the file
-    :param log: Class Log instance
-    :param separator: Class Separator instance
-    :param config: Class Config instance
-    :param image: Class Image instance
-    :param ocr: Class OCR instance
-    :param locale: Class Locale instance
-    :param web_service: Class WebServices instance
-    :param tmp_folder: Path to tmp folder (created using tempfile python lib)
-    """
-    q = queue.Queue()
-
-    # Find file in the wanted folder (default or exported pdf after qrcode separation)
-    for file in os.listdir(path):
-        if check_file(image, path + file, config, log):
-            q = process(args, path + file, log, separator, config, image, ocr, locale, web_service, tmp_folder, q)
-
-    while not q.empty():
-        run_queue(q, config, image, log, web_service, ocr)
 
 
 def check_file(image: imagesClass.Image, path: str, config: configClass.Config, log: logClass.Log) -> bool:
@@ -229,9 +199,6 @@ def launch(args):
         for file in os.listdir(path):
             process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
 
-        # Create the Queue to store files
-        # fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
-
     elif args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
@@ -243,8 +210,6 @@ def launch(args):
                     path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
                     for file in os.listdir(path):
                         process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
-                    # Create the Queue to store files
-                    # fill_queue(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
             else:
                 process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
 
