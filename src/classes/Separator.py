@@ -35,6 +35,7 @@ class Separator:
         self.pages = []
         self.nb_doc = 0
         self.nb_pages = 0
+        self.pdf_list = []
         self.error = False
         self.qrList = None
         self.enabled = False
@@ -218,6 +219,7 @@ class Separator:
 
                     pages_to_keep = range(page['index_start'], page['index_end'] + 1)
                     split_pdf(file, page['pdf_filename'], pages_to_keep)
+                    self.pdf_list.append(page['pdf_filename'])
                     if self.convert_to_pdfa == 'True':
                         self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
                 os.remove(file)

@@ -194,10 +194,11 @@ def launch(args):
             for fileToSep in os.listdir(path):
                 if check_file(image, path + fileToSep, config, log):
                     separator.run(path + fileToSep)
-            path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
-
-        for file in os.listdir(path):
-            process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
+                    for file in separator.pdf_list:
+                        process_file(image, file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
+        else:
+            for file in os.listdir(path):
+                process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
 
     elif args.get('file') is not None:
         path = args['file']
@@ -207,9 +208,8 @@ def launch(args):
                 if separator.error:  # in case the file is not a pdf or no qrcode was found, process as an image
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
                 else:
-                    path = separator.output_dir_pdfa if str2bool(separator.convert_to_pdfa) is True else separator.output_dir
-                    for file in os.listdir(path):
-                        process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
+                    for file in separator.pdf_list:
+                        process_file(image, file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
             else:
                 process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
 
