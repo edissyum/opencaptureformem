@@ -17,16 +17,15 @@
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 import os
+import re
+
 import cv2
 import uuid
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 import PyPDF2
-from wand.color import Color
-from wand.image import Image as Img
-from wand.api import library
-
+import pdf2image
 
 class Separator:
     def __init__(self, log, config, tmp_folder):
@@ -50,7 +49,14 @@ class Separator:
         os.mkdir(self.output_dir_pdfa)
 
     @staticmethod
-    def is_blank_page(image, config):
+    def is_blank_page(image, config) -> bool:
+        """
+         Check if a page is blank
+
+        :param image: Image path
+        :param config: Instance of Config class
+        :return: True if the page is blank. False if not
+        """
         params = cv2.SimpleBlobDetector_Params()
         params.minThreshold = 10
         params.maxThreshold = 200
@@ -94,22 +100,28 @@ class Separator:
             self.error = True
             self.Log.error("INIT : " + str(e))
 
+    @staticmethod
+    def sorted_files(data):
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        return sorted(data, key=alphanum_key)
+
     def remove_blank_page(self, file):
-        with Img(filename=file, resolution=300) as pic:
-            library.MagickResetIterator(pic.wand)
-            pic.scene = 1  # Start cpt of filename at 1 instead of 0
-            pic.compression_quality = 100
-            pic.background_color = Color("white")
-            pic.alpha_channel = 'remove'
-            pic.save(filename=(self.output_dir + '/result.jpg'))
+        pages = pdf2image.convert_from_path(file)
+        i = 1
+        for page in pages:
+            page.save(self.output_dir + '/result-' + str(i) + '.jpg', 'JPEG')
+            i = i + 1
 
         blank_page_exists = False
         pages_to_keep = []
-        for _file in os.listdir(self.output_dir):
+        for _file in self.sorted_files(os.listdir(self.output_dir)):
             if _file.endswith('.jpg'):
                 if not self.is_blank_page(self.output_dir + '/' + _file, self.Config.cfg):
-                    blank_page_exists = True
                     pages_to_keep.append(os.path.splitext(_file)[0].split('-')[1])
+                else:
+                    blank_page_exists = True
+
                 try:
                     os.remove(self.output_dir + '/' + _file)
                 except FileNotFoundError:
@@ -118,7 +130,7 @@ class Separator:
         if blank_page_exists:
             infile = PyPDF2.PdfFileReader(file)
             output = PyPDF2.PdfFileWriter()
-            for i in sorted(pages_to_keep):
+            for i in self.sorted_files(pages_to_keep):
                 p = infile.getPage(int(i) - 1)
                 output.addPage(p)
 
@@ -170,7 +182,7 @@ class Separator:
                 page['is_empty'] = False
                 page['index_start'] = page['index_sep'] + 2
 
-            page['uuid'] = str(uuid.uuid4())    # Generate random number for pdf filename
+            page['uuid'] = str(uuid.uuid4())  # Generate random number for pdf filename
             page['pdf_filename'] = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
             page['pdfa_filename'] = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
             self.pages.append(page)
