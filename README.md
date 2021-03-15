@@ -56,8 +56,6 @@ Systemd is perfect for one instance
     sudo ./Makefile
       # Answer the few questions asked at launch
       # Go grab a coffee ;)
-    cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
-    cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
 It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
