@@ -102,6 +102,12 @@ class Separator:
 
     @staticmethod
     def sorted_files(data):
+        """
+          Custom function to return a sorted list of file in dir. Works with numeric like 1,2,3,4,5,6,7,8,9,10
+          And do not return 1, 10, 2, 20 etc... as the standard sorted function
+        :param data:
+        :return:
+        """
         convert = lambda text: int(text) if text.isdigit() else text.lower()
         alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
         return sorted(data, key=alphanum_key)

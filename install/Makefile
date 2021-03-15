@@ -85,6 +85,11 @@ chmod u+x scripts/*.sh
 chmod u+x scripts/MailCollect/*.sh
 
 ####################
+# Modify default config
+cp $defaultPath/src/config/config.ini.default $defaultPath/src/config/config.ini
+cp $defaultPath/src/config/mail.ini.default $defaultPath/src/config/mail.ini
+
+####################
 # Create the service systemd or supervisor
 if [ "$finalChoice" == 2 ]; then
   touch /etc/systemd/system/oc-worker.service

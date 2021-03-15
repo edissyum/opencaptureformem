@@ -41,7 +41,7 @@ Tested with :
 ## Install Open-Capture for Maarch
 Nothing as simple as that :
 
-    sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R your_user:your_group /opt/maarch/
+    sudo mkdir /opt/maarch/ && sudo chmod -R 775 /opt/maarch/ && sudo chown -R $(whoami):$(whoami) /opt/maarch/
     sudo apt install git
     latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformaarch.git *20.03 | tail -n1 |  sed 's/.*\///; s/\^{}//')
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformaarch /opt/maarch/OpenCapture/
@@ -56,8 +56,6 @@ Systemd is perfect for one instance
     sudo ./Makefile
       # Answer the few questions asked at launch
       # Go grab a coffee ;)
-    cp /opt/maarch/OpenCapture/src/config/config.ini.default /opt/maarch/OpenCapture/src/config/config.ini
-    cp /opt/maarch/OpenCapture/src/config/mail.ini.default /opt/maarch/OpenCapture/src/config/mail.ini
 
 It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
 
