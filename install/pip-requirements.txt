@@ -5,6 +5,7 @@ pillow>=6.2.0
 kuyruk
 ocrmypdf
 requests
+pdf2image
 imap-tools
 pytesseract
 configparser
