@@ -2,6 +2,7 @@
 // NCH01
 namespace Attachment\controllers;
 
+use Convert\controllers\ConvertPdfController;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Attachment\models\AttachmentModel;
@@ -63,9 +64,9 @@ class ReconciliationController
 
         $title           = $info['title'];
         $fileFormat      = 'pdf';
-        $attachment_type = isset($aArgs['attachment_type']) ? $aArgs['attachment_type'] : 'signed_response';
+        $attachment_type = $aArgs['attachment_type'] ?? 'signed_response';
         $res_id_master   = $info['res_id_master'];
-        $status          = isset($aArgs['status']) ? $aArgs['status'] : 'SIGN';
+        $status          = $aArgs['status'] ?? 'SIGN';
 
         $aArgs = [
             'title'        => $title,
@@ -74,27 +75,34 @@ class ReconciliationController
             'typist'       => 'superadmin',
             'resIdMaster'  => $res_id_master,
             'type'         => $attachment_type,
-            'identifier'   => $identifier,
+            'chrono'       => $identifier,
             'recipientId'  => $info['recipient_id'],
-            'status'       => $status
+            'status'       => $status,
+            'originId'     => $info['res_id']
         ];
 
         $resId = StoreController::storeAttachment($aArgs);
+
+        ConvertPdfController::convert([
+            'resId'     => $resId,
+            'collId'    => 'attachments_coll'
+        ]);
+
+        $customId = CoreConfigModel::getCustomId();
+        $customId = empty($customId) ? 'null' : $customId;
+        exec("php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$resId} --collId attachments_coll --userId {$GLOBALS['id']} > /dev/null &");
 
         // Suppression du projet de reponse
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/attachments/xml/config.xml']);
         if ($loadedXml) {
             $reconciliationConfig    = $loadedXml->RECONCILIATION->CONFIG;
-            $delete_response_project = $reconciliationConfig->delete_response_project;
             $close_incoming          = $reconciliationConfig->close_incoming;
 
-            if ($delete_response_project == 'true') {
-                AttachmentModel::update([
-                    'set'   => ['status' => 'DEL'],
-                    'where' => ['res_id = ?'],
-                    'data'  => [$info['res_id']],
-                ]);
-            }
+            AttachmentModel::update([
+                'set'   => ['status' => 'SIGN'],
+                'where' => ['res_id = ?'],
+                'data'  => [$info['res_id']],
+            ]);
 
             // Cloture du courrier entrant
             if ($close_incoming == 'true') {

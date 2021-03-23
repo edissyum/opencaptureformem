@@ -91,11 +91,14 @@ class Separator:
                 self.remove_blank_page(file)
             pdf = PyPDF2.PdfFileReader(open(file, 'rb'))
             self.nb_pages = pdf.getNumPages()
+
             self.get_xml_qr_code(file)
             self.parse_xml()
             self.check_empty_docs()
             self.set_doc_ends()
             self.extract_and_convert_docs(file)
+            if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
+                self.pdf_list.append(self.output_dir + '/' + file)
         except Exception as e:
             self.error = True
             self.Log.error("INIT : " + str(e))
