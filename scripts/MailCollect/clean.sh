@@ -18,7 +18,13 @@
 
 # Bash script to clean MailCollect batches and log
 
-batch_path='/opt/maarch/OpenCapture/data/MailCollect/'
+batch_path='/home/nathan/PycharmProjects/oc_for_maarch/data/MailCollect/'
 conservation_time=7
 
-find $batch_path -mindepth 1 -maxdepth 2 -type d -not -name '_ERROR' -ctime +$conservation_time -exec rm -rf {} ';'
+for dir in "$batch_path"/*/; do
+  if [ -d "$dir" ]; then
+    if [[ $dir != *"_ERROR"* ]]; then
+      find "$dir" -mindepth 1 -maxdepth 1 -type d -mtime +$conservation_time -exec rm -rf {} ';'
+    fi
+  fi
+done
