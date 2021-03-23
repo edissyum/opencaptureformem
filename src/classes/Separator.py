@@ -97,7 +97,7 @@ class Separator:
             self.check_empty_docs()
             self.set_doc_ends()
             self.extract_and_convert_docs(file)
-            if self.nb_pages == 1 and not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
+            if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
                 self.pdf_list.append(self.output_dir + '/' + file)
         except Exception as e:
             self.error = True
