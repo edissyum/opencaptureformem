@@ -20,11 +20,12 @@ import pytesseract
 
 
 class PyTesseract:
-    def __init__(self, locale, log):
+    def __init__(self, locale, log, config):
         self.Log = log
         self.text = ''
         self.tool = ''
         self.lang = locale
+        self.Config = config
         self.searchablePdf = ''
 
     def text_builder(self, img):
@@ -41,15 +42,21 @@ class PyTesseract:
         except pytesseract.pytesseract.TesseractError as t:
             self.Log.error('Tesseract ERROR : ' + str(t))
 
-    def generate_searchable_pdf(self, pdf, tmp_path):
+    def generate_searchable_pdf(self, pdf, tmp_path, separator):
         """
         Start from standard PDF, with no OCR, and create a searchable PDF, with OCR. Thanks to ocrmypdf python lib
 
         :param pdf: Path to original pdf (not searchable, without OCR)
         :param tmp_path: Path to store the final pdf, searchable with OCR
+        :param separator: Class Separator instance
         """
         try:
-            ocrmypdf.ocr(pdf, tmp_path + '/result.pdf', language=self.lang, skip_text=True, progress_bar=False)
-            self.searchablePdf = open(tmp_path + '/result.pdf', 'rb').read()
+            output_file = tmp_path + '/result.pdf'
+            ocrmypdf.ocr(pdf, output_file, language=self.lang, skip_text=True, progress_bar=False, jobs=int(self.Config.cfg['GLOBAL']['nbthreads']))
+            if separator.convert_to_pdfa == "True":
+                output_file = tmp_path + '/result-pdfa.pdf'
+                separator.convert_to_pdfa_function(output_file, tmp_path + '/result.pdf', self.Log)
+
+            self.searchablePdf = open(output_file, 'rb').read()
         except ocrmypdf.exceptions.PriorOcrFoundError as e:
             self.Log.error(e)

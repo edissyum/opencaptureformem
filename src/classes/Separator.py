@@ -27,6 +27,7 @@ import xml.etree.ElementTree as ET
 import PyPDF2
 import pdf2image
 
+
 class Separator:
     def __init__(self, log, config, tmp_folder):
         self.Log = log
@@ -240,12 +241,30 @@ class Separator:
 
                     pages_to_keep = range(page['index_start'], page['index_end'] + 1)
                     split_pdf(file, page['pdf_filename'], pages_to_keep)
+                    # if self.convert_to_pdfa == 'True':
+                    #     convert_to_pdfa_function(page['pdfa_filename'], page['pdf_filename'])
+                    #     self.pdf_list.append(page['pdfa_filename'])
+                    # else:
                     self.pdf_list.append(page['pdf_filename'])
-                    if self.convert_to_pdfa == 'True':
-                        self.convert_to_pdfa(page['pdfa_filename'], page['pdf_filename'])
                 os.remove(file)
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
+
+    @staticmethod
+    def convert_to_pdfa_function(pdfa_filename, pdf_filename, log):
+        """
+        Convert a simple PDF to a PDF/A
+
+        :param pdfa_filename: New PDF/A filename
+        :param pdf_filename: Old PDF filename
+        :param log: Class Log instance
+        """
+        log.info('Convert file to PDF/A-2B')
+        gs_command_line = 'gs#-dNOSAFER#-dPDFA=2#-sColorConversionStrategy=RGB#-dNOOUTERSAVE#-sProcessColorModel=DeviceRGB#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=2#PDFA_def.ps#%s' % (
+            pdfa_filename, pdf_filename)
+        gs_args = gs_command_line.split('#')
+        subprocess.check_call(gs_args)
+        os.remove(pdf_filename)
 
 
 def split_pdf(input_path, output_path, pages):
@@ -264,16 +283,3 @@ def split_pdf(input_path, output_path, pages):
 
     with open(output_path, "wb") as stream:
         output_pdf.write(stream)
-
-
-def convert_to_pdfa(pdfa_filename, pdf_filename):
-    """
-    Convert a simple PDF to a PDF/A
-
-    :param pdfa_filename: New PDF/A filename
-    :param pdf_filename: Old PDF filename
-    """
-    gs_command_line = 'gs#-dPDFA#-dNOOUTERSAVE#-sProcessColorModel=DeviceCMYK#-sDEVICE=pdfwrite#-o#%s#-dPDFACompatibilityPolicy=1#PDFA_def.ps#%s' % (pdfa_filename, pdf_filename)
-    gs_args = gs_command_line.split('#')
-    subprocess.check_call(gs_args)
-    os.remove(pdf_filename)

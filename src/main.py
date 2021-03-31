@@ -165,7 +165,7 @@ def launch(args):
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
     locale = localeClass.Locale(config)
-    ocr = ocrClass.PyTesseract(locale.localeOCR, log)
+    ocr = ocrClass.PyTesseract(locale.localeOCR, log, config)
     separator = separatorClass.Separator(log, config, tmp_folder)
     web_service = webserviceClass.WebServices(
         config.cfg['OCForMaarch']['host'],
