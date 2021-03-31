@@ -217,9 +217,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     # Create the searchable PDF if necessary
     if is_ocr is False:
         log.info('Start OCR on document before send it')
-        ocr.generate_searchable_pdf(file, tmp_folder)
+        ocr.generate_searchable_pdf(file, tmp_folder, separator)
         file_to_send = ocr.searchablePdf
     else:
+        if separator.convert_to_pdfa == 'True':
+            output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
+            separator.convert_to_pdfa_function(output_file, file, log)
+            file = output_file
         file_to_send = open(file, 'rb').read()
 
     if q is not None:

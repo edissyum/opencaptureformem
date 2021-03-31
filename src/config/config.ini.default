@@ -1,6 +1,7 @@
 [GLOBAL]
 # Use ${GLOBAL:projectPath} to specify once for all the path of the project
-nbThreads           = 5
+# nbThtreads is use to specify how many files will be processed at the same time when OCR pdf
+nbThreads           = 4
 resolution          = 300
 compressionQuality  = 100
 # Used to fix potential OCR error into mail detection
