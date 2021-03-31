@@ -16,7 +16,6 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import queue
 import sys
 import tempfile
 import time
