@@ -208,6 +208,15 @@ To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</co
 
 By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
 
+## Possible errors
+
+If you have the following error when running your MailCollect scripts : <code>ssl.SSLError: [SSL: UNSUPPORTED_PROTOCOL] unsupported protocol (_ssl.c:1056)</code>
+One of the possibility to solve is the following :
+
+    sudo nano /etc/ssl/openssl.cnf
+
+Find the <code>minProtocol</code> options and set it to TLSv1.0
+
 ## Clean MailCollect batches
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
 To avoid lack of memory on the server, do not forget to cron the <code>clean.sh</code> script : 
