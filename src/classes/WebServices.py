@@ -253,7 +253,6 @@ class WebServices:
         action_id = config.cfg['REATTACH_DOCUMENT']['action']
         group = config.cfg['REATTACH_DOCUMENT']['group']
         basket = config.cfg['REATTACH_DOCUMENT']['basket']
-        ws_user_id = config.cfg['REATTACH_DOCUMENT']['ws_user_id']
 
         try:
             res = requests.put(self.baseUrl + 'resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/' + basket + '/actions/' + action_id, auth=self.auth, data=args,
