@@ -214,6 +214,86 @@ class WebServices:
             self.Log.error('More information : ' + str(e))
             return False
 
+    # BEGIN OBR01
+    def check_document(self, chrono):
+        """
+        Check if document exist
+        :param chrono: Chrono number of the document to check
+        :return: process success (boolean)
+        """
+        args = json.dumps({
+            'select': 'res_id',
+            'clause': "category_id='outgoing' AND alt_identifier='" + chrono + "' AND status<>'DEL'",
+        })
+        try:
+            res = requests.post(self.baseUrl + 'res/list', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') CheckDocumentError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while inserting in Maarch')
+            self.Log.error('More information : ' + str(e))
+            return False
+
+    def reattach_to_document(self, res_id_origin, res_id_signed, typist, config):
+        """
+        Reattach signed document to the origin one
+        :param typist: id of the user
+        :param res_id_origin: res_id of the origin document
+        :param res_id_signed: res_id of the signed document
+        :param config: config object
+        :return: process success (boolean)
+        """
+        args = json.dumps({
+            "data": {"resId": res_id_origin},
+            "resources": [res_id_signed]
+        })
+        action_id = config.cfg['REATTACH_DOCUMENT']['action']
+        group = config.cfg['REATTACH_DOCUMENT']['group']
+        basket = config.cfg['REATTACH_DOCUMENT']['basket']
+        ws_user_id = config.cfg['REATTACH_DOCUMENT']['ws_user_id']
+
+        try:
+            res = requests.put(self.baseUrl + 'resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/' + basket + '/actions/' + action_id, auth=self.auth, data=args,
+                headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+            if res.status_code != 204:
+                self.Log.error('(' + str(res.status_code) + ') ReattachToDocumentError : ' + str(res.text))
+                return False
+            else:
+                return True
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while reattach in Maarch')
+            self.Log.error('More information : ' + str(e))
+            return False
+
+    def change_status(self, res_id, config):
+        """
+        Change status of a maarch document
+        :param res_id: res_id of the maarch document
+        :param config: config object
+        :return: process success (boolean)
+        """
+        args = json.dumps({
+            "status": config.cfg['REATTACH_DOCUMENT']['status'],
+            "resId": [res_id]
+        })
+
+        try:
+            res = requests.put(self.baseUrl + 'res/resource/status', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') ChangeStatusError : ' + str(res.text))
+                return False
+            else:
+                return True
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('Error while changing status')
+            self.Log.error('More information : ' + str(e))
+            return False
+    # END OBR01
+
     def insert_letterbox_from_mail(self, args, _process):
         """
         Insert mail into Maarch Database

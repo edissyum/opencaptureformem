@@ -115,6 +115,14 @@ The file <code>src/config/config.ini</code> is splitted in different categories
   - OCForMaarch_**process_name**
      - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
+To activate auto recontiliation for Maarch outgoing document you must set this list of values in config.ini file (REATTACH_DOCUMENT part) :
+
+    - Active : activate the process (True or False)
+    - Action : reattach action id in Maarch
+    - group  : id of the scan group in Maarch
+    - basket : basket id linked to the group in Maarch
+    - status : the new status after reattach
+
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
