@@ -100,3 +100,10 @@ destination         =
 reconciliation      =
 separator_qr        = False
 generate_chrono     = False
+
+[REATTACH_DOCUMENT]
+active              = True
+action              =
+group               =
+basket              =
+status              = EENV

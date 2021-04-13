@@ -115,6 +115,14 @@ The file <code>src/config/config.ini</code> is splitted in different categories
   - OCForMaarch_**process_name**
      - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
+To activate auto recontiliation for Maarch outgoing document you must set this list of values in config.ini file (REATTACH_DOCUMENT part) :
+
+    - Active : activate the process (True or False)
+    - Action : reattach action id in Maarch
+    - group  : id of the scan group in Maarch
+    - basket : basket id linked to the group in Maarch
+    - status : the new status after reattach
+
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
@@ -207,6 +215,15 @@ To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</co
      */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/launch_MAIL.sh >/dev/null 2>&1
 
 By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
+
+## Possible errors
+
+If you have the following error when running your MailCollect scripts : <code>ssl.SSLError: [SSL: UNSUPPORTED_PROTOCOL] unsupported protocol (_ssl.c:1056)</code>
+One of the possibility to solve is the following :
+
+    sudo nano /etc/ssl/openssl.cnf
+
+Find the <code>minProtocol</code> options and set it to TLSv1.0
 
 ## Clean MailCollect batches
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
