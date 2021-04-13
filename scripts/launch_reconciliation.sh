@@ -65,7 +65,7 @@ check_attachment(){
 defaultProcess(){
     # If barcode couldn't be read or isn't present, use default process
     # Same if the barcode is read but the attachment doesn't exist on Maarch database
-    python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1" --chrono "${2:-default}"
 }
 
 reconciliationProcess(){
@@ -116,6 +116,6 @@ else
         reconciliationProcess "$tmpPath" "$chrono"
     else
         echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
-        defaultProcess "$tmpPath"
-    fi
+        defaultProcess "$tmpPath" "$chrono"
+      fi
 fi
