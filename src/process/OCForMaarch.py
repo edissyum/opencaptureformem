@@ -283,26 +283,27 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
             # BEGIN OBR01
             # If reattach is active and the origin document already exist,  reattach the new one to it
-            log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
-            if config.cfg['REATTACH_DOCUMENT']['active'] == 'True':
-                check_document_res = web_service.check_document(args['chrono'])
-                log.info("Reattach check result : " + str(check_document_res))
-                if check_document_res['resources']:
-                    res_id_origin = check_document_res['resources'][0]['res_id']
-                    res_id_signed = json.loads(res)['resId']
+            if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None:
+                log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
+                if args['chrono']:
+                    check_document_res = web_service.check_document(args['chrono'])
+                    log.info("Reattach check result : " + str(check_document_res))
+                    if check_document_res['resources']:
+                        res_id_origin = check_document_res['resources'][0]['res_id']
+                        res_id_signed = json.loads(res)['resId']
 
-                    log.info("Reatach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
-                    # Get ws user id and reattach the document
-                    list_of_users = web_service.retrieve_users()
-                    for user in list_of_users['users']:
-                        if config.cfg['OCForMaarch']['user'] == user['user_id']:
-                            typist = user['id']
-                            reattach_res = web_service.reattach_to_document(res_id_origin, res_id_signed, typist, config)
-                            log.info("Reattach result : " + str(reattach_res))
+                        log.info("Reatach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
+                        # Get ws user id and reattach the document
+                        list_of_users = web_service.retrieve_users()
+                        for user in list_of_users['users']:
+                            if config.cfg['OCForMaarch']['user'] == user['user_id']:
+                                typist = user['id']
+                                reattach_res = web_service.reattach_to_document(res_id_origin, res_id_signed, typist, config)
+                                log.info("Reattach result : " + str(reattach_res))
 
-                    # Change status of the document
-                    change_status_res = web_service.change_status(res_id_origin, config)
-                    log.info("Change status : " + str(change_status_res))
+                        # Change status of the document
+                        change_status_res = web_service.change_status(res_id_origin, config)
+                        log.info("Change status : " + str(change_status_res))
             # END OBR01
 
             if args.get('isMail') is None:
