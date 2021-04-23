@@ -24,7 +24,6 @@ class Locale:
         self.arrayDate = []
         self.regexDate = ''
         self.formatDate = ''
-        self.URLPattern = ''
         self.subjectOnly = ''
         self.regexSubject = ''
         self.dateTimeFormat = ''
@@ -41,7 +40,6 @@ class Locale:
             self.arrayDate = fp['dateConvert']
             self.phoneRegex = fp['phoneRegex']
             self.emailRegex = fp['emailRegex']
-            self.URLPattern = fp['URLPattern']
             self.subjectOnly = fp['subjectOnly']
             self.regexSubject = fp['subjectRegex']
             self.dateTimeFormat = fp['dateTimeFormat']
