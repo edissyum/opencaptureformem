@@ -220,7 +220,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
         file_to_send = ocr.searchablePdf
     else:
-        if separator.convert_to_pdfa == 'True':
+        if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and args.get('isMail') is None or args.get('isMail') is False:
             output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
             separator.convert_to_pdfa_function(output_file, file, log)
             file = output_file
