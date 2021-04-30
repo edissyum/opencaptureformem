@@ -223,7 +223,7 @@ class WebServices:
         """
         args = json.dumps({
             'select': 'res_id',
-            'clause': "category_id='outgoing' AND alt_identifier='" + chrono + "' AND status<>'DEL'",
+            'clause': "category_id='outgoing' AND alt_identifier='" + chrono + "' AND status <> 'DEL'",
         })
         try:
             res = requests.post(self.baseUrl + 'res/list', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'})

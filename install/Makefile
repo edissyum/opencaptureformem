@@ -90,6 +90,11 @@ cp $defaultPath/src/config/config.ini.default $defaultPath/src/config/config.ini
 cp $defaultPath/src/config/mail.ini.default $defaultPath/src/config/mail.ini
 
 ####################
+# Fix rights
+chmod -R 775 $defaultPath
+chown -R "$user":"$group" $defaultPath
+
+####################
 # Create the service systemd or supervisor
 if [ "$finalChoice" == 2 ]; then
   touch /etc/systemd/system/oc-worker.service
