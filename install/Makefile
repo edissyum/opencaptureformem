@@ -10,6 +10,7 @@ normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
 defaultPath=/opt/maarch/OpenCapture/
+imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
 group=www-data
 
@@ -93,6 +94,14 @@ cp $defaultPath/src/config/mail.ini.default $defaultPath/src/config/mail.ini
 # Fix rights
 chmod -R 775 $defaultPath
 chown -R "$user":"$group" $defaultPath
+
+####################
+# Fix ImageMagick Policies
+if test -f "$imageMagickPolicyFile"; then
+  sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' $imageMagickPolicyFile
+else
+  echo "We could not fix the ImageMagick policy files because it doesn't exists. Please fix it manually using the informations in the README"
+fi
 
 ####################
 # Create the service systemd or supervisor
