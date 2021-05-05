@@ -107,9 +107,18 @@ class ReconciliationController
             // Cloture du courrier entrant
             if ($close_incoming == 'true') {
                 ResModel::update([
-                    'set'   => ['status' => 'END'],
-                    'where' => ['res_id = ?'],
+                    'set'   => ['status' => 'END', 'closing_date = ?'],
+                    'where' => ['res_id = ?', 'CURRENT_TIMESTAMP'],
                     'data'  => [$res_id_master],
+                ]);
+
+                HistoryController::add([
+                    'tableName' => 'res_letterbox',
+                    'recordId'  => $res_id_master,
+                    'eventType' => 'UP',
+                    'info'      => 'Réconciliation : clôture du document cible dans le cadre de la réconciliation',
+                    'moduleId'  => 'reconciliation',
+                    'eventId'   => 'closeIncoming',
                 ]);
             }
         }
