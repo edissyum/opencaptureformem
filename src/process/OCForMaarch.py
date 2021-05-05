@@ -79,7 +79,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     # Retrieve destination ID from Maarch 20 if destination is not an integer
     if type(destination) is not int or not is_destination_valid:
         for dest in destinations['entities']:
-            if destination == dest['id']:
+            if str(destination) == str(dest['id']):
                 destination = dest['serialId']
                 is_destination_valid = True
                 if args.get('isMail') is not None and args.get('isMail') is True:
