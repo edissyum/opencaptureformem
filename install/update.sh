@@ -23,8 +23,9 @@ fi
 
 # Put the default paths.
 # Modify them if needed
+currentDate=$(date +%m%d%Y-%H%M%S)
 OCPath="/opt/maarch/OpenCapture/"
-backupPath="/opt/maarch/OpenCapture.bck/"
+backupPath="/opt/maarch/OpenCapture.$currentDate/"
 
 user=$(who am i | awk '{print $1}')
 
