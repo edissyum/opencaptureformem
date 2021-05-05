@@ -275,10 +275,18 @@ class WebServices:
         :param config: config object
         :return: process success (boolean)
         """
-        args = json.dumps({
-            "status": config.cfg['REATTACH_DOCUMENT']['status'],
-            "resId": [res_id]
-        })
+
+        if config.cfg['REATTACH_DOCUMENT']['status']:
+            args = json.dumps({
+                "status": config.cfg['REATTACH_DOCUMENT']['status'],
+                "resId": [res_id],
+                "historyMessage": 'Réconciliation : clôture du document cible dans le cadre de la réconciliation automatique'
+            })
+        else:
+            args = json.dumps({
+                "status": config.cfg['REATTACH_DOCUMENT']['status'],
+                "resId": [res_id],
+            })
 
         try:
             res = requests.put(self.baseUrl + 'res/resource/status', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'})
