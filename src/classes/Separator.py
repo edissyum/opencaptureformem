@@ -99,7 +99,7 @@ class Separator:
             self.set_doc_ends()
             self.extract_and_convert_docs(file)
             if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
-                self.pdf_list.append(self.output_dir + '/' + file)
+                self.pdf_list.append(self.output_dir + '/' + os.path.basename(file))
         except Exception as e:
             self.error = True
             self.Log.error("INIT : " + str(e))
@@ -241,10 +241,6 @@ class Separator:
 
                     pages_to_keep = range(page['index_start'], page['index_end'] + 1)
                     split_pdf(file, page['pdf_filename'], pages_to_keep)
-                    # if self.convert_to_pdfa == 'True':
-                    #     convert_to_pdfa_function(page['pdfa_filename'], page['pdf_filename'])
-                    #     self.pdf_list.append(page['pdfa_filename'])
-                    # else:
                     self.pdf_list.append(page['pdf_filename'])
                 os.remove(file)
             except Exception as e:
