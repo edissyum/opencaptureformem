@@ -367,6 +367,23 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
         pass
 
 
+def send_email_error_pj(batch_path, process, msg, res, smtp, attachment):
+    if smtp.enabled is not False:
+        error = ''
+        if res:
+            error = str(res['errors'])
+        smtp.send_email(
+            message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
+                    '    - Nom du process : ' + process + '\n' +
+                    '    - Sujet du mail : ' + msg['subject'] + '\n' +
+                    '    - Sujet de la pièce jointe : ' + attachment['subject'] + '\n' +
+                    '    - Date du mail : ' + msg['date'] + '\n' +
+                    '    - UID du mail : ' + msg['uid'] + '\n' +
+                    '\n\n'
+                    '    - Informations sur l\'erreur générée par la pièce jointe : ' + error + '\n',
+            step='du traitement du mail suivant')
+
+
 def str2bool(value):
     """
     Function to convert string to boolean
