@@ -30,7 +30,7 @@ import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
 from src.process.OCForMaarch import process, get_process_name
-from src.classes.Mail import move_batch_to_error
+from src.classes.Mail import move_batch_to_error, send_email_error_pj
 from src.classes.SMTP import SMTP
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
@@ -120,7 +120,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                             log.info('Insert attachment OK : ' + str(res[1]))
                             continue
                         else:
-                            move_batch_to_error(args['batch_path'], args['error_path'], smtp, args['process'], args['msg'], res[1])
+                            send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
                             log.error('Error while inserting attachment : ' + str(res[1]))
                 else:
                     log.info('No attachments found')
