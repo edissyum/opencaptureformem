@@ -26,7 +26,7 @@ from email.mime.text import MIMEText
 
 
 class SMTP:
-    def __init__(self, enabled, host, port, login, pwd, ssl, starttls, dest_mail, delay):
+    def __init__(self, enabled, host, port, login, pwd, ssl, starttls, dest_mail, delay, auth, from_mail):
         self.enabled = str2bool(enabled)
         self.pwd = pwd
         self.conn = None
@@ -34,7 +34,9 @@ class SMTP:
         self.host = host
         self.login = login
         self.ssl = str2bool(ssl)
+        self.auth = str2bool(auth)
         self.dest_mail = dest_mail
+        self.from_mail = from_mail
         self.starttls = str2bool(starttls)
         self.isUp = False
         self.delay = int(delay)
@@ -68,7 +70,8 @@ class SMTP:
                 print('SMTP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e))
                 sys.exit()
         try:
-            self.conn.login(self.login, self.pwd)
+            if self.auth:
+                self.conn.login(self.login, self.pwd)
         except (smtplib.SMTPException, OSError) as err:
             print('Error while trying to login to ' + self.host + ' using ' + self.login + '/' + self.pwd + ' as login/password : ' + str(err))
             sys.exit()
@@ -95,9 +98,10 @@ class SMTP:
 
         msg = MIMEMultipart()
         msg['To'] = self.dest_mail
+        if self.from_mail:
+            msg['From'] = self.from_mail
         msg['Subject'] = '[MailCollect] Erreur lors de la capture IMAP'
-        message = 'Une erreur est arrivée lors ' + step + ' : \n' \
-                  + message
+        message = 'Une erreur est arrivée lors ' + step + ' : \n' + message
         if self.delay != 0:
             message += '\n\n Attention, durant les ' + str(self.delay) + ' dernières minutes, d\'autres erreurs ont pu arriver sans notifications.'
 

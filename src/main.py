@@ -155,6 +155,8 @@ def launch(args):
             config_mail.cfg['GLOBAL']['smtp_starttls'],
             config_mail.cfg['GLOBAL']['smtp_dest_admin_mail'],
             config_mail.cfg['GLOBAL']['smtp_delay'],
+            config_mail.cfg['GLOBAL']['smtp_auth'],
+            config_mail.cfg['GLOBAL']['smtp_from_mail'],
         )
         log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
