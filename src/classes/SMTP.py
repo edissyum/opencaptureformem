@@ -101,8 +101,7 @@ class SMTP:
         if self.from_mail:
             msg['From'] = self.from_mail
         msg['Subject'] = '[MailCollect] Erreur lors de la capture IMAP'
-        message = 'Une erreur est arrivée lors ' + step + ' : \n' \
-                  + message
+        message = 'Une erreur est arrivée lors ' + step + ' : \n' + message
         if self.delay != 0:
             message += '\n\n Attention, durant les ' + str(self.delay) + ' dernières minutes, d\'autres erreurs ont pu arriver sans notifications.'
 

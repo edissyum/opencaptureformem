@@ -47,12 +47,15 @@ class WebServices:
         :param mail: e-mail to search
         :return: Contact from Maarch
         """
-        res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail': mail})
-        if res.status_code != 200:
-            self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
-            return False
+        if mail:
+            res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail': mail})
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
+                return False
+            else:
+                return json.loads(res.text)
         else:
-            return json.loads(res.text)
+            self.Log.info('GetContactByMailInfo : No email found')
 
     def retrieve_contact_by_phone(self, phone):
         """
