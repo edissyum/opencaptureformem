@@ -172,8 +172,10 @@ def launch(args):
         config.cfg['OCForMaarch']['host'],
         config.cfg['OCForMaarch']['user'],
         config.cfg['OCForMaarch']['password'],
-        log
+        log,
+        config.cfg['GLOBAL']['timeout']
     )
+
     image = imagesClass.Images(
         filename,
         int(config.cfg['GLOBAL']['resolution']),
