@@ -38,7 +38,8 @@ if __name__ == '__main__':
         config.cfg['OCForMaarch']['host'],
         config.cfg['OCForMaarch']['user'],
         config.cfg['OCForMaarch']['password'],
-        Log
+        Log,
+        config.cfg['GLOBAL']['timeout']
     )
     chrono = args['chrono']
 
