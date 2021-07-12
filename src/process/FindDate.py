@@ -29,42 +29,48 @@ class FindDate(Thread):
         self.Locale = locale
         self.Config = config
 
+    def format_date(self, _date):
+        self.date = _date.group().replace('1er', '01')  # Replace some possible inconvenient char
+        self.date = self.date.replace(',', ' ')  # Replace some possible inconvenient char
+        self.date = self.date.replace('/', ' ')  # Replace some possible inconvenient char
+        self.date = self.date.replace('-', ' ')  # Replace some possible inconvenient char
+        self.date = self.date.replace('.', ' ')  # Replace some possible inconvenient char
+        date_convert = self.Locale.arrayDate
+        for key in date_convert:
+            for month in date_convert[key]:
+                if month.lower() in self.date.lower():
+                    self.date = (self.date.lower().replace(month.lower(), key))
+                    break
+
+        try:
+            self.date = datetime.strptime(self.date, self.Locale.dateTimeFormat).strftime(self.Locale.formatDate)
+            # Check if the date of the document isn't too old. 62 (default value) is equivalent of 2 months
+            today = datetime.now()
+            doc_date = datetime.strptime(self.date, self.Locale.formatDate)
+            timedelta = today - doc_date
+
+            if int(self.Config.cfg['OCForMaarch']['timedelta']) != -1:
+                if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0:
+                    self.Log.info("Date is older than " + str(self.Config.cfg['OCForMaarch']['timedelta']) + " days or in the future: " + self.date)
+                    self.date = ''
+            self.Log.info("Date found : " + self.date)
+            return True
+        except ValueError:
+            self.Log.info("Date wasn't in a good format : " + self.date)
+            self.date = ''
+
     def run(self):
         """
         Override the default run function of threading package
         This will search for a date into the text of original PDF
 
         """
-
         for _date in re.finditer(r"" + self.Locale.regexDate + "", re.sub(r'(\d)\s+(\d)', r'\1\2', self.text)):  # The re.sub is useful to fix space between numerics
-            self.date = _date.group().replace('1er', '01')   # Replace some possible inconvenient char
-            self.date = self.date.replace(',', ' ')          # Replace some possible inconvenient char
-            self.date = self.date.replace('/', ' ')          # Replace some possible inconvenient char
-            self.date = self.date.replace('-', ' ')          # Replace some possible inconvenient char
-            self.date = self.date.replace('.', ' ')          # Replace some possible inconvenient char
+            if self.format_date(_date):
+                return True
 
-            date_convert = self.Locale.arrayDate
-            for key in date_convert:
-                for month in date_convert[key]:
-                    if month.lower() in self.date.lower():
-                        self.date = (self.date.lower().replace(month.lower(), key))
-                        break
+        if not self.date:
+            for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text):
+                if self.format_date(_date):
+                    return True
 
-            try:
-                self.date = datetime.strptime(self.date, self.Locale.dateTimeFormat).strftime(self.Locale.formatDate)
-                # Check if the date of the document isn't too old. 62 (default value) is equivalent of 2 months
-                today = datetime.now()
-                doc_date = datetime.strptime(self.date, self.Locale.formatDate)
-                timedelta = today - doc_date
-
-                if int(self.Config.cfg['OCForMaarch']['timedelta']) != -1:
-                    if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0:
-                        self.Log.info("Date is older than " + str(self.Config.cfg['OCForMaarch']['timedelta']) + " days or in the future: " + self.date)
-                        self.date = ''
-                        continue
-                self.Log.info("Date found : " + self.date)
-                break
-            except ValueError:
-                self.Log.info("Date wasn't in a good format : " + self.date)
-                self.date = ''
-                continue
