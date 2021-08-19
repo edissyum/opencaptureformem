@@ -28,7 +28,6 @@ login                = test@gmail.com
 ; If you have $ in your password, you must double it
 password             = test
 
-
 ; True or False
 isForm               = False
 generate_chrono      = True
