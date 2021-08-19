@@ -31,7 +31,7 @@ password             = test
 ; True or False
 isForm               = False
 generate_chrono      = True
-forceUtf8            = False
+forceUtf8            = True
 priorityToMailSubject= False
 priorityToMailDate   = False
 priorityToMailFrom   = False
