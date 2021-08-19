@@ -45,12 +45,13 @@ git config core.fileMode False
 # Force launch of apt and pip requirements
 # in case of older version without somes packages/libs
 cd install/ || exit 2
+apt update
 xargs -a apt-requirements.txt apt install -y
 pip3 install --upgrade pip
 pip3 install -r pip-requirements.txt
 pip3 install --upgrade -r pip-requirements.txt
 
-cd $OCPath || exit 2
+cd $OCPath || exit 3
 find . -name ".gitkeep" -delete
 
 # Fix right on folder

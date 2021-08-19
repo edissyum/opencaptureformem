@@ -55,13 +55,12 @@ class WebServices:
                 res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail': mail}, timeout=self.timeout)
                 if res.status_code != 200:
                     self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
-                    return False
+                    return False, str(res.text)
                 else:
                     return json.loads(res.text)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                self.Log.error('Error while retrieving Contact by Mail in Maarch')
-                self.Log.error('More information : ' + str(e))
-                return False
+                self.Log.error('GetContactByMailError : ' + str(e))
+                return False, str(e)
         else:
             self.Log.info('GetContactByMailInfo : No email found')
 
@@ -76,13 +75,12 @@ class WebServices:
             res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone}, timeout=self.timeout)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while retrieving Contact by Phone in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('GetContactByPhoneError : ' + str(e))
+            return False, str(e)
 
     def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail):
         """
@@ -140,13 +138,12 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('InsertIntoMaarchError : ' + str(e))
+            return False, str(e)
 
     def insert_attachment(self, file_content, config, res_id, _process):
         """
@@ -172,13 +169,12 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('InsertAttachmentsIntoMaarchError : ' + str(e))
+            return False, str(e)
 
     def insert_attachment_reconciliation(self, file_content, chrono, _process, config):
         """
@@ -203,13 +199,12 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('InsertAttachmentsReconciliationIntoMaarchError : ' + str(e))
+            return False, str(e)
 
     def check_attachment(self, chrono):
         """
@@ -222,13 +217,12 @@ class WebServices:
             res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono}, timeout=self.timeout)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('CheckAttachmentError : ' + str(e))
+            return False, str(e)
 
     # BEGIN OBR01
     def check_document(self, chrono):
@@ -245,13 +239,12 @@ class WebServices:
             res = requests.post(self.baseUrl + 'res/list', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') CheckDocumentError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('CheckDocumentError : ' + str(e))
+            return False, str(e)
 
     def reattach_to_document(self, res_id_origin, res_id_signed, typist, config):
         """
@@ -276,13 +269,12 @@ class WebServices:
 
             if res.status_code != 204:
                 self.Log.error('(' + str(res.status_code) + ') ReattachToDocumentError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return True
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while reattach in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('ReattachToDocumentError : ' + str(e))
+            return False, str(e)
 
     def change_status(self, res_id, config):
         """
@@ -308,13 +300,12 @@ class WebServices:
             res = requests.put(self.baseUrl + 'res/resource/status', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') ChangeStatusError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return True
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while changing status')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('ChangeStatusError : ' + str(e))
+            return False, str(e)
     # END OBR01
 
     def insert_letterbox_from_mail(self, args, _process):
@@ -339,13 +330,12 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMaarchError : ' + str(res.text))
-                return False, json.loads(res.text)
+                return False, str(res.text)
             else:
                 return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('MailInsertIntoMaarchError : ' + str(e))
+            return False, str(e)
 
     def insert_attachment_from_mail(self, args, res_id):
         """
@@ -370,12 +360,11 @@ class WebServices:
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMaarchError : ' + str(res.text))
-                return False, json.loads(res.text)
+                return False, str(res.text)
             else:
                 return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while inserting in Maarch')
-            self.Log.error('More information : ' + str(e))
+            self.Log.error('MailInsertAttachmentsIntoMaarchError : ' + str(e))
             return False, str(e)
 
     def retrieve_entities(self):
@@ -383,57 +372,46 @@ class WebServices:
             res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchEntitiesError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while retrieving Maarch entities')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('RetrieveMaarchEntitiesError : ' + str(e))
+            return False, str(e)
 
     def retrieve_users(self):
         try:
             res = requests.get(self.baseUrl + 'users', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchUserError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while retrieving Maarch users')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('RetrieveMaarchUserError : ' + str(e))
+            return False, str(e)
 
     def retrieve_custom_fields(self):
         try:
             res = requests.get(self.baseUrl + 'customFields', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'})
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchCustomFieldsError : ' + str(res.text))
-                return False
+                return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while retrieving Maarch custom fields')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('RetrieveMaarchCustomFieldsError : ' + str(e))
+            return False, str(e)
 
     def create_contact(self, contact):
-        res = requests.post(self.baseUrl + '/contacts', auth=self.auth, data=json.dumps(contact), headers={'Connection': 'close', 'Content-Type': 'application/json'})
-
-        if res.status_code != 200:
-            return False, res.text
-        else:
-            return True, json.loads(res.text)
-
-    def get_ban(self, adr):
         try:
-            res = requests.get("https://api-adresse.data.gouv.fr/search/?q=" + adr, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            res = requests.post(self.baseUrl + '/contacts', auth=self.auth, data=json.dumps(contact), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchUserError : ' + str(res.text))
-                return False
+                self.Log.error('CreateContactError : ' + str(res.text))
+                return False, str(res.text)
             else:
-                return json.loads(res.text)
+                return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error while retrieving Maarch users')
-            self.Log.error('More information : ' + str(e))
-            return False
+            self.Log.error('CreateContactError : ' + str(e))
+            return False, str(e)
