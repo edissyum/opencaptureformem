@@ -106,7 +106,7 @@ class Mail:
         :param log: Log object
         :return: dict of Args and file path
         """
-        to_str, cc_str, reply_to = ('', '', '')
+        to_str, cc_str, reply_to, from_val = ('', '', '', '')
         try:
             for to in msg.to_values:
                 to_str += to['full'] + ';'
@@ -122,6 +122,11 @@ class Mail:
         try:
             for rp_to in msg.reply_to_values:
                 reply_to += rp_to['full'] + ';'
+        except TypeError:
+            pass
+
+        try:
+            from_val = msg.from_values['full']
         except TypeError:
             pass
 
@@ -160,7 +165,7 @@ class Mail:
         # Add custom if specified
         if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log):
             data['mail']['customFields'].update({
-                cfg['custom_mail_from']: msg.from_values['full']
+                cfg['custom_mail_from']: from_val
             })
 
         if cfg.get('custom_mail_to') not in [None, ''] and to_str != '' and self.check_custom_field(cfg['custom_mail_to'], log):
