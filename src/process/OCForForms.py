@@ -70,7 +70,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
             json_file = config.cfg['GLOBAL']['formpath'] + identifier[process]['json_file']
-
             if os.path.isfile(json_file):
                 data = open(json_file, 'r').read()
                 data = json.loads(data)['FIELDS']
@@ -84,8 +83,17 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 results = {
                     contact_table: {},
                 }
+                if not text and file_content:
+                    file_content = open(args['file'], 'r')
+                    text_parsed = file_content.read().split('\n')
+                    text = []
+                    for line in text_parsed:
+                        if line:
+                            text.append(line)
+
                 for line in text:
-                    line = line.get_text()
+                    if type(line) != str:
+                        line = line.get_text()
                     for field in contact_fields:
                         regex = contact_fields[field]['regex']
                         column = contact_fields[field]['column']
@@ -115,6 +123,9 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                             if mapping[cpt]['isAddress'] == 'True':
                                                 latitude = value.split(',')[0]
                                                 longitude = value.split(',')[1]
+                                                zip_code = ""
+                                                for zip_code in re.finditer('\d{2}[ ]?\d{3}', text_without_brackets):
+                                                    zip_code = zip_code.group().replace(' ', '')
                                                 args['data']['customFields'].update({
                                                     column: [{
                                                         'latitude': latitude,
@@ -122,7 +133,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                                         "addressTown": "",
                                                         "addressNumber": "",
                                                         "addressStreet": "",
-                                                        "addressPostcode": "",
+                                                        "addressPostcode": zip_code,
                                                     }]
                                                 })
                                             else:
@@ -130,7 +141,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         else:
                                             args['data'][column] = value
                                     cpt = cpt + 1
-
                                 # Put the rest of the text (not in brackets) into the last map (if the cpt into mapping correponds)
                                 if len(brackets) + 1 == len(mapping):
                                     last_map = mapping[len(mapping) - 1]
