@@ -14,11 +14,12 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-import mimetypes
 import os
 import re
 import sys
+import json
 import shutil
+import mimetypes
 
 from ssl import SSLError
 from socket import gaierror
@@ -376,7 +377,7 @@ def send_email_error_pj(batch_path, process, msg, res, smtp, attachment):
     if smtp.enabled is not False:
         error = ''
         if res:
-            error = str(res['errors'])
+            error = str(json.loads(res)['errors'])
         smtp.send_email(
             message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
                     '    - Nom du process : ' + process + '\n' +
