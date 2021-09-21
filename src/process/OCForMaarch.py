@@ -226,95 +226,76 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             file = output_file
         file_to_send = open(file, 'rb').read()
 
-    if q is not None:
-        file_to_store = {
-            'fileToSend': file_to_send,
-            'file': file,
-            'date': date,
-            'subject': subject,
-            'contact': contact,
-            'destination': destination,
-            'process': _process,
-            'resId': args['resid'],
-            'chrono': args['chrono'],
-            'isInternalNote': args['isinternalnote'],
-            'custom_mail': custom_mail,
-        }
-
-        q.put(file_to_store)
-
-        return q
-    else:
-        if args.get('isMail') is not None and args.get('isMail') is True:
-            if date != '':
-                args['data']['documentDate'] = date
-            if subject != '':
-                args['data']['subject'] = subject
-            if contact != '':
-                args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
-            else:
-                if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
-                    log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])
-                contact = web_service.retrieve_contact_by_mail(args['data']['from'])
-                if contact:
-                    args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
-
-            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
-            if res:
-                log.info('Insert email OK : ' + str(res))
-                return res
-            else:
-                try:
-                    shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
-                except shutil.Error as e:
-                    log.error('Moving file ' + file + ' error : ' + str(e))
-                return False, res
-
-        elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
-            if args['isinternalnote']:
-                res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
-            else:
-                res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
+    if args.get('isMail') is not None and args.get('isMail') is True:
+        if date != '':
+            args['data']['documentDate'] = date
+        if subject != '':
+            args['data']['subject'] = subject
+        if contact != '':
+            args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
-            res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
+            if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+                log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])
+            contact = web_service.retrieve_contact_by_mail(args['data']['from'])
+            if contact:
+                args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
+        res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         if res:
-            log.info("Insert OK : " + res)
-
-            # BEGIN OBR01
-            # If reattach is active and the origin document already exist,  reattach the new one to it
-            if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None:
-                log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
-                if args['chrono']:
-                    check_document_res = web_service.check_document(args['chrono'])
-                    log.info("Reattach check result : " + str(check_document_res))
-                    if check_document_res['resources']:
-                        res_id_origin = check_document_res['resources'][0]['res_id']
-                        res_id_signed = json.loads(res)['resId']
-
-                        log.info("Reatach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
-                        # Get ws user id and reattach the document
-                        list_of_users = web_service.retrieve_users()
-                        for user in list_of_users['users']:
-                            if config.cfg['OCForMaarch']['user'] == user['user_id']:
-                                typist = user['id']
-                                reattach_res = web_service.reattach_to_document(res_id_origin, res_id_signed, typist, config)
-                                log.info("Reattach result : " + str(reattach_res))
-
-                        # Change status of the document
-                        change_status_res = web_service.change_status(res_id_origin, config)
-                        log.info("Change status : " + str(change_status_res))
-            # END OBR01
-
-            if args.get('isMail') is None:
-                try:
-                    os.remove(file)
-                except FileNotFoundError as e:
-                    log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
-            return True
+            log.info('Insert email OK : ' + str(res))
+            return res
         else:
             try:
                 shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
             except shutil.Error as e:
                 log.error('Moving file ' + file + ' error : ' + str(e))
-            return False
+            return False, res
+
+    elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
+        if args['isinternalnote']:
+            res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
+        else:
+            res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
+    else:
+        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
+
+    if res:
+        log.info("Insert OK : " + res)
+
+        # BEGIN OBR01
+        # If reattach is active and the origin document already exist,  reattach the new one to it
+        if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None:
+            log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
+            if args['chrono']:
+                check_document_res = web_service.check_document(args['chrono'])
+                log.info("Reattach check result : " + str(check_document_res))
+                if check_document_res['resources']:
+                    res_id_origin = check_document_res['resources'][0]['res_id']
+                    res_id_signed = json.loads(res)['resId']
+
+                    log.info("Reatach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
+                    # Get ws user id and reattach the document
+                    list_of_users = web_service.retrieve_users()
+                    for user in list_of_users['users']:
+                        if config.cfg['OCForMaarch']['user'] == user['user_id']:
+                            typist = user['id']
+                            reattach_res = web_service.reattach_to_document(res_id_origin, res_id_signed, typist, config)
+                            log.info("Reattach result : " + str(reattach_res))
+
+                    # Change status of the document
+                    change_status_res = web_service.change_status(res_id_origin, config)
+                    log.info("Change status : " + str(change_status_res))
+        # END OBR01
+
+        if args.get('isMail') is None:
+            try:
+                os.remove(file)
+            except FileNotFoundError as e:
+                log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
+        return True
+    else:
+        try:
+            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+        except shutil.Error as e:
+            log.error('Moving file ' + file + ' error : ' + str(e))
+        return False
