@@ -14,15 +14,15 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-import json
-import os
-import shutil
-import sys
 
+import os
+import sys
+import json
+import shutil
 from .FindDate import FindDate
+from .OCForForms import process_form
 from .FindSubject import FindSubject
 from .FindContact import FindContact
-from .OCForForms import process_form
 
 
 def get_process_name(args, config):

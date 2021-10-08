@@ -73,12 +73,8 @@ reconciliationProcess(){
     python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -chrono "$2"
 }
 
-
 # Main
-
 inputPath="$1"
-
-#sleep 5 # sleep to avoid broken file during file transfert
 
 if [[ ! -f "$1" ]]
 then
@@ -87,6 +83,7 @@ then
 fi
 
 fileName=$(basename "$1")
+
 # service is the parent folder name. e.g : /var/share/sortant/DGS/test.pdf --> $service will be DGS
 service=$(echo "$inputPath" | sed -e 's#/[^/]*$##' -e 's#.*/##')
 
@@ -94,7 +91,6 @@ tmpPath="$tmp_dir"/"$service"_"$fileName"
 mv "$inputPath" "$tmpPath"
 
 # Start process
-
 imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
 chrono=$(readBarCode "$imgFile")
