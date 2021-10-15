@@ -14,11 +14,12 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-import mimetypes
 import os
 import re
 import sys
+import json
 import shutil
+import mimetypes
 
 from ssl import SSLError
 from socket import gaierror
@@ -73,7 +74,7 @@ class Mail:
         """
         folders = self.conn.folder.list()
         for f in folders:
-            if folder == f['name']:
+            if folder == f.name:
                 return True
         return False
 
@@ -106,22 +107,27 @@ class Mail:
         :param log: Log object
         :return: dict of Args and file path
         """
-        to_str, cc_str, reply_to = ('', '', '')
+        to_str, cc_str, reply_to, from_val = ('', '', '', '')
         try:
             for to in msg.to_values:
-                to_str += to['full'] + ';'
+                to_str += to.full + ';'
         except TypeError:
             pass
 
         try:
             for cc in msg.cc_values:
-                cc_str += cc['full'] + ';'
+                cc_str += cc.full + ';'
         except TypeError:
             pass
 
         try:
             for rp_to in msg.reply_to_values:
-                reply_to += rp_to['full'] + ';'
+                reply_to += rp_to.full + ';'
+        except TypeError:
+            pass
+
+        try:
+            from_val = msg.from_values.full
         except TypeError:
             pass
 
@@ -160,7 +166,7 @@ class Mail:
         # Add custom if specified
         if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log):
             data['mail']['customFields'].update({
-                cfg['custom_mail_from']: msg.from_values['full']
+                cfg['custom_mail_from']: from_val
             })
 
         if cfg.get('custom_mail_to') not in [None, ''] and to_str != '' and self.check_custom_field(cfg['custom_mail_to'], log):
@@ -371,7 +377,7 @@ def send_email_error_pj(batch_path, process, msg, res, smtp, attachment):
     if smtp.enabled is not False:
         error = ''
         if res:
-            error = str(res['errors'])
+            error = str(json.loads(res)['errors'])
         smtp.send_email(
             message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
                     '    - Nom du process : ' + process + '\n' +
