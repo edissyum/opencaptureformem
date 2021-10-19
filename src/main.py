@@ -212,8 +212,8 @@ def launch(args):
                                     pj_filename = re.sub(r"#\d", "", os.path.basename(pj).replace('PJ_', ''))
                                     if pj_filename == document_filename:
                                         image.pdf_to_jpg(pj + '[0]', True)
-                                        text = ocr.line_box_builder(image.img)
-                                        subject_thread = FindSubject(text, locale, log)
+                                        ocr.text_builder(image.img)
+                                        subject_thread = FindSubject(ocr.text, locale, log)
                                         subject_thread.start()
                                         subject_thread.join()
                                         pj_args = {

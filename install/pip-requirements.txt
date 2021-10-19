@@ -1,7 +1,6 @@
 bs4
 wand
 pyPdf2
-pillow>=6.2.0
 kuyruk
 ocrmypdf
 requests
@@ -10,4 +9,5 @@ imap-tools
 pytesseract
 configparser
 opencv-python
+pillow>=6.2.0
 kuyruk_manager
