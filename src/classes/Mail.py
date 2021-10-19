@@ -358,7 +358,7 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
         if smtp.enabled is not False:
             error = ''
             if res:
-                error = res['errors']
+                error = json.loads(res)['errors']
             smtp.send_email(
                 message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
                         '    - Nom du process : ' + process + '\n' +

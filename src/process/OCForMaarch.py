@@ -292,7 +292,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 os.remove(file)
             except FileNotFoundError as e:
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
-        return True
+        return True, res
     else:
         try:
             shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))

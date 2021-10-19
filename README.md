@@ -270,8 +270,14 @@ If you want specific data you could use <code>[]</code> into your line. For exam
 
 # Informations
 ## QRCode separation
-Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
-On the new version 20.03 the separator now put entity ID instead of entity short label. But there is no issue
+Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file
+containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
+On the new version 20.03 the separator now put entity ID instead of entity short label. But there is no issue.0
+
+    WARNING : In Maarch parameters, set QRCodePrefix to 1 instead of 0
+
+Now it's possible to send attachments with QR Code Separation. If you have a resume and a motivation letter, start with Maarch entity Separation QR Code, then the resume. Add the PJ_SEPARATOR.pdf
+and then the motivation letter. In Maarch you'll have the resume as principal document and the motivation letter as attachment.
 
 ## Apache modifications
 In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
