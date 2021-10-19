@@ -34,11 +34,12 @@ class FindSubject(Thread):
 
         """
         subject_array = []
-        for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
-            if len(_subject.group()) > 3:
-                # Using the [:-2] to delete the ".*" of the regex
-                # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
-                subject_array.append(_subject.group())
+        for line in self.text:
+            for _subject in re.finditer(r"" + self.Locale.regexSubject + "", line.content):
+                if len(_subject.group()) > 3:
+                    # Using the [:-2] to delete the ".*" of the regex
+                    # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
+                    subject_array.append({'text': _subject.group(), 'position': line.position})
 
         # If there is more than one subject found, prefer the "Object" one instead of "Ref"
         if len(subject_array) > 1:
@@ -50,12 +51,16 @@ class FindSubject(Thread):
                 if subject:
                     self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
         elif len(subject_array) == 1:
-            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject_array[0]).strip()
+            self.subject = re.sub(r"" + self.Locale.regexSubject[:-2] + "", '', subject_array[0]['text']).strip()
         else:
             self.subject = ''
 
-        if self.subject is not '':
+        if self.subject != '':
+            self.search_subject_second_line()
             self.Log.info("Find the following subject : " + self.subject)
+
+    def search_subject_second_line(self):
+        print(self.subject)
 
 
 def loop_find_subject(array, compile_pattern):
@@ -68,6 +73,6 @@ def loop_find_subject(array, compile_pattern):
     """
     pattern = re.compile(compile_pattern)
     for value in array:
-        if pattern.search(value):
-            return value
+        if pattern.search(value['text']):
+            return value['text']
     return None

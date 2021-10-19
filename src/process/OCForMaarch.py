@@ -157,7 +157,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
             subject_thread = ''
         else:
-            subject_thread = FindSubject(ocr.text, locale, log)
+            text = ocr.line_box_builder(image.img)
+            subject_thread = FindSubject(text, locale, log)
 
         # Find date of document
         if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True:
@@ -292,7 +293,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 os.remove(file)
             except FileNotFoundError as e:
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
-        return True
+        return True, res
     else:
         try:
             shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))

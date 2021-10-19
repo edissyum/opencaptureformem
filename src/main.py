@@ -14,8 +14,9 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-
+import json
 import os
+import re
 import sys
 import tempfile
 import time
@@ -23,17 +24,18 @@ import time
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
+from src.classes.SMTP import SMTP
 from kuyruk_manager import Manager
 import src.classes.Log as logClass
 import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
 import src.classes.Config as configClass
 import src.classes.PyTesseract as ocrClass
-from src.process.OCForMaarch import process, get_process_name
-from src.classes.Mail import move_batch_to_error, send_email_error_pj
-from src.classes.SMTP import SMTP
+from .process.FindSubject import FindSubject
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
+from src.process.OCForMaarch import process, get_process_name
+from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
 OCforMaarch = Kuyruk()
 
@@ -107,7 +109,6 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
     if check_file(image, path, config, log):
         # Process the file and send it to Maarch
         res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, None, config_mail)
-
         if args.get('isMail') is not None and args.get('isMail') is True:
             # Process the attachments of mail
             if res[0]:
@@ -130,6 +131,8 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
 
             recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
             log.info('End process')
+        else:
+            return res
 
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
@@ -191,19 +194,7 @@ def launch(args):
     if args.get('isMail') is None or args.get('isMail') is False:
         separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
 
-    if args.get('path') is not None:
-        path = args['path']
-        if separator.enabled:
-            for fileToSep in os.listdir(path):
-                if check_file(image, path + fileToSep, config, log):
-                    separator.run(path + fileToSep)
-                    for file in separator.pdf_list:
-                        process_file(image, file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
-        else:
-            for file in os.listdir(path):
-                process_file(image, path + '/' + file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
-
-    elif args.get('file') is not None:
+    if args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
             if separator.enabled:
@@ -212,12 +203,28 @@ def launch(args):
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)
                 else:
                     for file in separator.pdf_list:
-                        process_file(image, file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
+                        res = process_file(image, file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
+                        if res[0]:
+                            res = json.loads(res[1])
+                            if 'resId' in res:
+                                for pj in separator.pj_list:
+                                    document_filename = os.path.basename(file)
+                                    pj_filename = re.sub(r"#\d", "", os.path.basename(pj).replace('PJ_', ''))
+                                    if pj_filename == document_filename:
+                                        image.pdf_to_jpg(pj + '[0]', True)
+                                        text = ocr.line_box_builder(image.img)
+                                        subject_thread = FindSubject(text, locale, log)
+                                        subject_thread.start()
+                                        subject_thread.join()
+                                        pj_args = {
+                                            'file': pj,
+                                            'format': 'pdf',
+                                            'status': 'A_TRA',
+                                            'subject': subject_thread.subject
+                                        }
+                                        web_service.insert_attachment_from_mail(pj_args, res['resId'])
             else:
                 process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
-
-    # Empty the tmp dir to avoid residual file
     recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
-
     end = time.time()
     log.info('Process end after ' + timer(start, end) + '\n')

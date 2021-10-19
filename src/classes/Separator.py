@@ -33,9 +33,11 @@ class Separator:
         self.Log = log
         self.Config = config
         self.pages = []
+        self.pj = []
         self.nb_doc = 0
         self.nb_pages = 0
         self.pdf_list = []
+        self.pj_list = []
         self.error = False
         self.qrList = None
         self.enabled = False
@@ -98,6 +100,9 @@ class Separator:
             self.check_empty_docs()
             self.set_doc_ends()
             self.extract_and_convert_docs(file)
+            self.extract_pj(file)
+            self.set_doc_ends(True)
+            self.extract_and_convert_docs(file, True)
             if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
                 self.pdf_list.append(self.output_dir + '/' + os.path.basename(file))
         except Exception as e:
@@ -171,7 +176,7 @@ class Separator:
             if cpe.returncode != 4:
                 self.Log.error("ZBARIMG : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
 
-    def parse_xml(self):
+    def parse_xml(self, is_pj=False, original_filename=False):
         """
         Parse XML content of QR Code to retrieve the destination of the document (in Maarc)
 
@@ -180,23 +185,43 @@ class Separator:
             return
         ns = {'bc': 'http://zbar.sourceforge.net/2008/barcode'}
         indexes = self.qrList[0].findall('bc:index', ns)
+        cpt = 0
         for index in indexes:
             page = {}
             data = index.find('bc:symbol', ns).find('bc:data', ns)
-            page['service'] = data.text
-            page['index_sep'] = int(index.attrib['num'])
-
-            if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
-                page['is_empty'] = True
+            if is_pj:
+                keyword = 'PJSTART'
             else:
-                page['is_empty'] = False
-                page['index_start'] = page['index_sep'] + 2
+                keyword = 'MAARCH_'
+            if keyword in data.text:
+                page['service'] = data.text
+                page['index_sep'] = int(index.attrib['num'])
 
-            page['uuid'] = str(uuid.uuid4())  # Generate random number for pdf filename
-            page['pdf_filename'] = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
-            page['pdfa_filename'] = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
-            self.pages.append(page)
-        self.nb_doc = len(self.pages)
+                if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
+                    page['is_empty'] = True
+                else:
+                    page['is_empty'] = False
+                    page['index_start'] = page['index_sep'] + 2
+
+                page['uuid'] = str(uuid.uuid4())  # Generate random number for pdf filename
+                if is_pj:
+                    parent_filename = os.path.splitext(os.path.basename(original_filename))[0]
+                    page['pdf_filename'] = self.output_dir + 'PJ' + self.divider + parent_filename + '#' + str(cpt) + '.pdf'
+                    page['pdfa_filename'] = self.output_dir_pdfa + 'PJ' + self.divider + parent_filename + '#' + str(cpt) + '.pdf'
+                    cpt = cpt + 1
+                else:
+                    page['pdf_filename'] = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
+                    page['pdfa_filename'] = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
+
+                if is_pj:
+                    page['original_filename'] = original_filename
+                    self.pj.append(page)
+                else:
+                    self.pages.append(page)
+        if is_pj:
+            self.nb_doc = len(self.pj)
+        else:
+            self.nb_doc = len(self.pages)
 
     def check_empty_docs(self):
         """
@@ -207,20 +232,44 @@ class Separator:
             if self.pages[i]['index_sep'] + 1 == self.pages[i + 1]['index_sep']:
                 self.pages[i]['is_empty'] = True
 
-    def set_doc_ends(self):
+    def set_doc_ends(self, is_pj=False):
         """
         Set a virtual limit to split document later
 
         """
+        data = self.pages
+        if is_pj:
+            data = self.pj
         for i in range(self.nb_doc):
-            if self.pages[i]['is_empty']:
+            if data[i]['is_empty']:
                 continue
             if i + 1 < self.nb_doc:
-                self.pages[i]['index_end'] = self.pages[i + 1]['index_sep']
+                data[i]['index_end'] = data[i + 1]['index_sep']
             else:
-                self.pages[i]['index_end'] = self.nb_pages
+                data[i]['index_end'] = self.nb_pages
 
-    def extract_and_convert_docs(self, file):
+    def extract_pj(self, file):
+        if len(self.pages) == 0:
+            try:
+                shutil.move(file, self.output_dir)
+            except shutil.Error as e:
+                self.Log.error('Moving file ' + file + ' error : ' + str(e))
+            return
+        else:
+            try:
+                for page in self.pages:
+                    if page['is_empty']:
+                        continue
+                    self.qrList = None
+                    self.get_xml_qr_code(page['pdf_filename'])
+                    pdf = PyPDF2.PdfFileReader(open(page['pdf_filename'], 'rb'))
+                    self.nb_pages = pdf.getNumPages()
+                    self.parse_xml(True, page['pdf_filename'])
+
+            except Exception as e:
+                self.Log.error("EACD: " + str(e))
+
+    def extract_and_convert_docs(self, file, is_pj=False):
         """
         If empty doc, move it directly
         Else, split document and export them
@@ -235,14 +284,26 @@ class Separator:
             return
         else:
             try:
-                for page in self.pages:
+                data = self.pages
+                cpt = 0
+                if is_pj:
+                    data = self.pj
+                for page in data:
                     if page['is_empty']:
                         continue
-
                     pages_to_keep = range(page['index_start'], page['index_end'] + 1)
-                    split_pdf(file, page['pdf_filename'], pages_to_keep)
-                    self.pdf_list.append(page['pdf_filename'])
-                os.remove(file)
+                    original_pages_to_keep = None
+                    if is_pj:
+                        self.pj_list.append(page['pdf_filename'])
+                        if cpt + 1 == len(self.pj):
+                            original_pages_to_keep = range(1, data[0]['index_start'] - 1)
+                        file = page['original_filename']
+                        cpt = cpt + 1
+                    else:
+                        self.pdf_list.append(page['pdf_filename'])
+                    split_pdf(file, page['pdf_filename'], pages_to_keep, original_pages_to_keep)
+                if not is_pj:
+                    os.remove(file)
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
 
@@ -263,19 +324,28 @@ class Separator:
         os.remove(pdf_filename)
 
 
-def split_pdf(input_path, output_path, pages):
+def split_pdf(input_path, output_path, pages, original_pages_to_keep=None):
     """
     Finally, split PDF into multiple PDF
 
     :param input_path: Orignal PDF (including separator with QR Code)
     :param output_path: Final PDF, splitted
     :param pages: Pages which compose the new PDF
+    :param original_pages_to_keep: Number of page of original document when we search for PJ
     """
     input_pdf = PyPDF2.PdfFileReader(open(input_path, "rb"))
     output_pdf = PyPDF2.PdfFileWriter()
-
     for page in pages:
         output_pdf.addPage(input_pdf.getPage(page - 1))
-
     with open(output_path, "wb") as stream:
         output_pdf.write(stream)
+
+    if original_pages_to_keep:
+        original_output_pdf = PyPDF2.PdfFileWriter()
+        input_pdf_bis = PyPDF2.PdfFileReader(open(input_path, "rb"))
+        os.remove(input_path)
+        for page in original_pages_to_keep:
+            original_output_pdf.addPage(input_pdf_bis.getPage(page - 1))
+
+        with open(input_path, "wb") as streama:
+            original_output_pdf.write(streama)
