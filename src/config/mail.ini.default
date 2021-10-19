@@ -1,8 +1,6 @@
 [GLOBAL]
 batchPath             = /opt/maarch/OpenCapture/data/MailCollect/
 # True or False
-importOnlyAttachments = False
-# True or False
 smtp_notif_on_error   = False
 smtp_auth             = True
 smtp_host             = smtp.gmail.com
@@ -35,6 +33,7 @@ forceUtf8            = True
 priorityToMailSubject= False
 priorityToMailDate   = False
 priorityToMailFrom   = False
+importOnlyAttachments= False
 
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES
