@@ -59,7 +59,7 @@ class FindSubject(Thread):
             self.Log.info("Find the following subject : " + self.subject)
 
     def search_subject_second_line(self):
-        not_allowed_symbol = [':']
+        not_allowed_symbol = [':', '.']
         text = self.text.split('\n')
         cpt = 0
         for line in text:
@@ -84,7 +84,6 @@ class FindSubject(Thread):
                     self.subject = self.subject[:char_cpt]
                     break
                 char_cpt = char_cpt + 1
-
 
 def loop_find_subject(array, compile_pattern):
     """
