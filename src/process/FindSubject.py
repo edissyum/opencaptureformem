@@ -85,6 +85,7 @@ class FindSubject(Thread):
                     break
                 char_cpt = char_cpt + 1
 
+
 def loop_find_subject(array, compile_pattern):
     """
     Simple loop to find subject when multiple subject are found
