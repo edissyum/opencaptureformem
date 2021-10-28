@@ -30,16 +30,16 @@ import pdf2image
 
 class Separator:
     def __init__(self, log, config, tmp_folder):
-        self.Log = log
-        self.Config = config
-        self.pages = []
         self.pj = []
+        self.Log = log
+        self.pages = []
         self.nb_doc = 0
         self.nb_pages = 0
-        self.pdf_list = []
         self.pj_list = []
-        self.error = False
+        self.pdf_list = []
         self.qrList = None
+        self.error = False
+        self.Config = config
         self.enabled = False
         self.divider = config.cfg['SEPARATOR_QR']['divider']
         self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['exportpdfa']
@@ -103,6 +103,7 @@ class Separator:
             self.extract_pj(file)
             self.set_doc_ends(True)
             self.extract_and_convert_docs(file, True)
+            exit()
             if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
                 self.pdf_list.append(self.output_dir + '/' + os.path.basename(file))
         except Exception as e:
@@ -196,7 +197,6 @@ class Separator:
             if keyword in data.text:
                 page['service'] = data.text
                 page['index_sep'] = int(index.attrib['num'])
-
                 if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
                     page['is_empty'] = True
                 else:
@@ -218,6 +218,8 @@ class Separator:
                     self.pj.append(page)
                 else:
                     self.pages.append(page)
+            else:
+                continue
         if is_pj:
             self.nb_doc = len(self.pj)
         else:
@@ -240,11 +242,15 @@ class Separator:
         data = self.pages
         if is_pj:
             data = self.pj
+
         for i in range(self.nb_doc):
             if data[i]['is_empty']:
                 continue
             if i + 1 < self.nb_doc:
-                data[i]['index_end'] = data[i + 1]['index_sep']
+                if not is_pj or is_pj and data[i]['original_filename'] == data[i + 1]['original_filename']:
+                    data[i]['index_end'] = data[i + 1]['index_sep']
+                elif is_pj:
+                    data[i]['index_end'] = self.nb_pages
             else:
                 data[i]['index_end'] = self.nb_pages
 
@@ -265,7 +271,6 @@ class Separator:
                     pdf = PyPDF2.PdfFileReader(open(page['pdf_filename'], 'rb'))
                     self.nb_pages = pdf.getNumPages()
                     self.parse_xml(True, page['pdf_filename'])
-
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
 
