@@ -222,7 +222,9 @@ def launch(args):
                                             'status': 'A_TRA',
                                             'subject': subject_thread.subject
                                         }
-                                        web_service.insert_attachment_from_mail(pj_args, res['resId'])
+                                        res = web_service.insert_attachment_from_mail(pj_args, res['resId'])
+                                        if res:
+                                            log.info('Attachment inserted : ' + str(res))
             else:
                 process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
     recursive_delete([tmp_folder, separator.output_dir, separator.output_dir_pdfa], log)
