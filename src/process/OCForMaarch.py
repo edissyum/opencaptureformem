@@ -273,7 +273,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     res_id_origin = check_document_res['resources'][0]['res_id']
                     res_id_signed = json.loads(res)['resId']
 
-                    log.info("Reatach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
+                    log.info("Reattach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
                     # Get ws user id and reattach the document
                     list_of_users = web_service.retrieve_users()
                     for user in list_of_users['users']:
