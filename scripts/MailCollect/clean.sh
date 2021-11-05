@@ -20,11 +20,14 @@
 
 batch_path='/opt/maarch/OpenCapture/data/MailCollect/'
 conservation_time=7
+conservation_time_error_folder=14
 
 for dir in "$batch_path"/*/; do
   if [ -d "$dir" ]; then
     if [[ $dir != *"_ERROR"* ]]; then
       find "$dir" -mindepth 1 -maxdepth 1 -type d -mtime +$conservation_time -exec rm -rf {} ';'
+    else
+      find "$dir" -mindepth 2 -maxdepth 2 -type d -mtime +$conservation_time_error_folder -exec rm -rf {} ';'
     fi
   fi
 done
