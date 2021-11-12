@@ -47,6 +47,9 @@ timeDelta           = 62
 # True or False
 upperCaseSubject    = False
 
+# !!!! IMPORTANT !!!!
+# The process name have to be LOWERCASE
+
 [OCForMaarch_incoming]
 status              = INIT
 doctype             = 1202
