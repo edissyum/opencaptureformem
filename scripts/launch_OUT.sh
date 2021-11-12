@@ -18,6 +18,7 @@
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 script="OUT"
+process="outgoing"
 # Made 14 char for name, to have the same layout in log as OC application
 # Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
@@ -49,7 +50,7 @@ then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
   mv "$filepath" "$tmpFilepath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$OCPath"/data/pdf/"$filename" --destination "$destination" --process outgoing
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$OCPath"/data/pdf/"$filename" --destination "$destination" --process "$process"
 
 elif test -f "$filepath" && test "$ext" != 'application/pdf';
 then
