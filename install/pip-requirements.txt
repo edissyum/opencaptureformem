@@ -6,6 +6,7 @@ ocrmypdf
 requests
 pdf2image
 imap-tools
+supervisor
 pytesseract
 configparser
 opencv-python
