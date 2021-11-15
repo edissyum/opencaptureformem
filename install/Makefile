@@ -133,6 +133,7 @@ EOF
   systemctl enable oc-worker.service
 
 else
+  mkdir "$defaultPath"/data/log/Supervisor/
   apt install -y supervisor
   touch /etc/supervisor/conf.d/OpenCapture.conf
   su -c "cat > /etc/supervisor/conf.d/OpenCapture.conf << EOF
@@ -145,7 +146,7 @@ stopsignal=QUIT
 stopasgroup=true
 killasgroup=true
 stopwaitsecs=10
-stderr_logfile=/tmp/OC_%(process_num)02d_error.log
+stderr_logfile=$defaultPath/data/log/Supervisor/OC_%(process_num)02d_error.log
 EOF
   "
   
