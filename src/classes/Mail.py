@@ -14,17 +14,19 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+
 import os
 import re
 import sys
 import json
 import shutil
 import mimetypes
-
 from ssl import SSLError
 from socket import gaierror
 from imaplib import IMAP4_SSL
+from tnefparse.mapi import TNEFMAPI_Attribute
 from imap_tools import utils, MailBox, MailBoxUnencrypted
+from tnefparse.tnef import TNEF, TNEFAttachment, TNEFObject
 
 
 class Mail:
@@ -314,18 +316,33 @@ class Mail:
         """
         args = []
         for att in msg.attachments:
-            file_format = os.path.splitext(att.filename)[1]
-            if not att.filename and not file_format:
-                continue
-            elif not file_format or file_format in ['.']:
-                file_format = mimetypes.guess_extension(att.content_type, strict=False)
+            if att.filename == 'winmail.dat':
+                mime_type = ''
+                winmail = TNEF(att.payload, do_checksum=True)
+                for att in winmail.attachments:
+                    for attr in att.mapi_attrs:
+                        if attr.attr_type == 30 and attr.name == 14094:
+                            mime_type = attr.raw_data[0]
+                    file_format = os.path.splitext(att.name)[1]
+                    args.append({
+                        'filename': os.path.splitext(att.name)[0].replace(' ', '_'),
+                        'format': file_format,
+                        'content': att.data,
+                        'mime_type': mime_type
+                    })
+            else:
+                file_format = os.path.splitext(att.filename)[1]
+                if not att.filename and not file_format:
+                    continue
+                elif not file_format or file_format in ['.']:
+                    file_format = mimetypes.guess_extension(att.content_type, strict=False)
 
-            args.append({
-                'filename': os.path.splitext(att.filename)[0].replace(' ', '_'),
-                'format': file_format,
-                'content': att.payload,
-                'mime_type': att.content_type
-            })
+                args.append({
+                    'filename': os.path.splitext(att.filename)[0].replace(' ', '_'),
+                    'format': file_format,
+                    'content': att.payload,
+                    'mime_type': att.content_type
+                })
         return args
 
     def check_custom_field(self, field, log):

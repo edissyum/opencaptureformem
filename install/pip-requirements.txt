@@ -5,6 +5,7 @@ kuyruk
 ocrmypdf
 requests
 pdf2image
+tnefparse
 imap-tools
 pytesseract
 configparser

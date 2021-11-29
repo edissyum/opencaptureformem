@@ -18,6 +18,7 @@
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 script="IN"
+process="incoming"
 # Made 14 char for name, to have the same layout in log as OC application
 # Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
@@ -49,7 +50,7 @@ then
 
   mv "$filepath" "$tmpFilepath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process incoming
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process"
 
   rm -f $PID
 
