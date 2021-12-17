@@ -195,12 +195,13 @@ if check:
                     Log.info('Found ' + str(len(ret['attachments'])) + ' attachments')
                     for attachment in ret['attachments']:
                         launch({
-                            'log': batch_path + '/' + date_batch + '.log',
                             'isMail': False,
-                            'file': batch_path + '/attachments/' + attachment['filename'] + '.' + attachment['format'],
-                            'process': 'incoming',
                             'data': ret['mail'],
-                            'config': args['config']
+                            'process': 'incoming',
+                            'config': args['config'],
+                            'isMailAttachment': True,
+                            'file': attachment['file'],
+                            'log': batch_path + '/' + date_batch + '.log'
                         })
                 else:
                     Log.info('No attachments found')

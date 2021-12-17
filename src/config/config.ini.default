@@ -57,7 +57,8 @@ typist              = bblier
 priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 1
-destination         = COU
+# Please use entity id (integer) instead of entity_id (13 instead of COU for example)
+destination         = 13
 custom_mail         =
 custom_fields		= {}
 # True or False
@@ -71,7 +72,8 @@ typist              = bblier
 priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 2
-destination         = COU
+# Please use entity id (integer) instead of entity_id (13 instead of COU for example)
+destination         = 13
 custom_mail         =
 custom_fields		= {}
 # True or False
@@ -85,7 +87,8 @@ typist              = bblier
 priority            = poiuytre1357nbvc
 format              = pdf
 model_id            = 5
-destination         = COU
+# Please use entity id (integer) instead of entity_id (13 instead of COU for example)
+destination         = 13
 reconciliation      =
 custom_mail         =
 # True or False
