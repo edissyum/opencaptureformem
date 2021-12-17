@@ -163,7 +163,10 @@ def launch(args):
         )
         log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
-        log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+        if args.get('isMailAttachment') is not None and args['isMailAttachment'] is True:
+            log = logClass.Log(args['log'])
+        else:
+            log = logClass.Log(config.cfg['GLOBAL']['logfile'])
         config_mail = False
 
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
