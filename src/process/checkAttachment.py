@@ -14,6 +14,7 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+import json
 import os
 import sys
 import argparse
@@ -41,7 +42,13 @@ if __name__ == '__main__':
         Log,
         config.cfg['GLOBAL']['timeout']
     )
+
     chrono = args['chrono']
+    try:
+        chrono = json.loads(chrono)
+        chrono = chrono['chrono']
+    except json.decoder.JSONDecodeError:
+        pass
 
     response = WebService.check_attachment(chrono)
     if response:
