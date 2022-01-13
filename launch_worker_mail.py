@@ -194,15 +194,16 @@ if check:
                 if len(ret['attachments']) > 0:
                     Log.info('Found ' + str(len(ret['attachments'])) + ' attachments')
                     for attachment in ret['attachments']:
-                        launch({
-                            'isMail': False,
-                            'data': ret['mail'],
-                            'process': 'incoming',
-                            'config': args['config'],
-                            'isMailAttachment': True,
-                            'file': attachment['file'],
-                            'log': batch_path + '/' + date_batch + '.log'
-                        })
+                        if attachment['format'].lower() == 'pdf':
+                            launch({
+                                'isMail': False,
+                                'data': ret['mail'],
+                                'process': 'incoming',
+                                'config': args['config'],
+                                'isMailAttachment': True,
+                                'file': attachment['file'],
+                                'log': batch_path + '/' + date_batch + '.log'
+                            })
                 else:
                     Log.info('No attachments found')
 

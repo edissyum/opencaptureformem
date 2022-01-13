@@ -210,7 +210,7 @@ For that, just fill the following informations :
 Hint : If you need to test the SMTP settings, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCollect/smtp_test.py</code> with your hosts informations
 Hint2 : To know the specific name of different folder, just launch the script <code>/opt/maarch/OpenCapture/scripts/MailCollect/check_folders.py</code> with your hosts informations
 
-To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script : 
+To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script :
 
      */5 8-18 * * 1-5   /opt/maarch/OpenCapture/scripts/launch_MAIL.sh >/dev/null 2>&1
 
@@ -272,7 +272,7 @@ If you want specific data you could use <code>[]</code> into your line. For exam
 ## QRCode separation
 Maarch permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file
 containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
-On the new version 20.03 the separator now put entity ID instead of entity short label. But there is no issue.0
+On the new version 20.03 the separator now put entity ID instead of entity short label. But there is no issue.
 
     WARNING : In Maarch parameters, set QRCodePrefix to 1 instead of 0
 

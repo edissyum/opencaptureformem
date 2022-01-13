@@ -137,8 +137,7 @@ class Images:
                             except PyPDF2.utils.PdfReadError:
                                 shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                                 return False
-                            else:
-                                return True
+                            return True
                         elif file.endswith('.html') or file.endswith('.txt'):
                             return True
                         elif file.endswith('.jpg'):
@@ -146,8 +145,9 @@ class Images:
                                 Image.open(file)
                             except OSError:
                                 return False
-                            else:
-                                return True
+                            return True
+                        else:
+                            return False
                     else:
                         count = count + 1
                         continue
