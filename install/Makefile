@@ -53,6 +53,22 @@ if [ "$finalChoice" == 1 ];then
   fi
 fi
 
+if [ "$finalChoice" != 1 ];then
+    echo "Do you want to secure RabbitMQ ? (default : no) "
+    printf "Enter your choice [yes/%s] : " "${bold}no${normal}"
+    read -r rabbitMqSecure
+
+    if [[ "$rabbitMqSecure" == "" || ("$rabbitMqSecure" != 'yes' && "$rabbitMqSecure" != 'no') ]]; then
+      finalRabbitMQSecure='no'
+    else
+      finalRabbitMQSecure="$rabbitMqSecure"
+      printf "Choose a RabbitMQ user : "
+      read -r rabbitMqUser
+      printf "Set a password for %s : " "${bold}$rabbitMqUser${normal}"
+      read -r rabbitMqPassword
+    fi
+fi
+
 ####################
 # Install package
 if [[ "$OS" = 'Debian' && "$VER" == *'9'* ]]; then
@@ -101,6 +117,22 @@ if test -f "$imageMagickPolicyFile"; then
   sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' $imageMagickPolicyFile
 else
   echo "We could not fix the ImageMagick policy files because it doesn't exists. Please fix it manually using the informations in the README"
+fi
+
+####################
+# Secure RabbitMQ service
+# First remove guest user permissions
+# Then add a new user, using choosen password
+# Finally give the new user the needed permissions
+
+if [[ "$rabbitMqSecure" == "no" ]]; then
+    rabbitmqctl set_permissions -p "/" "guest" "^$" "^$" "^$"
+    rabbitmqctl add_user "$rabbitMqUser" "$rabbitMqPassword"
+    rabbitmqctl set_permissions -p "/" "edissyum" ".*" ".*" ".*"
+
+    # Now update the main.py to add the users informations
+    sed -i "s/#OCforMaarch.config.RABBIT_USER = ''/OCforMaarch.config.RABBIT_USER = \"$rabbitMqUser\"/g" $defaultPath/src/main.py
+    sed -i "s/#OCforMaarch.config.RABBIT_PASSWORD = ''/OCforMaarch.config.RABBIT_PASSWORD = \"$rabbitMqPassword\"/g" $defaultPath/src/main.py
 fi
 
 ####################

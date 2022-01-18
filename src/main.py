@@ -14,12 +14,13 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-import json
+
 import os
 import re
 import sys
-import tempfile
 import time
+import json
+import tempfile
 
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -38,7 +39,8 @@ from src.process.OCForMaarch import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
 OCforMaarch = Kuyruk()
-
+#OCforMaarch.config.RABBIT_USER = ''
+#OCforMaarch.config.RABBIT_PASSWORD = ''
 OCforMaarch.config.MANAGER_HOST = "127.0.0.1"
 OCforMaarch.config.MANAGER_PORT = 16501
 OCforMaarch.config.MANAGER_HTTP_PORT = 16500
