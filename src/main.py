@@ -39,8 +39,8 @@ from src.process.OCForMaarch import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
 OCforMaarch = Kuyruk()
-#OCforMaarch.config.RABBIT_USER = ''
-#OCforMaarch.config.RABBIT_PASSWORD = ''
+# OCforMaarch.config.RABBIT_USER = ''
+# OCforMaarch.config.RABBIT_PASSWORD = ''
 OCforMaarch.config.MANAGER_HOST = "127.0.0.1"
 OCforMaarch.config.MANAGER_PORT = 16501
 OCforMaarch.config.MANAGER_HTTP_PORT = 16500
