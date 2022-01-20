@@ -146,7 +146,7 @@ def launch(args):
     config.load_file(args['config'])
     smtp = False
 
-    if args.get('isMail') is not None and args['isMail'] is True:
+    if args.get('isMail') is not None and args['isMail'] in [True, 'attachments']:
         log = logClass.Log(args['log'])
         config_mail = configClass.Config()
         config_mail.load_file(args['config_mail'])
@@ -163,12 +163,10 @@ def launch(args):
             config_mail.cfg['GLOBAL']['smtp_auth'],
             config_mail.cfg['GLOBAL']['smtp_from_mail'],
         )
-        log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
+        if args['isMail'] is True:
+            log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
-        if args.get('isMailAttachment') is not None and args['isMailAttachment'] is True:
-            log = logClass.Log(args['log'])
-        else:
-            log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+        log = logClass.Log(config.cfg['GLOBAL']['logfile'])
         config_mail = False
 
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])

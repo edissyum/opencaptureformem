@@ -198,9 +198,9 @@ if check:
                             launch({
                                 'isMail': 'attachments',
                                 'data': ret['mail'],
-                                'process': 'incoming',
+                                'process': process,
                                 'config': args['config'],
-                                'isMailAttachment': True,
+                                'config_mail': args['config_mail'],
                                 'file': attachment['file'],
                                 'priority_mail_date': priority_mail_date,
                                 'priority_mail_from': priority_mail_from,
