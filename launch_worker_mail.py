@@ -196,12 +196,15 @@ if check:
                     for attachment in ret['attachments']:
                         if attachment['format'].lower() == 'pdf':
                             launch({
-                                'isMail': False,
+                                'isMail': 'attachments',
                                 'data': ret['mail'],
                                 'process': 'incoming',
                                 'config': args['config'],
                                 'isMailAttachment': True,
                                 'file': attachment['file'],
+                                'priority_mail_date': priority_mail_date,
+                                'priority_mail_from': priority_mail_from,
+                                'priority_mail_subject': priority_mail_subject,
                                 'log': batch_path + '/' + date_batch + '.log'
                             })
                 else:
