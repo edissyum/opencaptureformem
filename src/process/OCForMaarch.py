@@ -26,7 +26,7 @@ from .FindContact import FindContact
 
 
 def get_process_name(args, config):
-    if args.get('isMail') is not None and args.get('isMail') is True:
+    if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
     else:
         if args['process'] in config.cfg['OCForMaarch']['processavailable'].split(','):
@@ -61,7 +61,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     # Or from the destination arguments
     elif args.get('destination') is not None:
         destination = args['destination']
-    elif args.get('isMail') is not None and args.get('isMail') is True:
+    elif args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         destination = args['data']['destination']
 
     if not destination:
@@ -82,23 +82,23 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             if str(destination) == str(dest['id']):
                 destination = dest['serialId']
                 is_destination_valid = True
-                if args.get('isMail') is not None and args.get('isMail') is True:
+                if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
                     args['data']['destination'] = destination
 
     # If destination still not good, try with default destination
     if type(destination) is not int or not is_destination_valid:
-        if args.get('isMail') is not None and args.get('isMail') is True:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             destination = args['data']['destination']
         else:
             destination = config.cfg[_process]['destination']
         for dest in destinations['entities']:
             if destination == dest['id']:
                 destination = dest['serialId']
-                if args.get('isMail') is not None and args.get('isMail') is True:
+                if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
                     args['data']['destination'] = destination
 
     # Retrieve user_id to use it as typist
-    if args.get('isMail') is not None and args.get('isMail') is True:
+    if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         typist = args['data']['typist']
     else:
         typist = config.cfg[_process]['typist']
@@ -108,7 +108,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         for user in list_of_users['users']:
             if typist == user['user_id']:
                 typist = user['id']
-                if args.get('isMail') is not None and args.get('isMail') is True:
+                if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
                     args['data']['typist'] = typist
                 else:
                     config.cfg[_process]['typist'] = typist
@@ -226,7 +226,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             file = output_file
         file_to_send = open(file, 'rb').read()
 
-    if args.get('isMail') is not None and args.get('isMail') is True:
+    if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         if date != '':
             args['data']['documentDate'] = date
         if subject != '':
@@ -257,6 +257,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
+        process = config.cfg[_process]
+        if args.get('isMail') in [True, 'attachments']:
+            process = config_mail.cfg[_process]
         if not subject or (args.get('priority_mail_subject') is True and args.get('isMail') in [True, 'attachments']):
             subject = args['data']['subject']
         if not date or (args.get('priority_mail_date') is True and args.get('isMail') in [True, 'attachments']):
@@ -265,7 +268,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             contact = web_service.retrieve_contact_by_mail(args['data']['from'])
             if contact:
                 args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
-        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
+        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, process, custom_mail)
 
     if res:
         log.info("Insert OK : " + res)
