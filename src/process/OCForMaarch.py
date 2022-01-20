@@ -154,50 +154,50 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             ocr.text_builder(image.img)
 
         # Find subject of document
-        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True:
             subject_thread = ''
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
 
         # Find date of document
-        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True:
             date_thread = ''
         else:
             date_thread = FindDate(ocr.text, locale, log, config)
 
         # Find mail in document and check if the contact exist in Maarch
-        if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True:
             contact_thread = ''
         else:
             contact_thread = FindContact(ocr.text, log, config, web_service, locale)
 
         # Launch all threads
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
             date_thread.start()
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
             subject_thread.start()
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact_thread.start()
 
         # Wait for end of threads
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
             date_thread.join()
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
             subject_thread.join()
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact_thread.join()
 
         # Get the returned values
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_date') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
             date = date_thread.date
         else:
             date = ''
 
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
             subject = subject_thread.subject
         else:
             subject = ''
-        if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact = contact_thread.contact
             custom_mail = contact_thread.custom_mail
         else:
@@ -257,6 +257,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
+        if not subject or (args.get('priority_mail_subject') is True and args.get('isMail') in [True, 'attachments']):
+            subject = args['data']['subject']
+        if not date or (args.get('priority_mail_date') is True and args.get('isMail') in [True, 'attachments']):
+            date = args['data']['documentDate']
+        if not contact or (args.get('priority_mail_from') is True and args.get('isMail') in [True, 'attachments']):
+            contact = web_service.retrieve_contact_by_mail(args['data']['from'])
+            if contact:
+                args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 
     if res:
