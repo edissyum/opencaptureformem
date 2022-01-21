@@ -240,6 +240,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             if contact:
                 args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
+        if args.get('isMail') == 'attachments':
+            args['data']['file'] = args['file']
+            args['data']['format'] = args['format']
+
         res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         if res:
             log.info('Insert email OK : ' + str(res))
