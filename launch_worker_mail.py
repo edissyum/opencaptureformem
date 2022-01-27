@@ -202,6 +202,7 @@ if check:
                                 'config': args['config'],
                                 'config_mail': args['config_mail'],
                                 'file': attachment['file'],
+                                'format': attachment['format'],
                                 'priority_mail_date': priority_mail_date,
                                 'priority_mail_from': priority_mail_from,
                                 'priority_mail_subject': priority_mail_subject,
