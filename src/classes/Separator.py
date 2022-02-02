@@ -194,7 +194,7 @@ class Separator:
             else:
                 keyword = 'MAARCH_'
             if keyword in data.text:
-                page['service'] = data.text
+                page['service'] = data.text.replace(keyword, '')
                 page['index_sep'] = int(index.attrib['num'])
                 if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
                     page['is_empty'] = True
@@ -217,6 +217,7 @@ class Separator:
                     page['nb_pages'] = self.nb_pages
                     self.pj.append(page)
                 else:
+                    print(page)
                     self.pages.append(page)
             else:
                 continue
