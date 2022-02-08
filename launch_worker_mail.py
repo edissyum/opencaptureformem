@@ -193,6 +193,7 @@ if check:
                 Log.info('Start to process only attachments')
                 if len(ret['attachments']) > 0:
                     Log.info('Found ' + str(len(ret['attachments'])) + ' attachments')
+                    cpt = 1
                     for attachment in ret['attachments']:
                         if attachment['format'].lower() == 'pdf':
                             launch({
@@ -208,6 +209,9 @@ if check:
                                 'priority_mail_subject': priority_mail_subject,
                                 'log': batch_path + '/' + date_batch + '.log'
                             })
+                        else:
+                            Log.error('Attachment n°' + str(cpt) + ' is not a pdf file')
+                        cpt += 1
                 else:
                     Log.info('No attachments found')
 
