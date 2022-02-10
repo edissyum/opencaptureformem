@@ -1,3 +1,4 @@
+jq
 qpdf
 incron
 python3
