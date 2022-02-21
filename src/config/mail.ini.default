@@ -34,6 +34,7 @@ priorityToMailSubject= False
 priorityToMailDate   = False
 priorityToMailFrom   = False
 importOnlyAttachments= False
+extensionsAllowed    = pdf,jpg,png
 
 folderToCrawl        = _MAARCH
 folderDestination    = _MAARCH_ARCHIVES

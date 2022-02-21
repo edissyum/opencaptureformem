@@ -125,13 +125,16 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                 if len(args['attachments']) > 0:
                     log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                     for attachment in args['attachments']:
-                        res = web_service.insert_attachment_from_mail(attachment, res_id)
-                        if res[0]:
-                            log.info('Insert attachment OK : ' + str(res[1]))
-                            continue
+                        if attachment['format'].lower() in args['extensionsAllowed']:
+                            res = web_service.insert_attachment_from_mail(attachment, res_id)
+                            if res[0]:
+                                log.info('Insert attachment OK : ' + str(res[1]))
+                                continue
+                            else:
+                                send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
+                                log.error('Error while inserting attachment : ' + str(res[1]))
                         else:
-                            send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
-                            log.error('Error while inserting attachment : ' + str(res[1]))
+                            log.info('Attachment not in allowedExtensions : ' + attachment['subject'])
                 else:
                     log.info('No attachments found')
             else:

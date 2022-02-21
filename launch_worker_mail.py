@@ -131,6 +131,10 @@ is_form = str2bool(config_mail.cfg[process]['isform'])
 force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
 Mail.test_connection(secured_connection)
 
+extensionsAllowed = []
+for extension in config_mail.cfg[process]['extensionsallowed'].split(','):
+    extensionsAllowed.append(extension.strip().lower())
+
 if action == 'delete':
     if folder_trash != '':
         check = check_folders(folder_to_crawl, folder_trash)
@@ -185,6 +189,7 @@ if check:
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],
+                    'extensionsAllowed': extensionsAllowed,
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
                     'priority_mail_date': priority_mail_date,
