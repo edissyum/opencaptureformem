@@ -168,10 +168,12 @@ if check:
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8)
             ret, file = Mail.construct_dict_before_send_to_maarch(msg, config_mail.cfg[process], batch_path, Log)
+            _from = ret['mail']['from']
             if not import_only_attachments:
                 launch({
                     'cpt': str(i),
                     'file': file,
+                    'from': _from,
                     'isMail': True,
                     'isForm': is_form,
                     'msg_uid': str(msg.uid),
@@ -199,6 +201,7 @@ if check:
                             launch({
                                 'isMail': 'attachments',
                                 'data': ret['mail'],
+                                'from': _from,
                                 'process': process,
                                 'config': args['config'],
                                 'config_mail': args['config_mail'],
@@ -225,7 +228,6 @@ if check:
             elif action == 'delete':
                 Log.info('Move mail to trash')
                 Mail.delete_mail(msg, folder_trash, Log)
-
             i = i + 1
     else:
         sys.exit('Folder do not contain any e-mail. Exit...')

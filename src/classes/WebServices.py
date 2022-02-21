@@ -320,7 +320,6 @@ class WebServices:
         args['arrivalDate'] = str(datetime.now())
 
         del args['file']
-        del args['from']
 
         if _process.get('custom_fields') is not None:
             args['customFields'].update(json.loads(_process.get('custom_fields')))
