@@ -26,7 +26,6 @@ import tempfile
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
 from src.classes.SMTP import SMTP
-from kuyruk_manager import Manager
 import src.classes.Log as logClass
 import src.classes.Locale as localeClass
 import src.classes.Images as imagesClass
@@ -39,13 +38,21 @@ from src.process.OCForMaarch import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
 OCforMaarch = Kuyruk()
-# OCforMaarch.config.RABBIT_USER = ''
-# OCforMaarch.config.RABBIT_PASSWORD = ''
-OCforMaarch.config.MANAGER_HOST = "127.0.0.1"
-OCforMaarch.config.MANAGER_PORT = 16501
-OCforMaarch.config.MANAGER_HTTP_PORT = 16500
 
-m = Manager(OCforMaarch)
+if os.path.isfile('./src/config/rabbitMQ.json'):
+    with open('./src/config/rabbitMQ.json', 'r') as f:
+        rabbitMQData = json.load(f)
+
+    if rabbitMQData['host']:
+        OCforMaarch.config.RABBIT_HOST = rabbitMQData['host']
+    if rabbitMQData['port']:
+        OCforMaarch.config.RABBIT_PORT = rabbitMQData['port']
+    if rabbitMQData['username']:
+        OCforMaarch.config.RABBIT_USER = rabbitMQData['username']
+    if rabbitMQData['password']:
+        OCforMaarch.config.RABBIT_PASSWORD = rabbitMQData['password']
+    if rabbitMQData['vhost'] and rabbitMQData['vhost'] != '/':
+        OCforMaarch.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
 
 
 def str2bool(value):
@@ -118,13 +125,16 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                 if len(args['attachments']) > 0:
                     log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                     for attachment in args['attachments']:
-                        res = web_service.insert_attachment_from_mail(attachment, res_id)
-                        if res[0]:
-                            log.info('Insert attachment OK : ' + str(res[1]))
-                            continue
+                        if attachment['format'].lower() in args['extensionsAllowed']:
+                            res = web_service.insert_attachment_from_mail(attachment, res_id)
+                            if res[0]:
+                                log.info('Insert attachment OK : ' + str(res[1]))
+                                continue
+                            else:
+                                send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
+                                log.error('Error while inserting attachment : ' + str(res[1]))
                         else:
-                            send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
-                            log.error('Error while inserting attachment : ' + str(res[1]))
+                            log.info('Attachment not in allowedExtensions : ' + attachment['subject'])
                 else:
                     log.info('No attachments found')
             else:
@@ -137,7 +147,6 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
             return res
 
 
-# If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
 @OCforMaarch.task()
 def launch(args):
     start = time.time()

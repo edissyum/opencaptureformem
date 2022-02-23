@@ -131,6 +131,10 @@ is_form = str2bool(config_mail.cfg[process]['isform'])
 force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
 Mail.test_connection(secured_connection)
 
+extensionsAllowed = []
+for extension in config_mail.cfg[process]['extensionsallowed'].split(','):
+    extensionsAllowed.append(extension.strip().lower())
+
 if action == 'delete':
     if folder_trash != '':
         check = check_folders(folder_to_crawl, folder_trash)
@@ -168,10 +172,12 @@ if check:
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8)
             ret, file = Mail.construct_dict_before_send_to_maarch(msg, config_mail.cfg[process], batch_path, Log)
+            _from = ret['mail']['from']
             if not import_only_attachments:
                 launch({
                     'cpt': str(i),
                     'file': file,
+                    'from': _from,
                     'isMail': True,
                     'isForm': is_form,
                     'msg_uid': str(msg.uid),
@@ -183,6 +189,7 @@ if check:
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],
+                    'extensionsAllowed': extensionsAllowed,
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
                     'priority_mail_date': priority_mail_date,
@@ -193,11 +200,13 @@ if check:
                 Log.info('Start to process only attachments')
                 if len(ret['attachments']) > 0:
                     Log.info('Found ' + str(len(ret['attachments'])) + ' attachments')
+                    cpt = 1
                     for attachment in ret['attachments']:
                         if attachment['format'].lower() == 'pdf':
                             launch({
                                 'isMail': 'attachments',
                                 'data': ret['mail'],
+                                'from': _from,
                                 'process': process,
                                 'config': args['config'],
                                 'config_mail': args['config_mail'],
@@ -208,6 +217,9 @@ if check:
                                 'priority_mail_subject': priority_mail_subject,
                                 'log': batch_path + '/' + date_batch + '.log'
                             })
+                        else:
+                            Log.error('Attachment n°' + str(cpt) + ' is not a pdf file')
+                        cpt += 1
                 else:
                     Log.info('No attachments found')
 
@@ -221,7 +233,6 @@ if check:
             elif action == 'delete':
                 Log.info('Move mail to trash')
                 Mail.delete_mail(msg, folder_trash, Log)
-
             i = i + 1
     else:
         sys.exit('Folder do not contain any e-mail. Exit...')

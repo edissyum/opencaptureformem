@@ -66,6 +66,12 @@ if [ "$finalChoice" != 1 ];then
       read -r rabbitMqUser
       printf "Set a password for %s : " "${bold}$rabbitMqUser${normal}"
       read -r rabbitMqPassword
+      printf "Set a host (empty for default one) : "
+      read -r rabbitMqHost
+      printf "Set a port (empty for default one) : "
+      read -r rabbitMqPort
+      printf "Choose a RabbitMQ vhost (Leave empty or type / to keep default one) : "
+      read -r rabbitMqVhost
     fi
 fi
 
@@ -89,6 +95,7 @@ fi
 
 xargs -a apt-requirements.txt apt install -y
 pip3 install --upgrade pip
+pip3 install pillow
 pip3 install -r pip-requirements.txt
 
 cd $defaultPath || exit 2
@@ -113,26 +120,45 @@ chown -R "$user":"$group" $defaultPath
 
 ####################
 # Fix ImageMagick Policies
-if test -f "$imageMagickPolicyFile"; then
+if test -f "$imageMagickPolicyFile"; then/
   sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' $imageMagickPolicyFile
 else
-  echo "We could not fix the ImageMagick policy files because it doesn't exists. Please fix it manually using the informations in the README"
+  echo "We could not fix the ImageMagick policy files because it doesn't exists. Please f/ix it manually using the informations in the README"
 fi
 
 ####################
 # Secure RabbitMQ service
 # First remove guest user permissions
+# Create custom vhost is needed
 # Then add a new user, using choosen password
-# Finally give the new user the needed permissions
+# Give the new user the needed permissions
+# Finally update the json file
 
-if [[ "$rabbitMqSecure" == "no" ]]; then
-    rabbitmqctl set_permissions -p "/" "guest" "^$" "^$" "^$"
+if [[ "$finalRabbitMQSecure" != "no" ]]; then
+    cp $defaultPath/src/config/rabbitMQ.json.default $defaultPath/src/config/rabbitMQ.json
+    rabbitMqFile=$defaultPath/src/config/rabbitMQ.json
+    vhost="/"
+
+    if [[ "rabbitMqVhost" != "/" && "rabbitMqVhost" != "" ]]; then
+        rabbitmqctl add_vhost "$rabbitMqVhost"
+        vhost=$rabbitMqVhost
+    fi
+
+    rabbitmqctl set_permissions --vhost "/" "guest" "^$" "^$" "^$"
     rabbitmqctl add_user "$rabbitMqUser" "$rabbitMqPassword"
-    rabbitmqctl set_permissions -p "/" "edissyum" ".*" ".*" ".*"
+    rabbitmqctl set_permissions --vhost "$vhost" "$rabbitMqUser" ".*" ".*" ".*"
 
-    # Now update the main.py to add the users informations
-    sed -i "s/#OCforMaarch.config.RABBIT_USER = ''/OCforMaarch.config.RABBIT_USER = \"$rabbitMqUser\"/g" $defaultPath/src/main.py
-    sed -i "s/#OCforMaarch.config.RABBIT_PASSWORD = ''/OCforMaarch.config.RABBIT_PASSWORD = \"$rabbitMqPassword\"/g" $defaultPath/src/main.py
+    jq '.username = "$rabbitMqUser"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    jq '.password = "$rabbitMqPassword"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    jq '.vhost = "$vhost"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+
+    if [[ "rabbitMqHost" != "" ]]; then
+        jq '.host = "$rabbitMqHost"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    fi
+
+    if [[ "rabbitMqPort" != "" ]]; then
+        jq '.port = "$rabbitMqPort"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    fi
 fi
 
 ####################

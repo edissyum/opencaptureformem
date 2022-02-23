@@ -10,5 +10,3 @@ imap-tools
 pytesseract
 configparser
 opencv-python
-pillow>=6.2.0
-kuyruk_manager

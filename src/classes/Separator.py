@@ -217,7 +217,6 @@ class Separator:
                     page['nb_pages'] = self.nb_pages
                     self.pj.append(page)
                 else:
-                    print(page)
                     self.pages.append(page)
             else:
                 continue

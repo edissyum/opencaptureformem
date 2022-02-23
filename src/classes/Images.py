@@ -131,16 +131,16 @@ class Images:
                     time.sleep(1)
                     size2 = os.path.getsize(file)
                     if size2 == size:
-                        if file.endswith(".pdf"):
+                        if file.lower().endswith(".pdf"):
                             try:
                                 PyPDF2.PdfFileReader(doc, strict=False)
                             except PyPDF2.utils.PdfReadError:
                                 shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                                 return False
                             return True
-                        elif file.endswith('.html') or file.endswith('.txt'):
+                        elif file.lower().endswith('.html') or file.lower().endswith('.txt'):
                             return True
-                        elif file.endswith('.jpg'):
+                        elif file.lower().endswith('.jpg'):
                             try:
                                 Image.open(file)
                             except OSError:
