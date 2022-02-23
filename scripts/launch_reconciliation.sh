@@ -82,6 +82,9 @@ then
         exit 0
 fi
 
+# Needed to avoid QR Code read error
+sleep 3
+
 fileName=$(basename "$1")
 
 # service is the parent folder name. e.g : /var/share/sortant/DGS/test.pdf --> $service will be DGS
