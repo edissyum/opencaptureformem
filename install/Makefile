@@ -120,7 +120,7 @@ chown -R "$user":"$group" $defaultPath
 
 ####################
 # Fix ImageMagick Policies
-if test -f "$imageMagickPolicyFile"; then/
+if test -f "$imageMagickPolicyFile"; then
   sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' $imageMagickPolicyFile
 else
   echo "We could not fix the ImageMagick policy files because it doesn't exists. Please f/ix it manually using the informations in the README"
