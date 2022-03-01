@@ -14,13 +14,12 @@
 # along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-import os
-import sys
+
 import json
 import base64
-
 import requests
-from datetime import datetime
+import holidays
+from datetime import datetime, time, timedelta
 from requests.auth import HTTPBasicAuth
 
 
@@ -125,6 +124,7 @@ class WebServices:
             'documentDate': date,
             'arrivaldate': str(datetime.now()),
             'customFields': {},
+            'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
         }
 
         if _process.get('custom_fields') is not None:
@@ -318,6 +318,7 @@ class WebServices:
         """
         args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
         args['arrivalDate'] = str(datetime.now())
+        args['processLimitDate'] = str(self.calcul_process_limit_date(args['doctype']))
 
         del args['file']
 
@@ -366,6 +367,29 @@ class WebServices:
             self.Log.error('MailInsertAttachmentsIntoMaarchError : ' + str(e))
             return False, str(e)
 
+    def calcul_process_limit_date(self, doctype):
+        doctype_info = self.retrieve_doctype(doctype)
+        today = datetime.combine(datetime.now(), time.min)
+        process_limit_date = today
+        days_off = []
+
+        for date, _ in sorted(holidays.FR(prov='Métropole', years=today.year).items()):
+            days_off.append(datetime.combine(date, time.min))
+
+        if len(doctype_info['doctype']) != 0:
+            process_delay = doctype_info['doctype']['process_delay']
+            working_days_info = self.retrieve_workings_days()
+            if len(working_days_info['parameter']) != 0:
+                working_days = working_days_info['parameter']['param_value_int']
+                if working_days:
+                    while process_delay > 0:
+                        process_limit_date += timedelta(days=1)
+                        weekday = process_limit_date.weekday()
+                        if weekday >= 5:
+                            continue
+                        process_delay -= 1
+        return process_limit_date
+
     def retrieve_entities(self):
         try:
             res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
@@ -376,6 +400,32 @@ class WebServices:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('RetrieveMaarchEntitiesError : ' + str(e))
+            return False, str(e)
+
+    def retrieve_doctype(self, doctype):
+        try:
+            res = requests.get(self.baseUrl + 'doctypes/types/' + doctype, auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveDoctypeError : ' + str(res.text))
+                return False, str(res.text)
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('RetrieveDoctypeError : ' + str(e))
+            return False, str(e)
+
+    def retrieve_workings_days(self):
+        try:
+            res = requests.get(self.baseUrl + 'parameters/workingDays', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveWorkingDaysError : ' + str(res.text))
+                return False, str(res.text)
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('RetrieveWorkingDaysError : ' + str(e))
             return False, str(e)
 
     def retrieve_users(self):

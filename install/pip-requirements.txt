@@ -3,6 +3,7 @@ wand
 pyPdf2
 kuyruk
 ocrmypdf
+holidays
 requests
 pdf2image
 tnefparse
