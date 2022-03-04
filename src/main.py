@@ -219,6 +219,7 @@ def launch(args):
                         if res[0]:
                             res = json.loads(res[1])
                             if 'resId' in res:
+                                res_id = res['resId']
                                 for pj in separator.pj_list:
                                     document_filename = os.path.basename(file)
                                     pj_filename = re.sub(r"#\d", "", os.path.basename(pj).replace('PJ_', ''))
@@ -234,7 +235,7 @@ def launch(args):
                                             'status': 'A_TRA',
                                             'subject': subject_thread.subject
                                         }
-                                        res = web_service.insert_attachment_from_mail(pj_args, res['resId'])
+                                        res = web_service.insert_attachment_from_mail(pj_args, res_id)
                                         if res:
                                             log.info('Attachment inserted : ' + str(res))
             else:
