@@ -148,7 +148,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
-    if 'reconciliation' not in _process:
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
         if args.get('isMail') is None or args.get('isMail') is False and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
             ocr.text_builder(image.img)

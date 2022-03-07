@@ -13,6 +13,8 @@ logFile             = ${GLOBAL:projectPath}/data/log/OCforMaarch.log
 formPath            = ${GLOBAL:projectPath}/src/config/form.json
 # Time in seconds before stopping the Webservices call
 timeout             = 30
+# True or False
+disableLad          = False
 
 [LOCALE]
 # fr_FR or en_EN by default
