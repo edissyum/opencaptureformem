@@ -113,24 +113,24 @@ class Mail:
         try:
             for to in msg.to_values:
                 to_str += to.full + ';'
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         try:
             for cc in msg.cc_values:
                 cc_str += cc.full + ';'
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         try:
             for rp_to in msg.reply_to_values:
                 reply_to += rp_to.full + ';'
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         try:
             from_val = msg.from_values.full
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         if len(msg.html) == 0:
