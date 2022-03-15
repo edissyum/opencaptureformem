@@ -47,7 +47,7 @@ if __name__ == '__main__':
     try:
         chrono = json.loads(chrono)
         chrono = chrono['chrono']
-    except json.decoder.JSONDecodeError:
+    except (json.decoder.JSONDecodeError, TypeError):
         pass
 
     response = WebService.check_attachment(chrono)
