@@ -182,7 +182,6 @@ def launch(args):
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
     locale = localeClass.Locale(config)
     ocr = ocrClass.PyTesseract(locale.localeOCR, log, config)
-    separator = separatorClass.Separator(log, config, tmp_folder)
     web_service = webserviceClass.WebServices(
         config.cfg['OCForMaarch']['host'],
         config.cfg['OCForMaarch']['user'],
@@ -202,6 +201,7 @@ def launch(args):
     # Start process
     _process = get_process_name(args, config)
     args['process_name'] = _process
+    separator = separatorClass.Separator(log, config, tmp_folder, _process)
 
     if args.get('isMail') is None or args.get('isMail') is False:
         separator.enabled = str2bool(config.cfg[_process]['separator_qr'])

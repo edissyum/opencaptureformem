@@ -29,7 +29,7 @@ import pdf2image
 
 
 class Separator:
-    def __init__(self, log, config, tmp_folder):
+    def __init__(self, log, config, tmp_folder, process):
         self.pj = []
         self.Log = log
         self.pages = []
@@ -41,6 +41,7 @@ class Separator:
         self.error = False
         self.Config = config
         self.enabled = False
+        self.process = process
         self.divider = config.cfg['SEPARATOR_QR']['divider']
         self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['exportpdfa']
         tmp_folder_name = os.path.basename(os.path.normpath(tmp_folder))
@@ -101,9 +102,21 @@ class Separator:
             self.extract_and_convert_docs(file)
             if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
                 self.pdf_list.append(self.output_dir + '/' + os.path.basename(file))
-            self.extract_pj(file)
+            self.extract_pj()
             self.set_doc_ends(True)
             self.extract_and_convert_docs(file, True)
+
+            if len(self.pages) == 0:
+                self.extract_only_pj(file)
+                if self.pdf_list[0] == self.output_dir + '/' + os.path.basename(file):
+                    del self.pdf_list[0]
+
+            if len(self.pj) == 0 and len(self.pages) == 0:
+                try:
+                    shutil.move(file, self.output_dir)
+                except shutil.Error as e:
+                    self.Log.error('Moving file ' + file + ' error : ' + str(e))
+                return
 
         except Exception as e:
             self.error = True
@@ -120,6 +133,35 @@ class Separator:
         convert = lambda text: int(text) if text.isdigit() else text.lower()
         alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
         return sorted(data, key=alphanum_key)
+
+    def extract_only_pj(self, file):
+        self.parse_xml(True, file)
+        if len(self.pj) > 0:
+            page = {}
+            first_qr_code_page = self.pj[0]['index_sep']
+            splitted_file = os.path.basename(file).split(self.divider)
+            if len(splitted_file) > 1:
+                page['service'] = splitted_file[0]
+            else:
+                page['service'] = self.Config.cfg[self.process]['destination']
+            page['uuid'] = str(uuid.uuid4())
+            page['is_empty'] = False
+            page['pdf_filename'] = self.output_dir + page['service'] + self.divider + page['uuid'] + '.pdf'
+            page['pdfa_filename'] = self.output_dir_pdfa + page['service'] + self.divider + page['uuid'] + '.pdf'
+            page['index_start'] = 1
+            page['index_end'] = first_qr_code_page
+            self.pages.append(page)
+            self.extract_and_convert_docs(file, delete_orig=False)
+            self.set_doc_ends(True)
+            cpt = 0
+            for pj_file in self.pj:
+                pj_cpt = os.path.basename(os.path.splitext(pj_file['pdf_filename'])[0]).split('#')[1]
+                new_filename = self.output_dir + 'PJ_' + page['service'] + self.divider + page['uuid'] + '#' + str(pj_cpt) + '.pdf'
+                new_filename_pdfa = self.output_dir_pdfa + 'PJ_' + page['service'] + self.divider + page['uuid'] + '#' + str(pj_cpt) + '.pdf'
+                self.pj[cpt]['pdf_filename'] = new_filename
+                self.pj[cpt]['pdfa_filename'] = new_filename_pdfa
+                cpt += 1
+            self.extract_and_convert_docs(file, True)
 
     def remove_blank_page(self, file):
         pages = pdf2image.convert_from_path(file)
@@ -257,13 +299,9 @@ class Separator:
                 else:
                     data[i]['index_end'] = self.nb_pages
 
-    def extract_pj(self, file):
+    def extract_pj(self):
         if len(self.pages) == 0:
-            try:
-                shutil.move(file, self.output_dir)
-            except shutil.Error as e:
-                self.Log.error('Moving file ' + file + ' error : ' + str(e))
-            return
+            pass
         else:
             try:
                 for page in self.pages:
@@ -277,19 +315,15 @@ class Separator:
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
 
-    def extract_and_convert_docs(self, file, is_pj=False):
+    def extract_and_convert_docs(self, file, is_pj=False, delete_orig=True):
         """
         If empty doc, move it directly
         Else, split document and export them
 
         :param file:
         """
-        if len(self.pages) == 0:
-            try:
-                shutil.move(file, self.output_dir)
-            except shutil.Error as e:
-                self.Log.error('Moving file ' + file + ' error : ' + str(e))
-            return
+        if len(self.pages) == 0 and is_pj is False:
+            pass
         else:
             try:
                 data = self.pages
@@ -310,7 +344,7 @@ class Separator:
                     else:
                         self.pdf_list.append(page['pdf_filename'])
                     split_pdf(file, page['pdf_filename'], pages_to_keep, original_pages_to_keep)
-                if not is_pj:
+                if not is_pj and delete_orig:
                     os.remove(file)
             except Exception as e:
                 self.Log.error("EACD: " + str(e))
