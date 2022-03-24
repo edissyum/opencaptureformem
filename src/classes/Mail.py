@@ -113,24 +113,24 @@ class Mail:
         try:
             for to in msg.to_values:
                 to_str += to.full + ';'
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         try:
             for cc in msg.cc_values:
                 cc_str += cc.full + ';'
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         try:
             for rp_to in msg.reply_to_values:
                 reply_to += rp_to.full + ';'
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         try:
             from_val = msg.from_values.full
-        except TypeError:
+        except (TypeError, AttributeError):
             pass
 
         if len(msg.html) == 0:
@@ -376,7 +376,10 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
         if smtp.enabled is not False:
             error = ''
             if res:
-                error = json.loads(res)['errors']
+                try:
+                    error = json.loads(res)['errors']
+                except ValueError:
+                    error = res
             smtp.send_email(
                 message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
                         '    - Nom du process : ' + process + '\n' +

@@ -231,7 +231,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['documentDate'] = date
         if subject != '':
             args['data']['subject'] = subject
-        if contact != '':
+        if contact:
             args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
             if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
