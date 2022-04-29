@@ -109,6 +109,9 @@ class WebServices:
             if config.cfg['OCForMaarch']['uppercasesubject'] == 'True':
                 subject = subject.upper()
 
+        if 'subject' in _process and _process['subject']:
+            subject = _process['subject']
+
         data = {
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
             'priority': _process['priority'],
