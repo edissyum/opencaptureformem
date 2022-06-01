@@ -85,8 +85,7 @@ EOF'
   apt install -y -t stretch-backports tesseract-ocr
   apt install -y -t stretch-backports tesseract-ocr-fra
   apt install -y -t stretch-backports tesseract-ocr-eng
-
-elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && $VER == *'10'* ]]; then
+elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && ($VER == *'10'* || $VER == *'11'*) ]]; then
   apt update
   apt install -y tesseract-ocr
   apt install -y tesseract-ocr-fra
