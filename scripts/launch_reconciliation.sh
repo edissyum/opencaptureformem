@@ -76,14 +76,14 @@ reconciliationProcess(){
 # Main
 inputPath="$1"
 
+# Needed to avoid QR Code read error
+sleep 3
+
 if [[ ! -f "$1" ]]
 then
         echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
         exit 0
 fi
-
-# Needed to avoid QR Code read error
-sleep 3
 
 fileName=$(basename "$1")
 
