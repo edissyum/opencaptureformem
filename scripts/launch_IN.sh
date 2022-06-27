@@ -50,7 +50,7 @@ then
 
   mv "$filepath" "$tmpFilepath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process"
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false
 
   rm -f $PID
 elif test -f "$filepath" && test "$ext" != 'application/pdf';

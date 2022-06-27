@@ -293,7 +293,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         if args.get('isMail') is None:
             try:
-                os.remove(file)
+                if args.get('keep_pdf_debug').lower() != 'true':
+                    os.remove(file)
             except FileNotFoundError as e:
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
         return True, res
