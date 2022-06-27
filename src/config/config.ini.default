@@ -48,6 +48,8 @@ defaultProcess      = incoming
 timeDelta           = 62
 # True or False
 upperCaseSubject    = False
+# Path to the .crt file
+certPath            =
 
 # !!!! IMPORTANT !!!!
 # The process name have to be LOWERCASE

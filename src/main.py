@@ -187,7 +187,8 @@ def launch(args):
         config.cfg['OCForMaarch']['user'],
         config.cfg['OCForMaarch']['password'],
         log,
-        config.cfg['GLOBAL']['timeout']
+        config.cfg['GLOBAL']['timeout'],
+        config.cfg['OCForMaarch']['certpath']
     )
 
     image = imagesClass.Images(
