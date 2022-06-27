@@ -24,11 +24,12 @@ from requests.auth import HTTPBasicAuth
 
 
 class WebServices:
-    def __init__(self, host, user, pwd, log, timeout):
+    def __init__(self, host, user, pwd, log, timeout, cert_path):
         self.Log = log
         self.baseUrl = host
         self.auth = HTTPBasicAuth(user, pwd)
         self.timeout = int(timeout)
+        self.cert = cert_path
         self.check_connection()
 
     def check_connection(self):
@@ -36,7 +37,7 @@ class WebServices:
         Check if remote host is UP
         """
         try:
-            requests.get(self.baseUrl, timeout=self.timeout)
+            requests.get(self.baseUrl, timeout=self.timeout, verify=self.cert)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('Error connecting to the host. Exiting program..')
             self.Log.error('More information : ' + str(e))
@@ -51,7 +52,7 @@ class WebServices:
         """
         if mail:
             try:
-                res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail': mail}, timeout=self.timeout)
+                res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail': mail}, timeout=self.timeout, verify=self.cert)
                 if res.status_code != 200:
                     self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
                     return False, str(res.text)
@@ -71,7 +72,7 @@ class WebServices:
         :return: Contact from Maarch
         """
         try:
-            res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone}, timeout=self.timeout)
+            res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text))
                 return False, str(res.text)
@@ -137,7 +138,7 @@ class WebServices:
             data['customFields'][_process['custom_mail']] = custom_mail
 
         try:
-            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
@@ -168,7 +169,7 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
@@ -198,7 +199,7 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
@@ -217,7 +218,7 @@ class WebServices:
         :return: Info of attachment from Maarch database
         """
         try:
-            res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
                 return False, str(res.text)
@@ -239,7 +240,7 @@ class WebServices:
             'clause': "category_id='outgoing' AND alt_identifier='" + chrono + "' AND status <> 'DEL'",
         })
         try:
-            res = requests.post(self.baseUrl + 'res/list', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'res/list', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') CheckDocumentError : ' + str(res.text))
                 return False, str(res.text)
@@ -268,7 +269,7 @@ class WebServices:
 
         try:
             res = requests.put(self.baseUrl + 'resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/' + basket + '/actions/' + action_id, auth=self.auth, data=args,
-                headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+                headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 204:
                 self.Log.error('(' + str(res.status_code) + ') ReattachToDocumentError : ' + str(res.text))
@@ -300,7 +301,7 @@ class WebServices:
             })
 
         try:
-            res = requests.put(self.baseUrl + 'res/resource/status', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.put(self.baseUrl + 'res/resource/status', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') ChangeStatusError : ' + str(res.text))
                 return False, str(res.text)
@@ -329,7 +330,7 @@ class WebServices:
             args['customFields'].update(json.loads(_process.get('custom_fields')))
 
         try:
-            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMaarchError : ' + str(res.text))
@@ -359,7 +360,7 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMaarchError : ' + str(res.text))
@@ -395,7 +396,7 @@ class WebServices:
 
     def retrieve_entities(self):
         try:
-            res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchEntitiesError : ' + str(res.text))
                 return False, str(res.text)
@@ -407,7 +408,7 @@ class WebServices:
 
     def retrieve_doctype(self, doctype):
         try:
-            res = requests.get(self.baseUrl + 'doctypes/types/' + doctype, auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.get(self.baseUrl + 'doctypes/types/' + doctype, auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveDoctypeError : ' + str(res.text))
@@ -420,7 +421,7 @@ class WebServices:
 
     def retrieve_workings_days(self):
         try:
-            res = requests.get(self.baseUrl + 'parameters/workingDays', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.get(self.baseUrl + 'parameters/workingDays', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveWorkingDaysError : ' + str(res.text))
@@ -433,7 +434,7 @@ class WebServices:
 
     def retrieve_users(self):
         try:
-            res = requests.get(self.baseUrl + 'users', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout)
+            res = requests.get(self.baseUrl + 'users', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchUserError : ' + str(res.text))
                 return False, str(res.text)

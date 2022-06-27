@@ -65,25 +65,25 @@ check_attachment(){
 defaultProcess(){
     # If barcode couldn't be read or isn't present, use default process
     # Same if the barcode is read but the attachment doesn't exist on Maarch database
-    python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1" --chrono "${2:-default}"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1" --chrono "${2:-default}" --keep-pdf-debug false
 }
 
 reconciliationProcess(){
     # If all things went good, start the reconciliation process and insert the document as a Maarch attachment
-    python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -chrono "$2"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -chrono "$2" --keep-pdf-debug false
 }
 
 # Main
 inputPath="$1"
+
+# Needed to avoid QR Code read error
+sleep 3
 
 if [[ ! -f "$1" ]]
 then
         echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
         exit 0
 fi
-
-# Needed to avoid QR Code read error
-sleep 3
 
 fileName=$(basename "$1")
 

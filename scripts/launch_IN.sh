@@ -50,7 +50,7 @@ then
 
   mv "$filepath" "$tmpFilepath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process"
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false
 
   rm -f $PID
 elif test -f "$filepath" && test "$ext" != 'application/pdf';
@@ -58,12 +58,15 @@ then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
   mkdir -p "$errFilepath"
   mv "$filepath" "$errFilepath"
+  rm -f $PID
 elif test -d "$filepath";
 then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a directory. Do not process it" >> "$logFile"
+  rm -f $PID
 elif ! test -f "$filepath";
 then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename doesn't exists or cannot be read" >> "$logFile"
+  rm -f $PID
 else
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
 fi

@@ -90,7 +90,8 @@ web_service = webserviceClass.WebServices(
     config.cfg['OCForMaarch']['user'],
     config.cfg['OCForMaarch']['password'],
     global_log,
-    config.cfg['GLOBAL']['timeout']
+    config.cfg['GLOBAL']['timeout'],
+    config.cfg['OCForMaarch']['certpath']
 )
 
 SMTP = SMTP(
