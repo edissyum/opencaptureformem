@@ -34,7 +34,7 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/opt/maarch/OpenCapture/"
+OCPath="/home/nathan/PycharmProjects/oc_for_maarch/"
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
 process_pj=reconciliation_default
@@ -81,11 +81,18 @@ sleep 3
 
 if [[ ! -f "$1" ]]
 then
-        echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
-        exit 0
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $inputPath is not a valid file" >> "$logFile"
+    exit 0
 fi
 
 fileName=$(basename "$1")
+
+separatorEnabled=$(crudini --get $config_file "OCForMaarch_reconciliation_default" "separator_qr" | sed 's/:.*//')
+if [[ "$fileName" != *"SEPARATED"* ]] && { [ "$separatorEnabled" == 'True' ] || [ "$separatorEnabled" == 'true' ]; }; then
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") Separate document by QR Code (QRPrefix on maarch need to be enabled)" >> "$logFile"
+    python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file"
+    exit
+fi
 
 # service is the parent folder name. e.g : /var/share/sortant/DGS/test.pdf --> $service will be DGS
 service=$(echo "$inputPath" | sed -e 's#/[^/]*$##' -e 's#.*/##')
