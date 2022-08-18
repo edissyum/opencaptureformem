@@ -1,5 +1,6 @@
 jq
 qpdf
+crudini
 python3
 libxml2
 pngquant

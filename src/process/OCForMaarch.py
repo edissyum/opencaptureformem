@@ -23,6 +23,7 @@ from .FindDate import FindDate
 from .OCForForms import process_form
 from .FindSubject import FindSubject
 from .FindContact import FindContact
+from .FindChrono import FindChrono
 
 
 def get_process_name(args, config):
@@ -159,6 +160,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
 
+        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+            chrono_thread = FindChrono(ocr.text, config.cfg[_process], log)
+        else:
+            chrono_thread = ''
+
         # Find date of document
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True:
             date_thread = ''
@@ -178,6 +184,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             subject_thread.start()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact_thread.start()
+        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+            chrono_thread.start()
 
         # Wait for end of threads
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
@@ -186,6 +194,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             subject_thread.join()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact_thread.join()
+        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+            chrono_thread.join()
 
         # Get the returned values
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
@@ -193,10 +203,16 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             date = ''
 
+        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+            chrono_number = chrono_thread.chrono
+        else:
+            chrono_number = ''
+
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
             subject = subject_thread.subject
         else:
             subject = ''
+
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact = contact_thread.contact
             custom_mail = contact_thread.custom_mail
@@ -206,6 +222,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         date = ''
         subject = ''
+        chrono_number = ''
         contact = {}
         custom_mail = ''
 
@@ -265,6 +282,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     if res:
         log.info("Insert OK : " + res)
+        if chrono_number:
+            chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
+            if chrono_res_id:
+                web_service.link_documents(json.loads(res)['resId'], chrono_res_id['resId'])
 
         # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it

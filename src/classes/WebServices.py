@@ -82,6 +82,36 @@ class WebServices:
             self.Log.error('GetContactByPhoneError : ' + str(e))
             return False, str(e)
 
+    def retrieve_document_by_chrono(self, chrono_number):
+        if chrono_number:
+            try:
+                data = {
+                    'chronoNumber': chrono_number,
+                    'light': True
+                }
+                res = requests.post(self.baseUrl + '/resources/getByChrono', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout,
+                                    verify=self.cert)
+                if res.status_code != 200:
+                    self.Log.error('(' + str(res.status_code) + ') getResourceByChrono : ' + str(res.text))
+                    return False
+                else:
+                    return json.loads(res.text)
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                self.Log.error('InsertIntoMaarchError : ' + str(e))
+                return False, str(e)
+
+    def link_documents(self, res_id_master, res_id):
+        data = {
+            'linkedResources': [res_id]
+        }
+
+        res = requests.post(self.baseUrl + '/resources/' + str(res_id_master) + '/linkedResources', auth=self.auth,
+                            data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+        if res.status_code not in (200, 204):
+            self.Log.error('(' + str(res.status_code) + ') linkDocumentError : ' + str(res.text))
+            return False
+        return True
+
     def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail):
         """
         Insert document into Maarch Database

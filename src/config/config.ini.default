@@ -69,6 +69,7 @@ custom_fields		= {}
 separator_qr        = False
 generate_chrono     = True
 subject             =
+chronoRegex         = MAARCH/20(1|2|3)[0-9]{1}A/\d*
 
 [OCForMaarch_outgoing]
 status              = INIT
@@ -85,6 +86,7 @@ custom_fields		= {}
 separator_qr        = False
 generate_chrono     = True
 subject             =
+chronoRegex         = MAARCH/20(1|2|3)[0-9]{1}D/\d*
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
