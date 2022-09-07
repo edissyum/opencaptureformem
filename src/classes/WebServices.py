@@ -476,7 +476,7 @@ class WebServices:
 
     def retrieve_custom_fields(self):
         try:
-            res = requests.get(self.baseUrl + 'customFields', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            res = requests.get(self.baseUrl + 'customFields', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
                 self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchCustomFieldsError : ' + str(res.text))
                 return False, str(res.text)
@@ -488,7 +488,7 @@ class WebServices:
 
     def create_contact(self, contact):
         try:
-            res = requests.post(self.baseUrl + '/contacts', auth=self.auth, data=json.dumps(contact), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            res = requests.post(self.baseUrl + '/contacts', auth=self.auth, data=json.dumps(contact), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
                 self.Log.error('CreateContactError : ' + str(res.text))
