@@ -1,17 +1,17 @@
-# This file is part of Open-Capture.
+# This file is part of Open-Capture For Maarch.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture is distributed in the hope that it will be useful,
+# Open-Capture For Maarch is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
@@ -117,7 +117,7 @@ def timer(start_time: time.time(), end_time: time.time()):
 def process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp):
     if check_file(image, path, config, log):
         # Process the file and send it to Maarch
-        res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, None, config_mail)
+        res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail)
         if args.get('isMail') is not None and args.get('isMail') is True:
             # Process the attachments of mail
             if res[0]:
@@ -147,7 +147,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
             return res
 
 
-@OCforMaarch.task()
+# @OCforMaarch.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
