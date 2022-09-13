@@ -108,7 +108,7 @@ class Separator:
 
             if len(self.pages) == 0:
                 self.extract_only_pj(file)
-                if self.pdf_list[0] == self.output_dir + '/' + os.path.basename(file):
+                if self.pj and self.pdf_list[0] == self.output_dir + '/' + os.path.basename(file):
                     del self.pdf_list[0]
 
             if len(self.pj) == 0 and len(self.pages) == 0:
@@ -211,8 +211,11 @@ class Separator:
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = xml.communicate()
 
+            if out.decode('utf-8') == "<barcodes xmlns='http://zbar.sourceforge.net/2008/barcode'>\n<source href='" + file + "'>\n</source>\n</barcodes>\n":
+                return
             if err.decode('utf-8'):
                 self.Log.error('ZBARIMG : ' + str(err))
+
             self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
@@ -223,6 +226,7 @@ class Separator:
         Parse XML content of QR Code to retrieve the destination of the document (in Maarc)
 
         """
+
         if self.qrList is None:
             return
         ns = {'bc': 'http://zbar.sourceforge.net/2008/barcode'}
