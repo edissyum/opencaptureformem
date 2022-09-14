@@ -186,7 +186,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             subject_thread.start()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact_thread.start()
-        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread.start()
 
         # Wait for end of threads
@@ -196,7 +196,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             subject_thread.join()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
             contact_thread.join()
-        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread.join()
 
         # Get the returned values
@@ -205,7 +205,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             date = ''
 
-        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+            chrono_number = ''
+        elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_number = chrono_thread.chrono
         else:
             chrono_number = ''
