@@ -27,7 +27,7 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/home/nathan//PycharmProjects/oc_for_maarch/"
+OCPath="/opt/maarch/Opencapture/"
 config_file="$OCPath"/src/config/config.ini
 config_mail_file="$OCPath"/src/config/mail.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
