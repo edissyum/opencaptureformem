@@ -160,7 +160,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
 
-        if 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+            chrono_thread = ''
+        elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread = FindChrono(ocr.text, config.cfg[_process], log)
         else:
             chrono_thread = ''
