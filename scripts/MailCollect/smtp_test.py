@@ -31,8 +31,9 @@ isSTARTLS = 'True'
 login = ''
 password = ''
 mail_dest = ''
+mail_from = ''
 
-SMTP = SMTP('True', hostname, port, login, password, isSSL, isSTARTLS, mail_dest, 0)
+SMTP = SMTP('True', hostname, port, login, password, isSSL, isSTARTLS, mail_dest, 0, 'True', mail_from)
 
 if SMTP.isUp:
     msg = MIMEMultipart()
