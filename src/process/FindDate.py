@@ -48,12 +48,16 @@ class FindDate(Thread):
             today = datetime.now()
             doc_date = datetime.strptime(self.date, self.Locale.formatDate)
             timedelta = today - doc_date
-
             if int(self.Config.cfg['OCForMaarch']['timedelta']) != -1:
                 if timedelta.days > int(self.Config.cfg['OCForMaarch']['timedelta']) or timedelta.days < 0:
                     self.Log.info("Date is older than " + str(self.Config.cfg['OCForMaarch']['timedelta']) + " days or in the future: " + self.date)
                     self.date = ''
-            self.Log.info("Date found : " + self.date)
+            elif timedelta.days < 0:
+                self.Log.info("Date is in the future: " + self.date)
+                self.date = ''
+
+            if self.date:
+                self.Log.info("Date found : " + self.date)
             return True
         except ValueError:
             self.Log.info("Date wasn't in a good format : " + self.date)
