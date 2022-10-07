@@ -117,7 +117,6 @@ class Separator:
                 except shutil.Error as e:
                     self.Log.error('Moving file ' + file + ' error : ' + str(e))
                 return
-
         except Exception as e:
             self.error = True
             self.Log.error("INIT : " + str(e))
@@ -288,6 +287,8 @@ class Separator:
         data = self.pages
         if is_pj:
             data = self.pj
+            if not data:
+                return
 
         for i in range(self.nb_doc):
             if data[i]['is_empty']:
