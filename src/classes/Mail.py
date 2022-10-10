@@ -89,7 +89,6 @@ class Mail:
             sys.exit()
 
         try:
-            print(self.auth_method)
             if self.auth_method == 'basic':
                 self.conn.login(self.login, self.pwd)
             elif self.auth_method == 'oauth':
