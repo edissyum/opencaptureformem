@@ -18,19 +18,21 @@
 import os
 import re
 import sys
+import msal
 import json
 import shutil
 import mimetypes
 from ssl import SSLError
 from socket import gaierror
 from imaplib import IMAP4_SSL
-from tnefparse.mapi import TNEFMAPI_Attribute
 from imap_tools import utils, MailBox, MailBoxUnencrypted
-from tnefparse.tnef import TNEF, TNEFAttachment, TNEFObject
+from tnefparse.tnef import TNEF
 
 
 class Mail:
-    def __init__(self, host, port, login, pwd, ws, smtp):
+    def __init__(self, auth_method, oauth, host, port, login, pwd, ws, smtp):
+        self.auth_method = auth_method
+        self.oauth = oauth
         self.pwd = pwd
         self.conn = None
         self.port = port
@@ -43,16 +45,43 @@ class Mail:
         if self.SMTP.isUp:
             self.SMTP.send_email(message=msg, step=step)
 
+    def generate_oauth_token(self):
+        """
+        Generate a token for oauth (Open Authentication)
+        :return: token result
+        """
+        app = msal.ConfidentialClientApplication(self.oauth['client_id'],
+                                                 authority=self.oauth['authority'] + self.oauth['tenant_id'],
+                                                 client_credential=self.oauth['secret'])
+
+        result = app.acquire_token_silent([self.oauth['scopes']], account=None)
+
+        if not result:
+            # No suitable token in cache.  Getting a new one.
+            result = app.acquire_token_for_client(scopes=[self.oauth['scopes']])
+
+        if "access_token" in result:
+            # Token generated with success.
+            return result
+
+        # Error while generated token.
+        print(result.get("error"))
+        print(result.get("error_description"))
+        print(result.get("correlation_id"))
+        sys.exit()
+
     def test_connection(self, secured_connection):
         """
         Test the connection to the IMAP server
-
+        :param secured_connection: boolean
+        :param log: Log object
         """
         try:
             if secured_connection:
                 self.conn = MailBox(host=self.host, port=self.port)
             else:
                 self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
+
         except (gaierror, SSLError) as e:
             error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e)
             print(error)
@@ -60,9 +89,15 @@ class Mail:
             sys.exit()
 
         try:
-            self.conn.login(self.login, self.pwd)
+            if self.auth_method == 'basic':
+                self.conn.login(self.login, self.pwd)
+            elif self.auth_method == 'oauth':
+                result = self.generate_oauth_token()
+                self.conn.xoauth2(self.login, result['access_token'])
+
         except IMAP4_SSL.error as err:
-            error = 'Error while trying to login to ' + self.host + ' using ' + self.login + '/' + self.pwd + ' as login/password : ' + str(err)
+            error = 'Authentication method : ' + self.auth_method + ' - Error while trying to login to ' \
+                    + self.host + ' using ' + self.login + ' : ' + str(err)
             print(error)
             self.send_notif(error, 'de l\'authentification IMAP')
             sys.exit()
@@ -171,17 +206,20 @@ class Mail:
                 cfg['custom_mail_from']: from_val
             })
 
-        if cfg.get('custom_mail_to') not in [None, ''] and to_str != '' and self.check_custom_field(cfg['custom_mail_to'], log):
+        if cfg.get('custom_mail_to') not in [None, ''] and to_str != '' and self.check_custom_field(
+                cfg['custom_mail_to'], log):
             data['mail']['customFields'].update({
                 cfg['custom_mail_to']: to_str[:-1]
             })
 
-        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str != '' and self.check_custom_field(cfg['custom_mail_cc'], log):
+        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str != '' and self.check_custom_field(
+                cfg['custom_mail_cc'], log):
             data['mail']['customFields'].update({
                 cfg['custom_mail_cc']: cc_str[:-1]
             })
 
-        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to != '' and self.check_custom_field(cfg['custom_mail_reply_to'], log):
+        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to != '' and self.check_custom_field(
+                cfg['custom_mail_reply_to'], log):
             data['mail']['customFields'].update({
                 cfg['custom_mail_reply_to']: reply_to[:-1]
             })
@@ -227,7 +265,8 @@ class Mail:
             try:
                 fp.write(header + ' : ' + msg.headers[header][0] + '\n')
             except UnicodeEncodeError:
-                fp.write(header + ' : ' + msg.headers[header][0].encode('utf-8', 'surrogateescape').decode('utf-8', 'replace') + '\n')
+                fp.write(header + ' : ' + msg.headers[header][0].encode('utf-8', 'surrogateescape').decode('utf-8',
+                                                                                                           'replace') + '\n')
         fp.close()
 
         # Then body
@@ -241,7 +280,8 @@ class Mail:
             fp = open(primary_mail_path + 'body.html', 'w')
             if force_utf8:
                 utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-                if not re.search(utf_8_charset.lower(), msg.html.lower()) or re.search(utf_8_charset.lower() + '\s*-->', msg.html.lower())\
+                if not re.search(utf_8_charset.lower(), msg.html.lower()) or re.search(utf_8_charset.lower() + '\s*-->',
+                                                                                       msg.html.lower()) \
                         or re.search('<!--\s*' + utf_8_charset.lower(), msg.html.lower()):
                     fp.write(utf_8_charset)
                     fp.write('\n')
@@ -383,7 +423,8 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
             smtp.send_email(
                 message='    - Nom du batch : ' + os.path.basename(batch_path) + '/ \n' +
                         '    - Nom du process : ' + process + '\n' +
-                        '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(error_path) + '/' + os.path.basename(batch_path) + ' \n' +
+                        '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(
+                    error_path) + '/' + os.path.basename(batch_path) + ' \n' +
                         '    - Sujet du mail : ' + msg['subject'] + '\n' +
                         '    - Date du mail : ' + msg['date'] + '\n' +
                         '    - UID du mail : ' + msg['uid'] + '\n' +
@@ -426,4 +467,5 @@ def sanitize_filename(s):
             return c
         else:
             return "_"
+
     return "".join(safe_char(c) for c in s).rstrip("_")
