@@ -109,12 +109,14 @@ SMTP = SMTP(
 )
 
 Mail = mailClass.Mail(
+    config_mail.cfg[process]['auth_method'],
+    config_mail.cfg['OAUTH'],
     config_mail.cfg[process]['host'],
     config_mail.cfg[process]['port'],
     config_mail.cfg[process]['login'],
     config_mail.cfg[process]['password'],
     web_service,
-    SMTP
+    SMTP,
 )
 
 cfg = config_mail.cfg[process]
