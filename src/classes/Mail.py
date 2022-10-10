@@ -18,17 +18,15 @@
 import os
 import re
 import sys
+import msal
 import json
 import shutil
 import mimetypes
 from ssl import SSLError
 from socket import gaierror
 from imaplib import IMAP4_SSL
-import msal
-
-from tnefparse.mapi import TNEFMAPI_Attribute
 from imap_tools import utils, MailBox, MailBoxUnencrypted
-from tnefparse.tnef import TNEF, TNEFAttachment, TNEFObject
+from tnefparse.tnef import TNEF
 
 
 class Mail:
