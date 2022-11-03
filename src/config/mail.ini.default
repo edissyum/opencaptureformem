@@ -29,8 +29,8 @@ secret      =
 auth_method          = basic
 host                 = outlook.office365.com
 port                 = 993
-; True or False
 login                = test@outlook.com
+; True or False
 securedConnection    = True
 
 ; Only for basic authentication If you have $ in your password, you must double it
