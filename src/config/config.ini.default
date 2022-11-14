@@ -38,7 +38,7 @@ blobsratio          = 1E-6
 
 [OCForMaarch]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
-host                = http://localhost/cs_maarch/rest/
+host                = http://localhost/maarch/rest/
 user                =
 password            =
 processAvailable    = incoming,outgoing,reconciliation_default,reconciliation_found
@@ -69,7 +69,7 @@ custom_fields		= {}
 separator_qr        = False
 generate_chrono     = True
 subject             =
-chronoRegex         = MAARCH/20(1|2|3)[0-9]{1}A/\d*
+chronoRegex         = 20(1|2|3)[0-9]{1}A/\d*
 
 [OCForMaarch_outgoing]
 status              = INIT
@@ -86,7 +86,7 @@ custom_fields		= {}
 separator_qr        = False
 generate_chrono     = True
 subject             =
-chronoRegex         = MAARCH/20(1|2|3)[0-9]{1}D/\d*
+chronoRegex         = 20(1|2|3)[0-9]{1}D/\d*
 
 [OCForMaarch_reconciliation_default]
 status              = ATTREC
@@ -103,6 +103,7 @@ custom_mail         =
 separator_qr        = False
 generate_chrono     = True
 subject             =
+chronoRegex         = 20(1|2|3)[0-9]{1}D/\d*
 
 [OCForMaarch_reconciliation_found]
 is_attachment       = True
