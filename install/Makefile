@@ -106,13 +106,13 @@ xargs -a apt-requirements.txt apt install -y
 if [ $pythonVenv = 'true' ]; then
     python3 -m venv "/home/$user/python-venv/opencaptureformaarch"
     echo "source /home/$user/python-venv/opencaptureformaarch/bin/activate" >> "/home/$user/.bashrc"
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install --upgrade pip >>$INFOLOG_PATH 2>>$ERRORLOG_PATH
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install pillow >>$INFOLOG_PATH 2>>$ERRORLOG_PATH
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install -r "$defaultPath/bin/install/pip-requirements.txt" >>$INFOLOG_PATH 2>>$ERRORLOG_PATH
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install --upgrade pip
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install pillow
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install -r pip-requirements.txt"
 else
-    python3 -m pip install --upgrade pip >>$INFOLOG_PATH 2>>$ERRORLOG_PATH
-    python3 -m pip install pillow >>$INFOLOG_PATH 2>>$ERRORLOG_PATH
-    python3 -m pip install -r pip-requirements.txt >>$INFOLOG_PATH 2>>$ERRORLOG_PATH
+    python3 -m pip install --upgrade pip
+    python3 -m pip install pillow
+    python3 -m pip install -r pip-requirements.txt
 fi
 
 cd $defaultPath || exit 2

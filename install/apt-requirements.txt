@@ -8,7 +8,7 @@ zbar-tools
 pkg-config
 imagemagick
 python3-pip
-python-venv
+python3-venv
 python3-lxml
 poppler-utils
 rabbitmq-server
