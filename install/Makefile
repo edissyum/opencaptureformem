@@ -58,7 +58,7 @@ if [ "$finalChoice" != 1 ];then
     printf "Enter your choice [yes/%s] : " "${bold}no${normal}"
     read -r rabbitMqSecure
 
-    if [[ "$rabbitMqSecure" == "" || ("$rabbitMqSecure" != 'yes' && "$rabbitMqSecure" != 'no') ]]; then
+    if [[ "$rabbitMqSecure" == "" ||  "$rabbitMqSecure" == "no" || ("$rabbitMqSecure" != 'yes' && "$rabbitMqSecure" != 'no') ]]; then
       finalRabbitMQSecure='no'
     else
       finalRabbitMQSecure="$rabbitMqSecure"
