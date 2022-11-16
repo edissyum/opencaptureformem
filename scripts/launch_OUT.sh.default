@@ -17,8 +17,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
-script="IN"
-process="incoming"
+script="OUT"
+process="outgoing"
 # Made 14 char for name, to have the same layout in log as OC application
 # Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
@@ -32,42 +32,38 @@ scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 OCPath="/opt/maarch/OpenCapture/"
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
-errFilepath="$OCPath"/data/error/$script/
-tmpFilepath="$OCPath"/data/pdf/
+errFilepath="$OCPath/data/error/$script/"
+tmpFilepath="$OCPath/data/pdf/"
 PID=/tmp/securite-$script-$$.pid
 
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
 filepath=$1
 filename=$(basename "$filepath")
+destination=$(basename "$(dirname "$filepath")")
 ext=$(file -b --mime-type "$filepath")
+
+§§PYTHON_VENV§§
 
 if ! test -e $PID && test "$ext" = 'application/pdf' && test -f "$filepath";
 then
   touch $PID
   echo $$ > $PID
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
-
   mv "$filepath" "$tmpFilepath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --destination "$destination" --process "$process" --keep-pdf-debug false
 
-  rm -f $PID
 elif test -f "$filepath" && test "$ext" != 'application/pdf';
 then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
   mkdir -p "$errFilepath"
   mv "$filepath" "$errFilepath"
-  rm -f $PID
 elif test -d "$filepath";
 then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a directory. Do not process it" >> "$logFile"
-  rm -f $PID
-elif ! test -f "$filepath";
-then
-  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename doesn't exists or cannot be read" >> "$logFile"
-  rm -f $PID
 else
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
 fi
 
+rm -f $PID

@@ -41,6 +41,8 @@ process_pj=reconciliation_default
 process_attfnd=reconciliation_found
 tmp_dir="$OCPath"/data/tmp/
 
+§§PYTHON_VENV§§
+
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
 # Define functions

@@ -33,6 +33,8 @@ config_mail_file="$OCPath"/src/config/mail.ini
 logFile="$OCPath"/data/log/OCforMaarch.log
 PID=/tmp/securite-$script-$$.pid
 
+§§PYTHON_VENV§§
+
 if ! test -e $PID;
 then
   touch $PID

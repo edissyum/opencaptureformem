@@ -123,10 +123,22 @@ git config core.fileMode False
 ####################
 # Copy default service script
 cp scripts/service.sh.default scripts/service.sh
+cp scripts/launch_IN.sh.default scripts/launch_IN.sh
+cp scripts/launch_OUT.sh.default scripts/launch_OUT.sh
+cp scripts/launch_reconciliation.sh.default scripts/launch_reconciliation.sh
+cp scripts/launch_MAIL.sh.default scripts/launch_MAIL.sh
 if [ $pythonVenv = 'true' ]; then
     sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/service.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_IN.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_OUT.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_reconciliation.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_MAIL.sh
 else
     sed -i "s#§§PYTHON_VENV§§##g" scripts/service.sh
+    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_IN.sh
+    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_OUT.sh
+    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_reconciliation.sh
+    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_MAIL.sh
 fi
 
 ####################
