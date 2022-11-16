@@ -58,7 +58,7 @@ if [ "$finalChoice" != 1 ];then
     printf "Enter your choice [yes/%s] : " "${bold}no${normal}"
     read -r rabbitMqSecure
 
-    if [[ "$rabbitMqSecure" == "" || ("$rabbitMqSecure" != 'yes' && "$rabbitMqSecure" != 'no') ]]; then
+    if [[ "$rabbitMqSecure" == "" ||  "$rabbitMqSecure" == "no" || ("$rabbitMqSecure" != 'yes' && "$rabbitMqSecure" != 'no') ]]; then
       finalRabbitMQSecure='no'
     else
       finalRabbitMQSecure="$rabbitMqSecure"
@@ -73,6 +73,15 @@ if [ "$finalChoice" != 1 ];then
       printf "Choose a RabbitMQ vhost (Leave empty or type / to keep default one) : "
       read -r rabbitMqVhost
     fi
+fi
+
+echo 'Would you use Python virtual environment ? (default : yes)'
+printf "Enter your choice [%s] : " "${bold}yes${normal}/no"
+read -r choice
+if [ "$choice" != "no" ]; then
+    pythonVenv='true'
+else
+    pythonVenv='false'
 fi
 
 ####################
@@ -93,14 +102,32 @@ elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && ($VER == *'10'* || $VER == *'11
 fi
 
 xargs -a apt-requirements.txt apt install -y
-pip3 install --upgrade pip
-pip3 install pillow
-pip3 install -r pip-requirements.txt
+
+if [ $pythonVenv = 'true' ]; then
+    python3 -m venv "/home/$user/python-venv/opencaptureformaarch"
+    echo "source /home/$user/python-venv/opencaptureformaarch/bin/activate" >> "/home/$user/.bashrc"
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install --upgrade pip
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install pillow
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install -r pip-requirements.txt
+else
+    python3 -m pip install --upgrade pip
+    python3 -m pip install pillow
+    python3 -m pip install -r pip-requirements.txt
+fi
 
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
 
 git config core.fileMode False
+
+####################
+# Copy default service script
+cp scripts/service.sh.default scripts/service.sh
+if [ $pythonVenv = 'true' ]; then
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/service.sh
+else
+    sed -i "s#§§PYTHON_VENV§§##g" scripts/service.sh
+fi
 
 ####################
 # Makes scripts executable

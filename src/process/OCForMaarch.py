@@ -285,7 +285,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 
     if res:
-        log.info("Insert OK : " + res)
+        log.info("Insert OK : " + str(res))
         if chrono_number:
             chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
             if chrono_res_id:
