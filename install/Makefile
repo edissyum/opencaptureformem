@@ -108,7 +108,7 @@ if [ $pythonVenv = 'true' ]; then
     echo "source /home/$user/python-venv/opencaptureformaarch/bin/activate" >> "/home/$user/.bashrc"
     "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install --upgrade pip
     "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install pillow
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install -r pip-requirements.txt"
+    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install -r pip-requirements.txt
 else
     python3 -m pip install --upgrade pip
     python3 -m pip install pillow
