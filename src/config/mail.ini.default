@@ -30,10 +30,10 @@ auth_method          = basic
 host                 = outlook.office365.com
 port                 = 993
 login                = test@outlook.com
-; True or False
-securedConnection    = True
+; SSL or STARTTLS or False
+securedConnection    = SSL
 
-; Only for basic authentication If you have $ in your password, you must double it
+; Only for basic authentication. If you have $ in your password, you must double it
 password             = test
 
 ; True or False
