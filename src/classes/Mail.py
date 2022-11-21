@@ -25,7 +25,7 @@ import mimetypes
 from ssl import SSLError
 from socket import gaierror
 from imaplib import IMAP4_SSL
-from imap_tools import utils, MailBox, MailBoxUnencrypted
+from imap_tools import utils, MailBox, MailBoxTls, MailBoxUnencrypted
 from tnefparse.tnef import TNEF
 
 
@@ -77,8 +77,10 @@ class Mail:
         :param log: Log object
         """
         try:
-            if secured_connection:
+            if secured_connection == 'SSL':
                 self.conn = MailBox(host=self.host, port=self.port)
+            elif secured_connection == 'STARTTLS':
+                self.conn = MailBoxTls(host=self.host, port=self.port)
             else:
                 self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
 
