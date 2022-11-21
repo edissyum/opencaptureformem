@@ -182,7 +182,7 @@ Don't forget to fill the `typist` with the user_id who scan document (in the def
 Here is a short list of options you have for mail process into <code>/opt/maarch/OpenCapture/src/config/mail.ini</code>
 
   - hostname, port, login, password : All the informations about the inbox 
-  - securedConnection : Choose between True or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is True, port must be a secured port (e.g : 993)
+  - securedConnection : Choose between SSL or STARTTLS or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is SSL, port must be a secured port (e.g : 993)
   - folderToCrawl : Which folder needed to be crawl by connector to process email
   - generate_chrono : If true, Maarch will generate a chrono number
   - forceUtf8 : If true, force mail encoding into UTF8 to avoid problems
