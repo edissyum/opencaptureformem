@@ -14,22 +14,29 @@
 # along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Oussama Brich <oussama.brich@edissyum.com>
 
 import sys
 from socket import gaierror
 from imaplib import IMAP4_SSL
-from imap_tools import MailBox, MailBoxUnencrypted
+from imap_tools import MailBox, MailBoxUnencrypted, MailBoxTls
 
 hostname = ''
 port = 143
 isSSL = False
+isSTARTTLS = False
 login = ''
 password = ''
 
 try:
     if isSSL:
+        print(f'Using SSL encryption on {hostname}:{port}')
         conn = MailBox(host=hostname, port=port)
+    elif isSTARTTLS:
+        print(f'Using STARTTLS encryption on {hostname}:{port}')
+        conn = MailBoxTls(host=hostname, port=port)
     else:
+        print(f'{hostname}:{port} with no encryption')
         conn = MailBoxUnencrypted(host=hostname, port=port)
 except (gaierror, IMAP4_SSL.error) as e:
     sys.exit('Error while connecting to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
