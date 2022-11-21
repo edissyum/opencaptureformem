@@ -121,7 +121,7 @@ Mail = mailClass.Mail(
 
 cfg = config_mail.cfg[process]
 
-secured_connection = str2bool(cfg['securedconnection'])
+secured_connection = cfg['securedconnection']
 folder_trash = cfg['foldertrash']
 action = cfg['actionafterprocess']
 folder_to_crawl = cfg['foldertocrawl']

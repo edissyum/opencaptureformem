@@ -33,9 +33,10 @@ try:
         print(f'Using SSL encryption on {hostname}:{port}')
         conn = MailBox(host=hostname, port=port)
     elif isSTARTTLS:
-        conn = MailBoxTls(host=hostname, port=port)
         print(f'Using STARTTLS encryption on {hostname}:{port}')
+        conn = MailBoxTls(host=hostname, port=port)
     else:
+        print(f'{hostname}:{port} with no encryption')
         conn = MailBoxUnencrypted(host=hostname, port=port)
 except (gaierror, IMAP4_SSL.error) as e:
     sys.exit('Error while connecting to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
