@@ -29,9 +29,9 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/opt/maarch/OpenCapture/"
+OCPath="/opt/mem/opencapture/"
 config_file="$OCPath"/src/config/config.ini
-logFile="$OCPath"/data/log/OCforMaarch.log
+logFile="$OCPath"/data/log/OCforMEM.log
 errFilepath="$OCPath"/data/error/$script/
 tmpFilepath="$OCPath"/data/pdf/
 PID=/tmp/securite-$script-$$.pid

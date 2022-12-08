@@ -236,8 +236,8 @@ class Separator:
             if is_pj:
                 keyword = 'PJSTART'
             else:
-                keyword = 'MAARCH_'
-            if keyword in data.text:
+                keyword = 'MAARCH_|MEM_'
+            if re.match(keyword, data.text) is not None:
                 page['service'] = data.text.replace(keyword, '')
                 page['index_sep'] = int(index.attrib['num'])
                 if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator

@@ -45,10 +45,10 @@ class WebServices:
 
     def retrieve_contact_by_mail(self, mail):
         """
-        Search a contact into Maarch database using mail
+        Search a contact into MEM Courrier database using mail
 
         :param mail: e-mail to search
-        :return: Contact from Maarch
+        :return: Contact from MEM Courrier
         """
         if mail:
             try:
@@ -66,10 +66,10 @@ class WebServices:
 
     def retrieve_contact_by_phone(self, phone):
         """
-        Search a contact into Maarch database using phone
+        Search a contact into MEM Courrier database using phone
 
         :param phone: phone to search
-        :return: Contact from Maarch
+        :return: Contact from MEM Courrier
         """
         try:
             res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone}, timeout=self.timeout, verify=self.cert)
@@ -97,7 +97,7 @@ class WebServices:
                 else:
                     return json.loads(res.text)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                self.Log.error('InsertIntoMaarchError : ' + str(e))
+                self.Log.error('InsertIntoMEMError : ' + str(e))
                 return False, str(e)
 
     def link_documents(self, res_id_master, res_id):
@@ -114,17 +114,17 @@ class WebServices:
 
     def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail):
         """
-        Insert document into Maarch Database
+        Insert document into MEM Courrier Database
 
         :param file_content: Path to file, then it will be encoded it in b64
         :param config: Class Config instance
-        :param contact: contact content (id, from Maarch database)
+        :param contact: contact content (id, from MEM Courrier database)
         :param subject: Subject found with REGEX on OCR pdf
         :param date: Date found with REGEX on OCR pdf
         :param destination: Destination (default or found with QR Code or by reading the filename)
         :param _process: Part of config file, only with process configuration
         :param custom_mail: custom to add all the e-mail found
-        :return: res_id from Maarch
+        :return: res_id from MEM Courrier
         """
         if not contact:
             contact = {}
@@ -137,7 +137,7 @@ class WebServices:
         if not subject:
             subject = ''
         else:
-            if config.cfg['OCForMaarch']['uppercasesubject'] == 'True':
+            if config.cfg['OCforMEM']['uppercasesubject'] == 'True':
                 subject = subject.upper()
 
         if 'subject' in _process and _process['subject']:
@@ -171,23 +171,23 @@ class WebServices:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertIntoMaarchError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') InsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('InsertIntoMaarchError : ' + str(e))
+            self.Log.error('InsertIntoMEMError : ' + str(e))
             return False, str(e)
 
     def insert_attachment(self, file_content, config, res_id, _process):
         """
-        Insert attachment into Maarch database
+        Insert attachment into MEM Courrier database
 
         :param file_content: Path to file, then it will be encoded it in b64
         :param config: Class Config instance
         :param res_id: Res_id of the document to attach the new attachment
-        :param _process: Process we will use to insert on Maarch (from config file)
-        :return: res_id from Maarch
+        :param _process: Process we will use to insert on MEM Courrier (from config file)
+        :return: res_id from MEM Courrier
         """
         data = {
             'status': config.cfg[_process]['status'],
@@ -202,24 +202,24 @@ class WebServices:
             res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMaarchError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('InsertAttachmentsIntoMaarchError : ' + str(e))
+            self.Log.error('InsertAttachmentsIntoMEMError : ' + str(e))
             return False, str(e)
 
     def insert_attachment_reconciliation(self, file_content, chrono, _process, config):
         """
-        Insert attachment into Maarch database
+        Insert attachment into MEM Courrier database
         Difference between this function and :insert_attachment() : this one will replace an attachment
 
         :param config:
         :param file_content: Path to file, then it will be encoded it in b64
         :param chrono: Chrono of the attachment to replace
-        :param _process: Process we will use to insert on Maarch (from config file)
-        :return: res_id from Maarch
+        :param _process: Process we will use to insert on MEM Courrier (from config file)
+        :return: res_id from MEM Courrier
         """
         data = {
             'chrono': chrono,
@@ -232,12 +232,12 @@ class WebServices:
             res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMaarchError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('InsertAttachmentsReconciliationIntoMaarchError : ' + str(e))
+            self.Log.error('InsertAttachmentsReconciliationIntoMEMError : ' + str(e))
             return False, str(e)
 
     def check_attachment(self, chrono):
@@ -245,7 +245,7 @@ class WebServices:
         Check if attachment exist
 
         :param chrono: Chrono of the attachment to check
-        :return: Info of attachment from Maarch database
+        :return: Info of attachment from MEM Courrier database
         """
         try:
             res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono}, timeout=self.timeout, verify=self.cert)
@@ -312,8 +312,8 @@ class WebServices:
 
     def change_status(self, res_id, config):
         """
-        Change status of a maarch document
-        :param res_id: res_id of the maarch document
+        Change status of a MEM Courrier document
+        :param res_id: res_id of the MEM Courrier document
         :param config: config object
         :return: process success (boolean)
         """
@@ -344,7 +344,7 @@ class WebServices:
 
     def insert_letterbox_from_mail(self, args, _process):
         """
-        Insert mail into Maarch Database
+        Insert mail into MEM Courrier Database
 
         :param _process: Part of mail config file, only with process configuration
         :param args: Array of argument, same as insert_with_args
@@ -363,21 +363,21 @@ class WebServices:
             res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMaarchError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('MailInsertIntoMaarchError : ' + str(e))
+            self.Log.error('MailInsertIntoMEMError : ' + str(e))
             return False, str(e)
 
     def insert_attachment_from_mail(self, args, res_id):
         """
-        Insert attachment into Maarch database
+        Insert attachment into MEM Courrier database
 
         :param args: Arguments used to insert attachment
         :param res_id: Res_id of the document to attach the new attachment
-        :return: res_id from Maarch
+        :return: res_id from MEM Courrier
         """
 
         data = {
@@ -393,12 +393,12 @@ class WebServices:
             res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMaarchError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('MailInsertAttachmentsIntoMaarchError : ' + str(e))
+            self.Log.error('MailInsertAttachmentsIntoMEMError : ' + str(e))
             return False, str(e)
 
     def calcul_process_limit_date(self, doctype):
@@ -428,12 +428,12 @@ class WebServices:
         try:
             res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchEntitiesError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMEMEntitiesError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveMaarchEntitiesError : ' + str(e))
+            self.Log.error('RetrieveMEMEntitiesError : ' + str(e))
             return False, str(e)
 
     def retrieve_doctype(self, doctype):
@@ -466,24 +466,24 @@ class WebServices:
         try:
             res = requests.get(self.baseUrl + 'users', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchUserError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMEMUserError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveMaarchUserError : ' + str(e))
+            self.Log.error('RetrieveMEMUserError : ' + str(e))
             return False, str(e)
 
     def retrieve_custom_fields(self):
         try:
             res = requests.get(self.baseUrl + 'customFields', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMaarchCustomFieldsError : ' + str(res.text))
+                self.Log.error('(' + str(res.status_code) + ') RetrieveMEMCustomFieldsError : ' + str(res.text))
                 return False, str(res.text)
             else:
                 return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveMaarchCustomFieldsError : ' + str(e))
+            self.Log.error('RetrieveMEMCustomFieldsError : ' + str(e))
             return False, str(e)
 
     def create_contact(self, contact):

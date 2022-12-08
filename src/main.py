@@ -34,25 +34,25 @@ import src.classes.PyTesseract as ocrClass
 from .process.FindSubject import FindSubject
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
-from src.process.OCForMaarch import process, get_process_name
+from src.process.OCForMEM import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
-OCforMaarch = Kuyruk()
+OCforMEM = Kuyruk()
 
 if os.path.isfile('./src/config/rabbitMQ.json'):
     with open('./src/config/rabbitMQ.json', 'r') as f:
         rabbitMQData = json.load(f)
 
     if rabbitMQData['host']:
-        OCforMaarch.config.RABBIT_HOST = rabbitMQData['host']
+        OCforMEM.config.RABBIT_HOST = rabbitMQData['host']
     if rabbitMQData['port']:
-        OCforMaarch.config.RABBIT_PORT = rabbitMQData['port']
+        OCforMEM.config.RABBIT_PORT = rabbitMQData['port']
     if rabbitMQData['username']:
-        OCforMaarch.config.RABBIT_USER = rabbitMQData['username']
+        OCforMEM.config.RABBIT_USER = rabbitMQData['username']
     if rabbitMQData['password']:
-        OCforMaarch.config.RABBIT_PASSWORD = rabbitMQData['password']
+        OCforMEM.config.RABBIT_PASSWORD = rabbitMQData['password']
     if rabbitMQData['vhost'] and rabbitMQData['vhost'] != '/':
-        OCforMaarch.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
+        OCforMEM.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
 
 
 def str2bool(value):
@@ -116,7 +116,7 @@ def timer(start_time: time.time(), end_time: time.time()):
 
 def process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp):
     if check_file(image, path, config, log):
-        # Process the file and send it to Maarch
+        # Process the file and send it to MEM Courrier
         res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail)
         if args.get('isMail') is not None and args.get('isMail') is True:
             # Process the attachments of mail
@@ -146,7 +146,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
             return res
 
 
-@OCforMaarch.task()
+@OCforMEM.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
@@ -182,12 +182,12 @@ def launch(args):
     locale = localeClass.Locale(config)
     ocr = ocrClass.PyTesseract(locale.localeOCR, log, config)
     web_service = webserviceClass.WebServices(
-        config.cfg['OCForMaarch']['host'],
-        config.cfg['OCForMaarch']['user'],
-        config.cfg['OCForMaarch']['password'],
+        config.cfg['OCforMEM']['host'],
+        config.cfg['OCforMEM']['user'],
+        config.cfg['OCforMEM']['password'],
         log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMaarch']['certpath']
+        config.cfg['OCforMEM']['certpath']
     )
 
     image = imagesClass.Images(

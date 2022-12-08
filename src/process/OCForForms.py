@@ -45,7 +45,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
                 if identifier[process].get('destination') is not None:
                     destination = identifier[_process].get('destination')
-                    # Retrieve destination ID from Maarch 20 if destination is not an integer
                     if type(destination) is not int:
                         destinations = web_service.retrieve_entities()
                         for dest in destinations['entities']:

@@ -35,7 +35,7 @@ config = configClass.Config()
 config.load_file(args['config'])
 log = logClass.Log(config.cfg['GLOBAL']['logfile'])
 tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
-separator = separatorClass.Separator(log, config, tmp_folder, 'OCForMaarch_reconciliation_default')
+separator = separatorClass.Separator(log, config, tmp_folder, 'OCforMEM_reconciliation_default')
 separator.enabled = True
 separator.run(args['file'])
 

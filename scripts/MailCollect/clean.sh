@@ -18,7 +18,7 @@
 
 # Bash script to clean MailCollect batches and log
 
-batch_path='/opt/maarch/OpenCapture/data/MailCollect/'
+batch_path='/opt/mem/opencapture/data/MailCollect/'
 conservation_time=7
 conservation_time_error_folder=14
 

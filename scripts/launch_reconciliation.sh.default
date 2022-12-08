@@ -34,9 +34,9 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/home/nathan/PycharmProjects/oc_for_maarch/"
+OCPath="/opt/mem/opencapture/"
 config_file="$OCPath"/src/config/config.ini
-logFile="$OCPath"/data/log/OCforMaarch.log
+logFile="$OCPath"/data/log/OCforMEM.log
 process_pj=reconciliation_default
 process_attfnd=reconciliation_found
 tmp_dir="$OCPath"/data/tmp/
@@ -60,18 +60,18 @@ readBarCode(){
 }
 
 check_attachment(){
-    # Using Maarch WebService, check if the chrono number is related to an attachment
+    # Using MEM Courrier WebService, check if the chrono number is related to an attachment
     python3 ${OCPath}/src/process/checkAttachment.py -c "$config_file" -chrono "$1"
 }
 
 defaultProcess(){
     # If barcode couldn't be read or isn't present, use default process
-    # Same if the barcode is read but the attachment doesn't exist on Maarch database
+    # Same if the barcode is read but the attachment doesn't exist on MEM Courrier database
     python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1" --chrono "${2:-default}" --keep-pdf-debug false
 }
 
 reconciliationProcess(){
-    # If all things went good, start the reconciliation process and insert the document as a Maarch attachment
+    # If all things went good, start the reconciliation process and insert the document as a MEM Courrier attachment
     python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -chrono "$2" --keep-pdf-debug false
 }
 
@@ -89,9 +89,9 @@ fi
 
 fileName=$(basename "$1")
 
-separatorEnabled=$(crudini --get $config_file "OCForMaarch_reconciliation_default" "separator_qr" | sed 's/:.*//')
+separatorEnabled=$(crudini --get $config_file "OCforMEM_reconciliation_default" "separator_qr" | sed 's/:.*//')
 if [[ "$fileName" != *"SEPARATED"* ]] && { [ "$separatorEnabled" == 'True' ] || [ "$separatorEnabled" == 'true' ]; }; then
-    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") Separate document by QR Code (QRPrefix on maarch need to be enabled)" >> "$logFile"
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") Separate document by QR Code (QRPrefix on MEM Courrier need to be enabled)" >> "$logFile"
     python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file"
     exit
 fi

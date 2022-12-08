@@ -17,10 +17,10 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 export LD_LIBRARY_PATH=/usr/local/lib/
-export MAGICK_TMPDIR=/tmp/OpenCapture/
+export MAGICK_TMPDIR=/tmp/opencapture/
 export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
 
-cd /opt/maarch/OpenCapture/ || exit
+cd /opt/mem/opencapture/ || exit
 §§PYTHON_VENV§§
 kuyruk_path=$(command -v kuyruk)
-$kuyruk_path --app src.main.OCforMaarch worker
+$kuyruk_path --app src.main.OCforMEM worker

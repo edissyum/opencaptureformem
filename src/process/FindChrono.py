@@ -20,9 +20,8 @@ from threading import Thread
 
 
 class FindChrono(Thread):
-    def __init__(self, text, process, log):
+    def __init__(self, text, process):
         Thread.__init__(self, name='chronoThread')
-        self.Log = log
         self.text = text
         self.chrono = None
         self.process = process

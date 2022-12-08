@@ -52,7 +52,7 @@ class FindContact(Thread):
             if contact:
                 found_contact = True
                 self.contact = contact
-                self.Log.info('Find phone in Maarch, get it : ' + sanitized_phone)
+                self.Log.info('Find phone in MEM Courrier, get it : ' + sanitized_phone)
                 break
             else:
                 # Add the phone into a custom value (custom_t10 by default)
@@ -69,7 +69,7 @@ class FindContact(Thread):
                 contact = self.WebService.retrieve_contact_by_mail(sanitized_mail)
                 if contact:
                     self.contact = contact
-                    self.Log.info('Find E-MAIL in Maarch, attach it to the document')
+                    self.Log.info('Find E-MAIL in MEM Courrier, attach it to the document')
                     break
                 else:
                     # Add the e-mail into a custom value (custom_t10 by default)

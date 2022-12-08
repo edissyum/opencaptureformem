@@ -111,7 +111,7 @@ class SMTP:
             if diff_minutes is not False and self.delay != 0 and diff_minutes < self.delay:
                 pass
             else:
-                self.conn.sendmail(from_addr='MailCollect@OpenCapture.com', to_addrs=self.dest_mail, msg=msg.as_string())
+                self.conn.sendmail(from_addr='MailCollect@opencapture.com', to_addrs=self.dest_mail, msg=msg.as_string())
                 f = open(file, 'w')
                 f.write(datetime.now().strftime('%d/%m/%Y %H:%M'))
                 f.close()

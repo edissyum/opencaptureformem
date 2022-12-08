@@ -36,12 +36,12 @@ if __name__ == '__main__':
     config.load_file(args['config'])
     Log = Log(config.cfg['GLOBAL']['logfile'])
     WebService = WebServices(
-        config.cfg['OCForMaarch']['host'],
-        config.cfg['OCForMaarch']['user'],
-        config.cfg['OCForMaarch']['password'],
+        config.cfg['OCforMEM']['host'],
+        config.cfg['OCforMEM']['user'],
+        config.cfg['OCforMEM']['password'],
         Log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMaarch']['certpath']
+        config.cfg['OCforMEM']['certpath']
     )
 
     chrono = args['chrono']
