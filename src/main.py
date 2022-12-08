@@ -130,9 +130,8 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                             if res[0]:
                                 log.info('Insert attachment OK : ' + str(res[1]))
                                 continue
-                            else:
-                                send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
-                                log.error('Error while inserting attachment : ' + str(res[1]))
+                            send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
+                            log.error('Error while inserting attachment : ' + str(res[1]))
                         else:
                             log.info('Attachment not in allowedExtensions : ' + attachment['subject'])
                 else:
@@ -225,7 +224,7 @@ def launch(args):
                                     document_filename = os.path.basename(file)
                                     pj_filename = re.sub(r"#\d", "", os.path.basename(pj).replace('PJ_', ''))
                                     if pj_filename == document_filename:
-                                        image.pdf_to_jpg(pj + '[0]', True)
+                                        image.pdf_to_jpg(pj, True)
                                         ocr.text_builder(image.img)
                                         subject_thread = FindSubject(ocr.text, locale, log)
                                         subject_thread.start()

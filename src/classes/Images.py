@@ -18,24 +18,21 @@
 import os
 import time
 import shutil
-
-from bs4 import BeautifulSoup
 import PyPDF2
 from PIL import Image
-from wand.color import Color
-from wand.image import Image as Img
-from wand import exceptions as wand_except
+from bs4 import BeautifulSoup
+from pdf2image import convert_from_path
 
 
 class Images:
     def __init__(self, jpg_name, res, quality, log, config):
         Image.MAX_IMAGE_PIXELS = None  # Disable to avoid DecompressionBombWarning error
-        self.jpgName = jpg_name
+        self.jpg_name = jpg_name
         self.resolution = res
         self.compressionQuality = quality
         self.img = None
-        self.Log = log
-        self.Config = config.cfg
+        self.log = log
+        self.config = config.cfg
 
     def html_to_txt(self, html_name):
         """
@@ -46,14 +43,19 @@ class Images:
         """
 
         try:
-            html_content = open(html_name, 'r').read()
-            bs_content = BeautifulSoup(html_content, 'lxml')
-            html_content = bs_content.get_text('\n')
-        except (OSError, FileNotFoundError) as e:
-            self.Log.error('Error while converting HTML to raw text : ' + str(e))
+            with open(html_name, 'r', encoding='utf-8') as file:
+                bs_content = BeautifulSoup(file.read(), 'lxml')
+                html_content = bs_content.get_text('\n')
+        except (OSError, FileNotFoundError) as _e:
+            self.log.error('Error while converting HTML to raw text : ' + str(_e))
             return False
 
         return html_content
+
+    def timer(self, start_time, end_time):
+        hours, rem = divmod(end_time - start_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
     def pdf_to_jpg(self, pdf_name, open_img=True):
         """
@@ -63,16 +65,31 @@ class Images:
         :param open_img: Boolean to open image and store it in class var
         :return: Boolean to show if all the processes ended well
         """
-        res = self.save_img_with_wand(pdf_name, self.jpgName)
+        res = self.save_img_with_pdf2image(pdf_name, self.jpg_name, 1)
         if res is not False:
             if open_img:
-                self.img = Image.open(self.jpgName)
+                self.img = Image.open(self.jpg_name)
             return True
-        else:
-            try:
-                shutil.move(pdf_name.replace('[0]', ''), self.Config['GLOBAL']['errorpath'])
-            except shutil.Error as e2:
-                self.Log.error('Moving file ' + pdf_name.replace('[0]', '') + ' error : ' + str(e2))
+        try:
+            shutil.move(pdf_name, self.config['GLOBAL']['errorpath'])
+        except shutil.Error as _e:
+            self.log.error('Moving file ' + pdf_name + ' error : ' + str(_e))
+        return False
+
+    def save_img_with_pdf2image(self, pdf_name, output, page=None):
+        try:
+            output = os.path.splitext(output)[0]
+            bck_output = os.path.splitext(output)[0]
+            images = convert_from_path(pdf_name, first_page=page, last_page=page, dpi=400)
+            cpt = 1
+            for i in range(len(images)):
+                if not page:
+                    output = bck_output + '-' + str(cpt).zfill(3)
+                images[i].save(output + '.jpg', 'JPEG')
+                cpt = cpt + 1
+            return True
+        except Exception as error:
+            self.log.error('Error during pdf2image conversion : ' + str(error))
             return False
 
     def open_img(self, img):
@@ -82,36 +99,6 @@ class Images:
         :param img: path to the image
         """
         self.img = Image.open(img)
-
-    # Save pdf with one or more pages into JPG file
-    def save_img_with_wand(self, pdf_name, output):
-        """
-        Save pdf with on or more pages into JPG file. Called by self.pdf_to_jpg function
-
-        :param pdf_name: path to pdf
-        :param output: Filename of temporary jpeg after pdf conversion
-        :return: Boolean to show if all the processes ended well
-        """
-        try:
-            with Img(filename=pdf_name, resolution=self.resolution) as pic:
-                pic.compression_quality = self.compressionQuality
-                pic.background_color = Color("white")
-                pic.alpha_channel = 'remove'
-                pic.save(filename=output)
-
-        except wand_except.WandRuntimeError as e:
-            self.Log.error(e)
-            self.Log.error('Exiting program...Fix the issue and restart the service')
-            return False
-        except wand_except.CacheError as e:
-            self.Log.error(e)
-            self.Log.error('Exiting program...Fix the issue and restart the service')
-            return False
-        except wand_except.PolicyError as e:
-            self.Log.error(e)
-            self.Log.error('Maybe you have to check the PDF rights in ImageMagick policy.xml file')
-            self.Log.error('Exiting programm...Fix the issue and restart the service')
-            return False
 
     def check_file_integrity(self, file, config):
         """
@@ -152,6 +139,6 @@ class Images:
                         count = count + 1
                         continue
             except PermissionError as e:
-                self.Log.error(e)
+                self.log.error(e)
                 return False
         return False

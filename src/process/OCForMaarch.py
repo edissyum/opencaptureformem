@@ -122,7 +122,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 return form
 
     if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
-        res = image.pdf_to_jpg(file + '[0]', True)
+        res = image.pdf_to_jpg(file, True)
         if res is False:
             exit(os.EX_IOERR)
         # Check if pdf is already OCR and searchable
@@ -139,7 +139,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         res = image.html_to_txt(file)
         if res is False:
             sys.exit(os.EX_IOERR)
-
         ocr.text = res
         is_ocr = True
     elif os.path.splitext(file)[1].lower() == '.txt':
@@ -231,7 +230,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         custom_mail = ''
 
     try:
-        os.remove(image.jpgName)  # Delete the temp file used to OCR'ed the first PDF page
+        os.remove(image.jpg_name)  # Delete the temp file used to OCR'ed the first PDF page
     except FileNotFoundError:
         pass
 

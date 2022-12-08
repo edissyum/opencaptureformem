@@ -1,5 +1,5 @@
 bs4
-wand
+msal
 pyPdf2
 kuyruk
 ocrmypdf
@@ -11,4 +11,3 @@ imap-tools
 pytesseract
 configparser
 opencv-python
-msal
