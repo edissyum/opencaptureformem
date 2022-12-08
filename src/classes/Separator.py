@@ -18,14 +18,13 @@
 
 import os
 import re
-
 import cv2
 import uuid
+import PyPDF2
 import shutil
+import pdf2image
 import subprocess
 import xml.etree.ElementTree as ET
-import PyPDF2
-import pdf2image
 
 
 class Separator:
@@ -93,8 +92,9 @@ class Separator:
         try:
             if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
                 self.remove_blank_page(file)
-            pdf = PyPDF2.PdfFileReader(open(file, 'rb'))
-            self.nb_pages = pdf.getNumPages()
+            with open(file, 'rb') as pdf_file:
+                pdf = PyPDF2.PdfFileReader(pdf_file)
+                self.nb_pages = len(pdf.pages)
             self.get_xml_qr_code(file)
             self.parse_xml()
             self.check_empty_docs()
@@ -114,12 +114,12 @@ class Separator:
             if len(self.pj) == 0 and len(self.pages) == 0:
                 try:
                     shutil.move(file, self.output_dir)
-                except shutil.Error as e:
-                    self.Log.error('Moving file ' + file + ' error : ' + str(e))
+                except shutil.Error as _e:
+                    self.Log.error('Moving file ' + file + ' error : ' + str(_e))
                 return
-        except Exception as e:
+        except Exception as _e:
             self.error = True
-            self.Log.error("INIT : " + str(e))
+            self.Log.error("INIT : " + str(_e))
 
     @staticmethod
     def sorted_files(data):
@@ -317,8 +317,8 @@ class Separator:
                     pdf = PyPDF2.PdfFileReader(open(page['pdf_filename'], 'rb'))
                     self.nb_pages = pdf.getNumPages()
                     self.parse_xml(True, page['pdf_filename'])
-            except Exception as e:
-                self.Log.error("EACD: " + str(e))
+            except Exception as _e:
+                self.Log.error("EACD: " + str(_e))
 
     def extract_and_convert_docs(self, file, is_pj=False, delete_orig=True):
         """
@@ -351,8 +351,8 @@ class Separator:
                     split_pdf(file, page['pdf_filename'], pages_to_keep, original_pages_to_keep)
                 if not is_pj and delete_orig:
                     os.remove(file)
-            except Exception as e:
-                self.Log.error("EACD: " + str(e))
+            except Exception as _e:
+                self.Log.error("EACD: " + str(_e))
 
     @staticmethod
     def convert_to_pdfa_function(pdfa_filename, pdf_filename, log):
