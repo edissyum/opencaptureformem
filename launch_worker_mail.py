@@ -1,17 +1,17 @@
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
@@ -20,7 +20,6 @@ import sys
 import argparse
 import tempfile
 import datetime
-
 from src.main import launch
 from src.classes.SMTP import SMTP
 import src.classes.Log as logClass
@@ -86,12 +85,12 @@ path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d'
 path_without_time = config_mail.cfg['GLOBAL']['batchpath']
 
 web_service = webserviceClass.WebServices(
-    config.cfg['OCForMaarch']['host'],
-    config.cfg['OCForMaarch']['user'],
-    config.cfg['OCForMaarch']['password'],
+    config.cfg['OCforMEM']['host'],
+    config.cfg['OCforMEM']['user'],
+    config.cfg['OCforMEM']['password'],
     global_log,
     config.cfg['GLOBAL']['timeout'],
-    config.cfg['OCForMaarch']['certpath']
+    config.cfg['OCforMEM']['certpath']
 )
 
 SMTP = SMTP(
@@ -174,7 +173,7 @@ if check:
         for msg in emails:
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8)
-            ret, file = Mail.construct_dict_before_send_to_maarch(msg, config_mail.cfg[process], batch_path, Log)
+            ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
             _from = ret['mail']['from']
             if not import_only_attachments:
                 launch({

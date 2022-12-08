@@ -6,10 +6,10 @@ resolution          = 300
 compressionQuality  = 100
 # Used to fix potential OCR error into mail detection
 sanitizeStr         = {}\[\]()!?§&é~èàç
-projectPath         = /opt/maarch/OpenCapture
+projectPath         = /opt/mem/opencapture
 tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 errorPath           = ${GLOBAL:projectPath}/data/error/
-logFile             = ${GLOBAL:projectPath}/data/log/OCforMaarch.log
+logFile             = ${GLOBAL:projectPath}/data/log/OCforMEM.log
 formPath            = ${GLOBAL:projectPath}/src/config/form.json
 # Time in seconds before stopping the Webservices call
 timeout             = 30
@@ -36,7 +36,7 @@ removeBlankPage     = True
 # Recognition threshold
 blobsratio          = 1E-6
 
-[OCForMaarch]
+[OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
 host                = http://localhost/maarch/rest/
 user                =
@@ -54,7 +54,7 @@ certPath            =
 # !!!! IMPORTANT !!!!
 # The process name have to be LOWERCASE
 
-[OCForMaarch_incoming]
+[OCForMEM_incoming]
 status              = INIT
 doctype             = 1202
 typist              = bblier
@@ -71,7 +71,7 @@ generate_chrono     = True
 subject             =
 chronoRegex         = 20(1|2|3)[0-9]{1}A/\d*
 
-[OCForMaarch_outgoing]
+[OCForMEM_outgoing]
 status              = INIT
 doctype             = 1202
 typist              = bblier
@@ -88,7 +88,7 @@ generate_chrono     = True
 subject             =
 chronoRegex         = 20(1|2|3)[0-9]{1}D/\d*
 
-[OCForMaarch_reconciliation_default]
+[OCForMEM_reconciliation_default]
 status              = ATTREC
 doctype             = 1202
 typist              = bblier
@@ -105,7 +105,7 @@ generate_chrono     = True
 subject             =
 chronoRegex         = 20(1|2|3)[0-9]{1}D/\d*
 
-[OCForMaarch_reconciliation_found]
+[OCForMEM_reconciliation_found]
 is_attachment       = True
 attachment_type     = signed_response
 status              = A_TRA

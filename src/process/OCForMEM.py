@@ -1,17 +1,17 @@
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
@@ -30,10 +30,10 @@ def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
     else:
-        if args['process'] in config.cfg['OCForMaarch']['processavailable'].split(','):
-            _process = 'OCForMaarch_' + args['process'].lower()
+        if args['process'] in config.cfg['OCforMEM']['processavailable'].split(','):
+            _process = 'OCforMEM_' + args['process'].lower()
         else:
-            _process = 'OCForMaarch_' + config.cfg['OCForMaarch']['defaultprocess'].lower()
+            _process = 'OCforMEM_' + config.cfg['OCforMEM']['defaultprocess'].lower()
 
     return _process
 
@@ -77,7 +77,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if destination == dest['serialId']:
             is_destination_valid = True
 
-    # Retrieve destination ID from Maarch 20 if destination is not an integer
     if type(destination) is not int or not is_destination_valid:
         for dest in destinations['entities']:
             if str(destination) == str(dest['id']):
@@ -162,7 +161,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             chrono_thread = ''
         elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
-            chrono_thread = FindChrono(ocr.text, config.cfg[_process], log)
+            chrono_thread = FindChrono(ocr.text, config.cfg[_process])
         else:
             chrono_thread = ''
 
@@ -172,7 +171,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             date_thread = FindDate(ocr.text, locale, log, config)
 
-        # Find mail in document and check if the contact exist in Maarch
+        # Find mail in document and check if the contact exist in MEM Courrier
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True:
             contact_thread = ''
         else:
@@ -305,7 +304,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     # Get ws user id and reattach the document
                     list_of_users = web_service.retrieve_users()
                     for user in list_of_users['users']:
-                        if config.cfg['OCForMaarch']['user'] == user['user_id']:
+                        if config.cfg['OCforMEM']['user'] == user['user_id']:
                             typist = user['id']
                             reattach_res = web_service.reattach_to_document(res_id_origin, res_id_signed, typist, config)
                             log.info("Reattach result : " + str(reattach_res))

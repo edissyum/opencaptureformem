@@ -1,17 +1,17 @@
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
@@ -136,7 +136,7 @@ class Mail:
             emails.append(mail)
         return emails
 
-    def construct_dict_before_send_to_maarch(self, msg, cfg, backup_path, log):
+    def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
         """
         Construct a dict with all the data of a mail (body and attachments)
 
@@ -250,7 +250,7 @@ class Mail:
 
     def backup_email(self, msg, backup_path, force_utf8):
         """
-        Backup e-mail into path before send it to Maarch
+        Backup e-mail into path before send it to MEM Courrier
 
         :param force_utf8: Force HTML UTF-8 encoding
         :param msg: Mail data
@@ -393,7 +393,7 @@ class Mail:
         for custom in list_of_custom['customFields']:
             if int(field) == int(custom['id']):
                 return True
-        log.error('The following custom field doesn\'t exist in Maarch database : ' + field)
+        log.error('The following custom field doesn\'t exist in MEM Courrier database : ' + field)
         return False
 
 
@@ -401,7 +401,7 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
     """
     If error in batch process, move the batch folder into error folder
 
-    :param res: return of Maarch WS
+    :param res: return of MEM Courrier WS
     :param process: Process name
     :param msg: Contain the msg metadata
     :param smtp: instance of SMTP class
