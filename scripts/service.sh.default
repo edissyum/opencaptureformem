@@ -23,4 +23,4 @@ export TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
 cd /opt/mem/opencapture/ || exit
 §§PYTHON_VENV§§
 kuyruk_path=$(command -v kuyruk)
-$kuyruk_path --app src.main.OCforMEM worker
+$kuyruk_path --app src.main.OCForMEM worker

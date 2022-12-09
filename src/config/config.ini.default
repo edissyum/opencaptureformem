@@ -9,7 +9,7 @@ sanitizeStr         = {}\[\]()!?§&é~èàç
 projectPath         = /opt/mem/opencapture
 tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 errorPath           = ${GLOBAL:projectPath}/data/error/
-logFile             = ${GLOBAL:projectPath}/data/log/OCforMEM.log
+logFile             = ${GLOBAL:projectPath}/data/log/OCForMEM.log
 formPath            = ${GLOBAL:projectPath}/src/config/form.json
 # Time in seconds before stopping the Webservices call
 timeout             = 30

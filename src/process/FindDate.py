@@ -48,9 +48,9 @@ class FindDate(Thread):
             today = datetime.now()
             doc_date = datetime.strptime(self.date, self.Locale.formatDate)
             timedelta = today - doc_date
-            if int(self.Config.cfg['OCforMEM']['timedelta']) != -1:
-                if timedelta.days > int(self.Config.cfg['OCforMEM']['timedelta']) or timedelta.days < 0:
-                    self.Log.info("Date is older than " + str(self.Config.cfg['OCforMEM']['timedelta']) + " days or in the future: " + self.date)
+            if int(self.Config.cfg['OCForMEM']['timedelta']) != -1:
+                if timedelta.days > int(self.Config.cfg['OCForMEM']['timedelta']) or timedelta.days < 0:
+                    self.Log.info("Date is older than " + str(self.Config.cfg['OCForMEM']['timedelta']) + " days or in the future: " + self.date)
                     self.date = ''
             elif timedelta.days < 0:
                 self.Log.info("Date is in the future: " + self.date)

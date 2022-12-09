@@ -30,10 +30,10 @@ def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
     else:
-        if args['process'] in config.cfg['OCforMEM']['processavailable'].split(','):
-            _process = 'OCforMEM_' + args['process'].lower()
+        if args['process'] in config.cfg['OCForMEM']['processavailable'].split(','):
+            _process = 'OCForMEM_' + args['process'].lower()
         else:
-            _process = 'OCforMEM_' + config.cfg['OCforMEM']['defaultprocess'].lower()
+            _process = 'OCForMEM_' + config.cfg['OCForMEM']['defaultprocess'].lower()
 
     return _process
 
@@ -304,7 +304,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     # Get ws user id and reattach the document
                     list_of_users = web_service.retrieve_users()
                     for user in list_of_users['users']:
-                        if config.cfg['OCforMEM']['user'] == user['user_id']:
+                        if config.cfg['OCForMEM']['user'] == user['user_id']:
                             typist = user['id']
                             reattach_res = web_service.reattach_to_document(res_id_origin, res_id_signed, typist, config)
                             log.info("Reattach result : " + str(reattach_res))

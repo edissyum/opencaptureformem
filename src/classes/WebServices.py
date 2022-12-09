@@ -137,7 +137,7 @@ class WebServices:
         if not subject:
             subject = ''
         else:
-            if config.cfg['OCforMEM']['uppercasesubject'] == 'True':
+            if config.cfg['OCForMEM']['uppercasesubject'] == 'True':
                 subject = subject.upper()
 
         if 'subject' in _process and _process['subject']:

@@ -85,12 +85,12 @@ path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d'
 path_without_time = config_mail.cfg['GLOBAL']['batchpath']
 
 web_service = webserviceClass.WebServices(
-    config.cfg['OCforMEM']['host'],
-    config.cfg['OCforMEM']['user'],
-    config.cfg['OCforMEM']['password'],
+    config.cfg['OCForMEM']['host'],
+    config.cfg['OCForMEM']['user'],
+    config.cfg['OCForMEM']['password'],
     global_log,
     config.cfg['GLOBAL']['timeout'],
-    config.cfg['OCforMEM']['certpath']
+    config.cfg['OCForMEM']['certpath']
 )
 
 SMTP = SMTP(
