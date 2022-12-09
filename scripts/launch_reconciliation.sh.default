@@ -36,7 +36,7 @@ scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
 OCPath="/opt/mem/opencapture/"
 config_file="$OCPath"/src/config/config.ini
-logFile="$OCPath"/data/log/OCforMEM.log
+logFile="$OCPath"/data/log/OCForMEM.log
 process_pj=reconciliation_default
 process_attfnd=reconciliation_found
 tmp_dir="$OCPath"/data/tmp/
@@ -89,7 +89,7 @@ fi
 
 fileName=$(basename "$1")
 
-separatorEnabled=$(crudini --get $config_file "OCforMEM_reconciliation_default" "separator_qr" | sed 's/:.*//')
+separatorEnabled=$(crudini --get $config_file "OCForMEM_reconciliation_default" "separator_qr" | sed 's/:.*//')
 if [[ "$fileName" != *"SEPARATED"* ]] && { [ "$separatorEnabled" == 'True' ] || [ "$separatorEnabled" == 'true' ]; }; then
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") Separate document by QR Code (QRPrefix on MEM Courrier need to be enabled)" >> "$logFile"
     python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file"

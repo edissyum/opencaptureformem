@@ -37,22 +37,22 @@ import src.classes.WebServices as webserviceClass
 from src.process.OCForMEM import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
-OCforMEM = Kuyruk()
+OCForMEM = Kuyruk()
 
 if os.path.isfile('./src/config/rabbitMQ.json'):
     with open('./src/config/rabbitMQ.json', 'r') as f:
         rabbitMQData = json.load(f)
 
     if rabbitMQData['host']:
-        OCforMEM.config.RABBIT_HOST = rabbitMQData['host']
+        OCForMEM.config.RABBIT_HOST = rabbitMQData['host']
     if rabbitMQData['port']:
-        OCforMEM.config.RABBIT_PORT = rabbitMQData['port']
+        OCForMEM.config.RABBIT_PORT = rabbitMQData['port']
     if rabbitMQData['username']:
-        OCforMEM.config.RABBIT_USER = rabbitMQData['username']
+        OCForMEM.config.RABBIT_USER = rabbitMQData['username']
     if rabbitMQData['password']:
-        OCforMEM.config.RABBIT_PASSWORD = rabbitMQData['password']
+        OCForMEM.config.RABBIT_PASSWORD = rabbitMQData['password']
     if rabbitMQData['vhost'] and rabbitMQData['vhost'] != '/':
-        OCforMEM.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
+        OCForMEM.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
 
 
 def str2bool(value):
@@ -146,7 +146,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
             return res
 
 
-@OCforMEM.task()
+@OCForMEM.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
@@ -182,12 +182,12 @@ def launch(args):
     locale = localeClass.Locale(config)
     ocr = ocrClass.PyTesseract(locale.localeOCR, log, config)
     web_service = webserviceClass.WebServices(
-        config.cfg['OCforMEM']['host'],
-        config.cfg['OCforMEM']['user'],
-        config.cfg['OCforMEM']['password'],
+        config.cfg['OCForMEM']['host'],
+        config.cfg['OCForMEM']['user'],
+        config.cfg['OCForMEM']['password'],
         log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCforMEM']['certpath']
+        config.cfg['OCForMEM']['certpath']
     )
 
     image = imagesClass.Images(
