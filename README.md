@@ -1,4 +1,4 @@
-![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2019/08/OpenCaptureForMaarch.png)
+![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2022/12/open_capture_for_mem_courrier.png)
 
 # Open-Capture for MEM Courrier 21.03
 Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
