@@ -26,6 +26,9 @@ class FindChrono(Thread):
         self.chrono = None
         self.process = process
 
+    def get_chrono(self):
+        return self.chrono
+
     def run(self):
         """
         Override the default run function of threading package
