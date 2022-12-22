@@ -20,12 +20,12 @@ import msal
 
 args = {
     "authority": "https://login.microsoftonline.com/",
-    "scopes": ["https://outlook.office.com/.default"],
+    "scopes": ["https://outlook.office365.com/.default"],
     "tenant_id": "",
     "client_id": "",
     "secret": "",
     "host": "outlook.office365.com",
-    "login": "test@outlook.com",
+    "login": "",
 }
 
 
@@ -50,7 +50,11 @@ if __name__ == "__main__":
         print(result.get("error_description"))
         print(result.get("correlation_id"))
 
-    mailbox = MailBox('outlook.office365.com').xoauth2(args['login'], result['access_token'])
+    print(result)
+    mailbox = MailBox(args['host'])
+    mailbox.client.authenticate("XOAUTH2",
+                                lambda x: generate_auth_string(args['login'], result['access_token'])
+                                .encode("utf-8"))
     folders = mailbox.folder.list()
     for f in folders:
         print(f.name)
