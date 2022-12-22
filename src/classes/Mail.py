@@ -103,7 +103,6 @@ class Mail:
                 self.conn.login(self.login, self.pwd)
             elif self.auth_method == 'oauth':
                 result = self.generate_oauth_token()
-                self.conn.xoauth2(self.login, result['access_token'])
                 self.conn.client.authenticate("XOAUTH2", lambda x: self.generate_auth_string(result['access_token']).encode("utf-8"))
 
         except IMAP4_SSL.error as err:
