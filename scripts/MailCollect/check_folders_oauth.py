@@ -50,7 +50,6 @@ if __name__ == "__main__":
         print(result.get("error_description"))
         print(result.get("correlation_id"))
 
-    print(result)
     mailbox = MailBox(args['host'])
     mailbox.client.authenticate("XOAUTH2",
                                 lambda x: generate_auth_string(args['login'], result['access_token'])
