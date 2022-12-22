@@ -74,7 +74,7 @@ class Mail:
         """
         Generate Oauth string based on user and token
         :param token: Oauth token
-        :return:
+        :return: string
         """
         return f"user={self.login}\x01auth=Bearer {token}\x01\x01"
 
