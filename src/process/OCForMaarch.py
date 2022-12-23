@@ -102,14 +102,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         # Find date of document
         date_thread = FindDate(ocr.text, locale, log, config)
         # Find mail in document and check if the contact exist in Maarch
-        contact_thread = FindContact(ocr.text, log, config, web_service, locale)
+        # contact_thread = FindContact(ocr.text, log, config, web_service, locale) # EDISSYUM AMO01 OAUTH 19.04
         # Launch all threads
         date_thread.start()
         if args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_subject') is True:
             pass
         else:
             subject_thread.start()
-        contact_thread.start()
+        #contact_thread.start() # AMO01 OAUTH 19.04
 
         # Wait for end of threads
         date_thread.join()
@@ -117,7 +117,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             pass
         else:
             subject_thread.join()
-        contact_thread.join()
+        #contact_thread.join()# EDISSYUM AMO01 OAUTH 19.04
 
         # Get the returned values
         date = date_thread.date
@@ -125,8 +125,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             subject = ''
         else:
             subject = subject_thread.subject
-        contact = contact_thread.contact
-        custom_mail = contact_thread.custom_mail
+        #contact = contact_thread.contact# EDISSYUM AMO01 OAUTH 19.04
+#         custom_mail = contact_thread.custom_mail # AMO01 OAUTH 19
     else:
         date = ''
         subject = ''
@@ -170,9 +170,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 args['data']['doc_date'] = date
             if subject != '':
                 args['data']['subject'] = subject
-            if contact != '':
-                args['data']['address_id'] = contact['id']
-                args['data']['exp_contact_id'] = contact['contact_id']
+#             if contact != '': # AMO01 OAUTH 19
+#                 args['data']['address_id'] = contact['id'] # AMO01 OAUTH 19
+#                 args['data']['exp_contact_id'] = contact['contact_id'] # AMO01 OAUTH 19
             else:
                 # Search a contact id from Maarch database
                 log.info('No contact found on mail body, try with "from" of the mail :  ' + args['data']['from'])

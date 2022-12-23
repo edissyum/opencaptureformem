@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import shutil
+import msal # AMO01 OAUTH 19.04
 
 from socket import gaierror
 from imap_tools import utils, MailBox, MailBoxUnencrypted
@@ -26,7 +27,9 @@ from imaplib import IMAP4_SSL
 
 
 class Mail:
-    def __init__(self, host, port, login, pwd, smtp):
+    def __init__(self, auth_method, oauth, host, port, login, pwd, ws, smtp): # AMO01 OAUTH 19.04
+        self.auth_method = auth_method # AMO01 OAUTH 19.04
+        self.oauth = oauth # AMO01 OAUTH 19.04
         self.pwd = pwd
         self.conn = None
         self.port = port
@@ -38,17 +41,54 @@ class Mail:
         if self.SMTP.isUp:
             self.SMTP.send_email(message=msg, step=step)
 
+    # AMO01 OAUTH 19.04
+    def generate_oauth_token(self):
+        """
+        Generate a token for oauth (Open Authentication)
+        :return: token result
+        """
+        app = msal.ConfidentialClientApplication(self.oauth['client_id'],
+                                                 authority=self.oauth['authority'] + self.oauth['tenant_id'],
+                                                 client_credential=self.oauth['secret'])
+
+        result = app.acquire_token_silent([self.oauth['scopes']], account=None)
+
+        if not result:
+            # No suitable token in cache.  Getting a new one.
+            result = app.acquire_token_for_client(scopes=[self.oauth['scopes']])
+
+        if "access_token" in result:
+            # Token generated with success.
+            return result
+
+        # Error while generated token.
+        print(result.get("error"))
+        print(result.get("error_description"))
+        print(result.get("correlation_id"))
+        sys.exit()
+
+    def generate_auth_string(self, token):
+        """
+         Generate Oauth string based on user and token
+        :param token: Oauth token
+        :return: string
+        """
+        return f"user={self.login}\x01auth=Bearer {token}\x01\x01"
+
+    # END AMO01 OAUTH 19.04
+
     def test_connection(self, secured_connection):
         """
         Test the connection to the IMAP server
-
-        :param secured_connection: Boolean, if SSL is needed or not
+        :param secured_connection: boolean
+        :param log: Log object
         """
         try:
             if secured_connection:
                 self.conn = MailBox(host=self.host, port=self.port)
             else:
                 self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
+
         except gaierror as e:
             error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e)
             print(error)
@@ -56,30 +96,39 @@ class Mail:
             sys.exit()
 
         try:
-            self.conn.login(self.login, self.pwd)
+            # AMO01 OAUTH 19.04
+            print(self.auth_method)
+            if self.auth_method == 'basic':
+                self.conn.login(self.login, self.pwd)
+            elif self.auth_method == 'oauth':
+                result = self.generate_oauth_token()
+                self.conn.client.authenticate("XOAUTH2", lambda x: self.generate_auth_string(result['access_token']).encode("utf-8"))
+            # END AMO01 OAUTH 19.04
+
         except IMAP4_SSL.error as err:
-            error = 'Error while trying to login to ' + self.host + ' using ' + self.login + '/' + self.pwd + ' as login/password : ' + str(err)
-            print(error)
-            self.send_notif(error, 'de l\'authentification IMAP')
-            sys.exit()
+            # AMO01 OAUTH 19.04
+           error = 'Authentication method : ' + self.auth_method + ' - Error while trying to login to ' \
+                                   + self.host + ' using ' + self.login + ' : ' + str(err)
+           print(error)
+           self.send_notif(error, 'de l\'authentification IMAP')
+           sys.exit()
+           # END AMO01 OAUTH 19.04
 
     def check_if_folder_exist(self, folder):
         """
         Check if a folder exist into the IMAP mailbox
-
         :param folder: Folder to check
         :return: Boolean
         """
         folders = self.conn.folder.list()
         for f in folders:
-            if folder == f['name']:
+            if folder == f.name: # AMO01 OAUTH 19.04
                 return True
         return False
 
     def select_folder(self, folder):
         """
         Select a folder to find mail into
-
         :param folder: Folder to select
         """
         self.conn.folder.set(folder)
@@ -87,7 +136,6 @@ class Mail:
     def retrieve_message(self):
         """
         Retrieve all the messages into the selected mailbox
-
         :return: list of mails
         """
         emails = []
@@ -98,7 +146,6 @@ class Mail:
     def construct_dict_before_send_to_maarch(self, msg, cfg, backup_path):
         """
         Construct a dict with all the data of a mail (body and attachments)
-
         :param msg: Mailbox object containing all the data of mail
         :param cfg: Config Object
         :param backup_path: Path to backup of the e-mail
@@ -155,15 +202,15 @@ class Mail:
 
         # Add custom if specified
         if cfg.get('custom_mail_from') not in [None, '']:
-            data['mail'][cfg['custom_mail_from']] = msg.from_values['full']
+            data['mail'][cfg['custom_mail_from']] = msg.from_values.email # AMO01 OAUTH 19.04
 
-        if cfg.get('custom_mail_to') not in [None, ''] and to_str is not '':
+        if cfg.get('custom_mail_to') not in [None, ''] and to_str != '':# AMO01 OAUTH 19.04
             data['mail'][cfg['custom_mail_to']] = to_str[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
 
-        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str is not '':
+        if cfg.get('custom_mail_cc') not in [None, ''] and cc_str != '': # AMO01 OAUTH 19.04
             data['mail'][cfg['custom_mail_cc']] = cc_str[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
 
-        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to is not '':
+        if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to != '': # AMO01 OAUTH 19.04
             data['mail'][cfg['custom_mail_reply_to']] = reply_to[:-1][:254]  # 254 to avoid too long string (maarch custom is limited to 255 char)
 
         attachments = self.retrieve_attachment(msg)
@@ -191,7 +238,6 @@ class Mail:
     def backup_email(self, msg, backup_path, force_utf8):
         """
         Backup e-mail into path before send it to Maarch
-
         :param msg: Mail data
         :param backup_path: Backup path
         :return: Boolean
@@ -254,7 +300,6 @@ class Mail:
     def move_to_destination_folder(self, msg, destination, log):
         """
         Move e-mail to selected destination IMAP folder (if action is set to move)
-
         :param log: Log class instance
         :param msg: Mail data
         :param destination: IMAP folder destination
@@ -270,7 +315,6 @@ class Mail:
     def delete_mail(self, msg, trash_folder, log):
         """
         Move e-mail to trash IMAP folder (if action is set to delete) if specified. Else, delete it (can't be retrieved)
-
         :param log: Log class instance
         :param msg: Mail Data
         :param trash_folder: IMAP trash folder
@@ -289,7 +333,6 @@ class Mail:
     def retrieve_attachment(msg):
         """
         Retrieve all attachments from a given mail
-
         :param msg: Mail Data
         :return: List of all the attachments for a mail
         """
@@ -311,7 +354,6 @@ class Mail:
 def move_batch_to_error(batch_path, error_path, smtp, process, msg):
     """
     If error in batch process, move the batch folder into error folder
-
     :param msg: Contain the msg metadata
     :param smtp: instance of SMTP class
     :param batch_path: Path to the actual batch
@@ -342,7 +384,6 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg):
 def str2bool(value):
     """
     Function to convert string to boolean
-
     :return: Boolean
     """
     return value.lower() in "true"

@@ -20,11 +20,11 @@ from socket import gaierror
 from imaplib import IMAP4_SSL
 from imap_tools import MailBox, MailBoxUnencrypted
 
-hostname = ''
-port = 143
-isSSL = False
-login = ''
-password = ''
+hostname = 'imap.gmail.com'
+port = 993
+isSSL = True
+login = 'mail.edissyum@gmail.com'
+password = 'pmunfkolidzhouxe'
 
 try:
     if isSSL:
@@ -42,4 +42,4 @@ except (gaierror, IMAP4_SSL.error) as e:
 
 folders = conn.folder.list()
 for f in folders:
-    print(f['name'])
+    print(f.name)

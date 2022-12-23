@@ -1,5 +1,4 @@
 qpdf
-incron
 python3
 libxml2
 pngquant

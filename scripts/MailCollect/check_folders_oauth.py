@@ -1,45 +1,59 @@
-# This file is part of Open-Capture.
+# This file is part of Open-Capture For Maarch.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture is distributed in the hope that it will be useful,
+# Open-Capture For Maarch is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
 
-# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Oussama BRICH <oussama.brich@edissyum.com>
 
-import sys
-from socket import gaierror
-from imaplib import IMAP4_SSL
-from imap_tools import MailBox, MailBoxUnencrypted
+from imap_tools import MailBox
+import msal
 
-hostname = 'imap.gmail.com'
-port = 993
-isSSL = True
-login = 'mail.edissyum@gmail.com'
-password = 'pmunfkolidzhouxe'
+args = {
+    "authority": "https://login.microsoftonline.com/",
+    "scopes": ["https://outlook.office365.com/.default"],
+    "tenant_id": "26da24bf-0572-4dac-8113-667560022461",
+    "client_id": "10a6fe7a-f333-47c3-b20a-5902d774a87f",
+    "secret": "nIQ8Q~K~ulIFIc.Ma2yvNNFZEniBRi2lcAPDebPb",
+    "host": "outlook.office365.com",
+    "login": "test.carlos@grandavignon.fr",
+}
 
-try:
-    if isSSL:
-        conn = MailBox(host=hostname, port=port)
+
+def generate_auth_string(user, token):
+    return f"user={user}\x01auth=Bearer {token}\x01\x01"
+
+
+if __name__ == "__main__":
+    app = msal.ConfidentialClientApplication(args['client_id'], authority=args['authority'] + args['tenant_id'],
+                                             client_credential=args['secret'])
+
+    result = app.acquire_token_silent(args['scopes'], account=None)
+
+    if not result:
+        print("No suitable token in cache.  Get new one.")
+        result = app.acquire_token_for_client(scopes=args['scopes'])
+
+    if "access_token" in result:
+        print("Token generated with success.\n")
     else:
-        conn = MailBoxUnencrypted(host=hostname, port=port)
-except (gaierror, IMAP4_SSL.error) as e:
-    sys.exit('Error while connecting to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
+        print(result.get("error"))
+        print(result.get("error_description"))
+        print(result.get("correlation_id"))
 
-try:
-    conn.login(login, password)
-except (gaierror, IMAP4_SSL.error) as e:
-    sys.exit('Error while login to ' + hostname + ' on port ' + str(port) + ' : ' + str(e))
-
-
-folders = conn.folder.list()
-for f in folders:
-    print(f.name)
+    mailbox = MailBox(args['host'])
+    mailbox.client.authenticate("XOAUTH2",
+                                lambda x: generate_auth_string(args['login'], result['access_token'])
+                                .encode("utf-8"))
+    folders = mailbox.folder.list()
+    for f in folders:
+        print(f.name)

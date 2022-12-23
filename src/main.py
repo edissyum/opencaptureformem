@@ -135,14 +135,14 @@ def timer(start_time: time.time(), end_time: time.time()):
 
 
 # If needed just run "kuyruk --app src.main.OCforMaarch manager" to have web dashboard of current running worker
-@OCforMaarch.task()
+#@OCforMaarch.task() # AMO01 OAUTH 19.04 DISABLE
 def launch(args):
     start = time.time()
     # Init all the necessary classes
     config = configClass.Config()
     config.load_file(args['config'])
     smtp = False
-
+    print('ici')
     if args.get('isMail') is not None:
         log = logClass.Log(args['log'])
         if args['isMail'] is True:

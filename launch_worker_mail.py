@@ -96,21 +96,25 @@ SMTP = SMTP(
     ConfigMail.cfg['GLOBAL']['smtp_dest_admin_mail'],
     ConfigMail.cfg['GLOBAL']['smtp_delay'],
 )
-
-Mail = mailClass.Mail(
-    ConfigMail.cfg[process]['host'],
-    ConfigMail.cfg[process]['port'],
-    ConfigMail.cfg[process]['login'],
-    ConfigMail.cfg[process]['password'],
-    SMTP
-)
-
 web_service = webserviceClass.WebServices(
     Config.cfg['OCForMaarch']['host'],
     Config.cfg['OCForMaarch']['user'],
     Config.cfg['OCForMaarch']['password'],
     global_log
 )
+
+# AMO01 OAUTH 19.04
+Mail = mailClass.Mail(
+    ConfigMail.cfg[process]['auth_method'],
+    ConfigMail.cfg['OAUTH'],
+    ConfigMail.cfg[process]['host'],
+    ConfigMail.cfg[process]['port'],
+    ConfigMail.cfg[process]['login'],
+    ConfigMail.cfg[process]['password'],
+    web_service,
+    SMTP,
+)
+# END AMO01 OAUTH 19.04
 
 cfg = ConfigMail.cfg[process]
 
