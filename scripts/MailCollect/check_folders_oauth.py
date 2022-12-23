@@ -21,11 +21,11 @@ import msal
 args = {
     "authority": "https://login.microsoftonline.com/",
     "scopes": ["https://outlook.office365.com/.default"],
-    "tenant_id": "26da24bf-0572-4dac-8113-667560022461",
-    "client_id": "10a6fe7a-f333-47c3-b20a-5902d774a87f",
-    "secret": "nIQ8Q~K~ulIFIc.Ma2yvNNFZEniBRi2lcAPDebPb",
-    "host": "outlook.office365.com",
-    "login": "test.carlos@grandavignon.fr",
+    "tenant_id": "",
+    "client_id": "",
+    "secret": "",
+    "host": "",
+    "login": "",
 }
 
 

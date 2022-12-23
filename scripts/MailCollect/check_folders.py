@@ -23,8 +23,8 @@ from imap_tools import MailBox, MailBoxUnencrypted
 hostname = 'imap.gmail.com'
 port = 993
 isSSL = True
-login = 'mail.edissyum@gmail.com'
-password = 'pmunfkolidzhouxe'
+login = ''
+password = ''
 
 try:
     if isSSL:
