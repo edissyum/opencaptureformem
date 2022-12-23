@@ -69,7 +69,7 @@ custom_fields		= {}
 separator_qr        = False
 generate_chrono     = True
 subject             =
-chronoRegex         = 20(1|2|3)[0-9]{1}A/\d*
+chronoRegex         = 20(1|2|3)[0-9]{1}A/\d{5}
 
 [OCForMEM_outgoing]
 status              = INIT
@@ -86,7 +86,7 @@ custom_fields		= {}
 separator_qr        = False
 generate_chrono     = True
 subject             =
-chronoRegex         = 20(1|2|3)[0-9]{1}D/\d*
+chronoRegex         = 20(1|2|3)[0-9]{1}D/\d{5}
 
 [OCForMEM_reconciliation_default]
 status              = ATTREC
@@ -103,7 +103,7 @@ custom_mail         =
 separator_qr        = False
 generate_chrono     = True
 subject             =
-chronoRegex         = 20(1|2|3)[0-9]{1}D/\d*
+chronoRegex         = 20(1|2|3)[0-9]{1}D/\d{5}
 
 [OCForMEM_reconciliation_found]
 is_attachment       = True

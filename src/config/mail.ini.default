@@ -52,12 +52,15 @@ folderDestination    = _MEM_ARCHIVES
 folderTrash          = Trash
 ; move, delete or none
 actionAfterProcess   = move
+
+chronoRegex          = 20(1|2|3)[0-9]{1}A/\d{5}
 model_id             = 1
 priority             = poiuytre1357nbvc
 status               = MAQUAL
 doctype              = 103
 typist               = bblier
 destination          = COU
+
 ; True or False
 from_is_reply_to     = False
 custom_mail_from     = 8

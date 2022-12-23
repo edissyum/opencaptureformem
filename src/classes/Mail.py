@@ -70,6 +70,14 @@ class Mail:
         print(result.get("correlation_id"))
         sys.exit()
 
+    def generate_auth_string(self, token):
+        """
+        Generate Oauth string based on user and token
+        :param token: Oauth token
+        :return: string
+        """
+        return f"user={self.login}\x01auth=Bearer {token}\x01\x01"
+
     def test_connection(self, secured_connection):
         """
         Test the connection to the IMAP server
@@ -95,14 +103,14 @@ class Mail:
                 self.conn.login(self.login, self.pwd)
             elif self.auth_method == 'oauth':
                 result = self.generate_oauth_token()
-                self.conn.xoauth2(self.login, result['access_token'])
+                self.conn.client.authenticate("XOAUTH2", lambda x: self.generate_auth_string(result['access_token']).encode("utf-8"))
 
         except IMAP4_SSL.error as err:
-            error = 'Authentication method : ' + self.auth_method + ' - Error while trying to login to ' \
-                    + self.host + ' using ' + self.login + ' : ' + str(err)
-            print(error)
-            self.send_notif(error, 'de l\'authentification IMAP')
-            sys.exit()
+                error = 'Authentication method : ' + self.auth_method + ' - Error while trying to login to ' \
+                        + self.host + ' using ' + self.login + ' : ' + str(err)
+                print(error)
+                self.send_notif(error, 'de l\'authentification IMAP')
+                sys.exit()
 
     def check_if_folder_exist(self, folder):
         """

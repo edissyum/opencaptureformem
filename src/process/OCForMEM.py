@@ -158,8 +158,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
 
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chronoregex' not in config_mail.cfg[_process]:
             chrono_thread = ''
+        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+            chrono_thread = FindChrono(ocr.text, config_mail.cfg[_process])
         elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread = FindChrono(ocr.text, config.cfg[_process])
         else:
@@ -186,6 +188,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             contact_thread.start()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread.start()
+        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+            chrono_thread.start()
 
         # Wait for end of threads
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
@@ -196,6 +200,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             contact_thread.join()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread.join()
+        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+            chrono_thread.join()
 
         # Get the returned values
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
@@ -203,8 +209,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             date = ''
 
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chronoregex' not in config_mail.cfg[_process]:
             chrono_number = ''
+        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+            chrono_number = chrono_thread.chrono
         elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_number = chrono_thread.chrono
         else:
@@ -266,14 +274,24 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         if res:
             log.info('Insert email OK : ' + str(res))
+            if chrono_number:
+                chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
+                if chrono_res_id:
+                    web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
+            else:
+                chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
+                chrono_class.run()
+                chrono_number = chrono_class.chrono
+                if chrono_number:
+                    chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
+                    if chrono_res_id:
+                        web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
             return res
-        else:
-            try:
-                shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
-            except shutil.Error as e:
-                log.error('Moving file ' + file + ' error : ' + str(e))
-            return False, res
-
+        try:
+            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+        except shutil.Error as _e:
+            log.error('Moving file ' + file + ' error : ' + str(_e))
+        return False, res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
         if args['isinternalnote']:
             res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
@@ -288,7 +306,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
             if chrono_res_id:
                 web_service.link_documents(json.loads(res)['resId'], chrono_res_id['resId'])
-
         # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
         if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None:
@@ -313,17 +330,15 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     change_status_res = web_service.change_status(res_id_origin, config)
                     log.info("Change status : " + str(change_status_res))
         # END OBR01
-
         if args.get('isMail') is None:
             try:
                 if args.get('keep_pdf_debug').lower() != 'true':
                     os.remove(file)
-            except FileNotFoundError as e:
-                log.error('Unable to delete ' + file + ' after insertion : ' + str(e))
+            except FileNotFoundError as _e:
+                log.error('Unable to delete ' + file + ' after insertion : ' + str(_e))
         return True, res
-    else:
-        try:
-            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
-        except shutil.Error as e:
-            log.error('Moving file ' + file + ' error : ' + str(e))
-        return False
+    try:
+        shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+    except shutil.Error as _e:
+        log.error('Moving file ' + file + ' error : ' + str(_e))
+    return False
