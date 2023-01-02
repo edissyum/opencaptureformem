@@ -1,6 +1,5 @@
 bs4
 msal
-pyPdf2
 kuyruk
 ocrmypdf
 holidays
@@ -11,3 +10,4 @@ imap-tools
 pytesseract
 configparser
 opencv-python
+pyPdf2==2.12.1
