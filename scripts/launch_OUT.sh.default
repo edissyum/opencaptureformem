@@ -33,7 +33,7 @@ OCPath="/opt/mem/opencapture/"
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
 errFilepath="$OCPath/data/error/$script/"
-tmpFilepath="$OCPath/data/tmp/"
+tmpFilepath="$OCPath/data/pdf/"
 PID=/tmp/securite-$script-$$.pid
 
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
