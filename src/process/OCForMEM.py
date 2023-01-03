@@ -162,7 +162,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             chrono_thread = ''
         elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
             chrono_thread = FindChrono(ocr.text, config_mail.cfg[_process])
-        elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        elif _process in config.cfg and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread = FindChrono(ocr.text, config.cfg[_process])
         else:
             chrono_thread = ''
@@ -213,7 +213,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             chrono_number = ''
         elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
             chrono_number = chrono_thread.chrono
-        elif 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        elif _process in config.cfg and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_number = chrono_thread.chrono
         else:
             chrono_number = ''
