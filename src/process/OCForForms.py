@@ -17,10 +17,9 @@
 
 import os
 import re
-import shutil
-
-from bs4 import BeautifulSoup
 import json
+import shutil
+from bs4 import BeautifulSoup
 
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
