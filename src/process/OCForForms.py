@@ -109,7 +109,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                         regex = field['regex']
                         column = field['column']
                         regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
-
                         if regex_return:
                             if column != 'custom':
                                 args['data'][column] = regex_return[0]
