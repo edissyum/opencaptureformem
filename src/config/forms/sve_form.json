@@ -4,20 +4,16 @@
             "table": "contacts",
             "data": {
                 "lastname": {
-                    "regex": "Nom\\s*:\\s*(.+)",
+                    "regex": "Nom\\s:\\s(.+)",
                     "column": "lastname"
                 },
                 "firstname": {
-                    "regex": "Prenom\\s*:\\s*(.+)",
+                    "regex": "Prénom\\s:\\s(.+)",
                     "column": "firstname"
                 },
                 "email": {
-                    "regex": "Email\\s*:\\s*(.+)",
+                    "regex": "E-mail\\s:\\s(.+)",
                     "column": "email"
-                },
-                "phone": {
-                    "regex": "Telephone\\s*:\\s*(.+)",
-                    "column": "phone"
                 },
                 "address_street": {
                     "regex": "Adresse\\s:\\s(.+)",
@@ -35,7 +31,7 @@
                     "regex": "Pays\\s:\\s(.+)",
                     "column": "addressCountry"
                 },
-                "civility": {
+                "Civilité": {
                     "regex": "Civilité\\s:\\s(.+)",
                     "column": "civility",
                     "correspondance_table": {
@@ -51,39 +47,7 @@
         },
         "LETTERBOX": {
             "table": "res_letterbox",
-            "data": [
-                {
-                    "regex": "Objet\\s*:\\s*(.+)",
-                    "column": "subject"
-                },
-                {
-                    "regex": "Précisions\\s*:\\s*(.+)",
-                    "column": "custom",
-                    "mapping": [
-                        {
-                            "isCustom": "True",
-                            "isAddress": "False",
-                            "column": "12"
-                        }
-                    ]
-                },
-                {
-                    "regex": "Lieu d’intervention\\s*:\\s*(.+)",
-                    "column": "custom",
-                    "mapping": [
-                        {
-                            "isCustom": "True",
-                            "isAddress": "True",
-                            "column": "2"
-                        },
-                        {
-                            "isCustom": "True",
-                            "isAddress": "True",
-                            "column": "2"
-                        }
-                    ]
-                }
-            ]
+            "data": {}
         }
     }
 }

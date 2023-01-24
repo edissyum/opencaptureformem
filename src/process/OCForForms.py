@@ -92,13 +92,12 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 for line in text:
                     if not isinstance(line, str):
                         line = line.get_text()
-
+                    line = line.replace('<br>', '').replace('&nbsp;', '')
                     for field in contact_fields:
                         regex = contact_fields[field]['regex']
                         column = contact_fields[field]['column']
                         res = re.findall(r'' + regex, line)
                         if res and res[0].strip():
-                            res[0] = res[0].replace('<br>', '')
                             if 'correspondance_table' in contact_fields[field] and contact_fields[field]['correspondance_table']:
                                 for correspondance in contact_fields[field]['correspondance_table']:
                                     if res[0].lower() == correspondance.lower():
