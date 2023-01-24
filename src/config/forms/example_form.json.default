@@ -18,6 +18,18 @@
                 "phone": {
                     "regex": "Telephone\\s*:\\s*(.+)",
                     "column": "phone"
+                },
+                "civility": {
+                    "regex": "Civilité\\s:\\s(.+)",
+                    "column": "civility",
+                    "correspondance_table": {
+                        "Monsieur": 1,
+                        "Madame": 2,
+                        "Mademoiselle": 3,
+                        "Messieurs": 4,
+                        "Mesdames": 5,
+                        "Mesdemoiselles": 6
+                    }
                 }
             }
         },

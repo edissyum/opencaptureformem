@@ -81,7 +81,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 results = {
                     contact_table: {},
                 }
-                if not text and file_content:
+                if (not text and file_content) or len(text) <= 1:
                     file_content = open(args['file'], 'r')
                     text_parsed = file_content.read().split('\n')
                     text = []
@@ -90,14 +90,21 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                             text.append(line)
 
                 for line in text:
-                    if type(line) != str:
+                    if not isinstance(line, str):
                         line = line.get_text()
+
                     for field in contact_fields:
                         regex = contact_fields[field]['regex']
                         column = contact_fields[field]['column']
                         res = re.findall(r'' + regex, line)
                         if res and res[0].strip():
-                            results[contact_table][column] = res[0]
+                            res[0] = res[0].replace('<br>', '')
+                            if 'correspondance_table' in contact_fields[field] and contact_fields[field]['correspondance_table']:
+                                for correspondance in contact_fields[field]['correspondance_table']:
+                                    if res[0].lower() == correspondance.lower():
+                                        results[contact_table][column] = contact_fields[field]['correspondance_table'][correspondance]
+                            else:
+                                results[contact_table][column] = res[0]
 
                     for field in letterbox_fields:
                         regex = field['regex']
@@ -153,8 +160,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
-                else:
-                    log.error('Error while creating contact : ' + str(res_contact[1]))
 
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[process_name])
                 if res:
