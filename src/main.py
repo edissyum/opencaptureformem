@@ -1,17 +1,17 @@
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
@@ -34,25 +34,25 @@ import src.classes.PyTesseract as ocrClass
 from .process.FindSubject import FindSubject
 import src.classes.Separator as separatorClass
 import src.classes.WebServices as webserviceClass
-from src.process.OCForMaarch import process, get_process_name
+from src.process.OCForMEM import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
-OCforMaarch = Kuyruk()
+OCForMEM = Kuyruk()
 
 if os.path.isfile('./src/config/rabbitMQ.json'):
     with open('./src/config/rabbitMQ.json', 'r') as f:
         rabbitMQData = json.load(f)
 
     if rabbitMQData['host']:
-        OCforMaarch.config.RABBIT_HOST = rabbitMQData['host']
+        OCForMEM.config.RABBIT_HOST = rabbitMQData['host']
     if rabbitMQData['port']:
-        OCforMaarch.config.RABBIT_PORT = rabbitMQData['port']
+        OCForMEM.config.RABBIT_PORT = rabbitMQData['port']
     if rabbitMQData['username']:
-        OCforMaarch.config.RABBIT_USER = rabbitMQData['username']
+        OCForMEM.config.RABBIT_USER = rabbitMQData['username']
     if rabbitMQData['password']:
-        OCforMaarch.config.RABBIT_PASSWORD = rabbitMQData['password']
+        OCForMEM.config.RABBIT_PASSWORD = rabbitMQData['password']
     if rabbitMQData['vhost'] and rabbitMQData['vhost'] != '/':
-        OCforMaarch.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
+        OCForMEM.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
 
 
 def str2bool(value):
@@ -116,7 +116,7 @@ def timer(start_time: time.time(), end_time: time.time()):
 
 def process_file(image, path, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp):
     if check_file(image, path, config, log):
-        # Process the file and send it to Maarch
+        # Process the file and send it to MEM Courrier
         res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail)
         if args.get('isMail') is not None and args.get('isMail') is True:
             # Process the attachments of mail
@@ -130,9 +130,8 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                             if res[0]:
                                 log.info('Insert attachment OK : ' + str(res[1]))
                                 continue
-                            else:
-                                send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
-                                log.error('Error while inserting attachment : ' + str(res[1]))
+                            send_email_error_pj(args['batch_path'], args['process'], args['msg'], res[1], smtp, attachment)
+                            log.error('Error while inserting attachment : ' + str(res[1]))
                         else:
                             log.info('Attachment not in allowedExtensions : ' + attachment['subject'])
                 else:
@@ -147,7 +146,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
             return res
 
 
-@OCforMaarch.task()
+@OCForMEM.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
@@ -183,12 +182,12 @@ def launch(args):
     locale = localeClass.Locale(config)
     ocr = ocrClass.PyTesseract(locale.localeOCR, log, config)
     web_service = webserviceClass.WebServices(
-        config.cfg['OCForMaarch']['host'],
-        config.cfg['OCForMaarch']['user'],
-        config.cfg['OCForMaarch']['password'],
+        config.cfg['OCForMEM']['host'],
+        config.cfg['OCForMEM']['user'],
+        config.cfg['OCForMEM']['password'],
         log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMaarch']['certpath']
+        config.cfg['OCForMEM']['certpath']
     )
 
     image = imagesClass.Images(
@@ -225,7 +224,7 @@ def launch(args):
                                     document_filename = os.path.basename(file)
                                     pj_filename = re.sub(r"#\d", "", os.path.basename(pj).replace('PJ_', ''))
                                     if pj_filename == document_filename:
-                                        image.pdf_to_jpg(pj + '[0]', True)
+                                        image.pdf_to_jpg(pj, True)
                                         ocr.text_builder(image.img)
                                         subject_thread = FindSubject(ocr.text, locale, log)
                                         subject_thread.start()

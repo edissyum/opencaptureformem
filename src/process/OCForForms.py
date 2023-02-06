@@ -1,26 +1,25 @@
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
 import re
-import shutil
-
-from bs4 import BeautifulSoup
 import json
+import shutil
+from bs4 import BeautifulSoup
 
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
@@ -45,7 +44,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
                 if identifier[process].get('destination') is not None:
                     destination = identifier[_process].get('destination')
-                    # Retrieve destination ID from Maarch 20 if destination is not an integer
                     if type(destination) is not int:
                         destinations = web_service.retrieve_entities()
                         for dest in destinations['entities']:
@@ -83,7 +81,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 results = {
                     contact_table: {},
                 }
-                if not text and file_content:
+                if (not text and file_content) or len(text) <= 1:
                     file_content = open(args['file'], 'r')
                     text_parsed = file_content.read().split('\n')
                     text = []
@@ -92,20 +90,25 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                             text.append(line)
 
                 for line in text:
-                    if type(line) != str:
+                    if not isinstance(line, str):
                         line = line.get_text()
+                    line = line.replace('<br>', '').replace('&nbsp;', '')
                     for field in contact_fields:
                         regex = contact_fields[field]['regex']
                         column = contact_fields[field]['column']
                         res = re.findall(r'' + regex, line)
                         if res and res[0].strip():
-                            results[contact_table][column] = res[0]
+                            if 'correspondance_table' in contact_fields[field] and contact_fields[field]['correspondance_table']:
+                                for correspondance in contact_fields[field]['correspondance_table']:
+                                    if res[0].lower() == correspondance.lower():
+                                        results[contact_table][column] = contact_fields[field]['correspondance_table'][correspondance]
+                            else:
+                                results[contact_table][column] = res[0]
 
                     for field in letterbox_fields:
                         regex = field['regex']
                         column = field['column']
                         regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
-
                         if regex_return:
                             if column != 'custom':
                                 args['data'][column] = regex_return[0]
@@ -155,8 +158,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
-                else:
-                    log.error('Error while creating contact : ' + str(res_contact[1]))
 
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[process_name])
                 if res:

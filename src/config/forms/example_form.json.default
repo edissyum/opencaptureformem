@@ -18,6 +18,34 @@
                 "phone": {
                     "regex": "Telephone\\s*:\\s*(.+)",
                     "column": "phone"
+                },
+                "address_street": {
+                    "regex": "Adresse\\s:\\s(.+)",
+                    "column": "addressStreet"
+                },
+                "address_postcode": {
+                    "regex": "Code postal\\s:\\s(.+)",
+                    "column": "addressPostcode"
+                },
+                "address_town": {
+                    "regex": "Ville\\s:\\s(.+)",
+                    "column": "addressTown"
+                },
+                "address_country": {
+                    "regex": "Pays\\s:\\s(.+)",
+                    "column": "addressCountry"
+                },
+                "civility": {
+                    "regex": "Civilité\\s:\\s(.+)",
+                    "column": "civility",
+                    "correspondance_table": {
+                        "Monsieur": 1,
+                        "Madame": 2,
+                        "Mademoiselle": 3,
+                        "Messieurs": 4,
+                        "Mesdames": 5,
+                        "Mesdemoiselles": 6
+                    }
                 }
             }
         },

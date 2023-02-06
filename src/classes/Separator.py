@@ -1,31 +1,30 @@
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 import os
 import re
-
 import cv2
 import uuid
+import PyPDF2
 import shutil
+import pdf2image
 import subprocess
 import xml.etree.ElementTree as ET
-import PyPDF2
-import pdf2image
 
 
 class Separator:
@@ -93,8 +92,9 @@ class Separator:
         try:
             if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
                 self.remove_blank_page(file)
-            pdf = PyPDF2.PdfFileReader(open(file, 'rb'))
-            self.nb_pages = pdf.getNumPages()
+            with open(file, 'rb') as pdf_file:
+                pdf = PyPDF2.PdfFileReader(pdf_file)
+                self.nb_pages = len(pdf.pages)
             self.get_xml_qr_code(file)
             self.parse_xml()
             self.check_empty_docs()
@@ -114,12 +114,12 @@ class Separator:
             if len(self.pj) == 0 and len(self.pages) == 0:
                 try:
                     shutil.move(file, self.output_dir)
-                except shutil.Error as e:
-                    self.Log.error('Moving file ' + file + ' error : ' + str(e))
+                except shutil.Error as _e:
+                    self.Log.error('Moving file ' + file + ' error : ' + str(_e))
                 return
-        except Exception as e:
+        except Exception as _e:
             self.error = True
-            self.Log.error("INIT : " + str(e))
+            self.Log.error("INIT : " + str(_e))
 
     @staticmethod
     def sorted_files(data):
@@ -214,7 +214,6 @@ class Separator:
                 return
             if err.decode('utf-8'):
                 self.Log.error('ZBARIMG : ' + str(err))
-
             self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:
             if cpe.returncode != 4:
@@ -237,8 +236,8 @@ class Separator:
             if is_pj:
                 keyword = 'PJSTART'
             else:
-                keyword = 'MAARCH_'
-            if keyword in data.text:
+                keyword = 'MAARCH_|MEM_'
+            if re.match(keyword, data.text) is not None:
                 page['service'] = data.text.replace(keyword, '')
                 page['index_sep'] = int(index.attrib['num'])
                 if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
@@ -317,8 +316,8 @@ class Separator:
                     pdf = PyPDF2.PdfFileReader(open(page['pdf_filename'], 'rb'))
                     self.nb_pages = pdf.getNumPages()
                     self.parse_xml(True, page['pdf_filename'])
-            except Exception as e:
-                self.Log.error("EACD: " + str(e))
+            except Exception as _e:
+                self.Log.error("EACD: " + str(_e))
 
     def extract_and_convert_docs(self, file, is_pj=False, delete_orig=True):
         """
@@ -351,8 +350,8 @@ class Separator:
                     split_pdf(file, page['pdf_filename'], pages_to_keep, original_pages_to_keep)
                 if not is_pj and delete_orig:
                     os.remove(file)
-            except Exception as e:
-                self.Log.error("EACD: " + str(e))
+            except Exception as _e:
+                self.Log.error("EACD: " + str(_e))
 
     @staticmethod
     def convert_to_pdfa_function(pdfa_filename, pdf_filename, log):

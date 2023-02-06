@@ -1,5 +1,5 @@
 [GLOBAL]
-batchPath             = /opt/maarch/OpenCapture/data/MailCollect/
+batchPath             = /opt/mem/opencapture/data/MailCollect/
 # True or False
 smtp_notif_on_error   = False
 smtp_auth             = True
@@ -46,18 +46,21 @@ priorityToMailFrom   = False
 importOnlyAttachments= False
 extensionsAllowed    = pdf,jpg,jpeg,png,docx,odt,doc
 
-folderToCrawl        = _MAARCH
-folderDestination    = _MAARCH_ARCHIVES
+folderToCrawl        = _MEM
+folderDestination    = _MEM_ARCHIVES
 ; If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
 folderTrash          = Trash
 ; move, delete or none
 actionAfterProcess   = move
+
+chronoRegex          = 20(1|2|3)[0-9]{1}A/\d{5}
 model_id             = 1
 priority             = poiuytre1357nbvc
 status               = MAQUAL
 doctype              = 103
 typist               = bblier
 destination          = COU
+
 ; True or False
 from_is_reply_to     = False
 custom_mail_from     = 8

@@ -9,7 +9,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
-defaultPath=/opt/maarch/OpenCapture/
+defaultPath=/opt/mem/opencapture/
 imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
 group=www-data
@@ -104,11 +104,11 @@ fi
 xargs -a apt-requirements.txt apt install -y
 
 if [ $pythonVenv = 'true' ]; then
-    python3 -m venv "/home/$user/python-venv/opencaptureformaarch"
-    echo "source /home/$user/python-venv/opencaptureformaarch/bin/activate" >> "/home/$user/.bashrc"
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install --upgrade pip
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install pillow
-    "/home/$user/python-venv/opencaptureformaarch/bin/python3" -m pip install -r pip-requirements.txt
+    python3 -m venv "/home/$user/python-venv/opencaptureformem"
+    echo "source /home/$user/python-venv/opencaptureformem/bin/activate" >> "/home/$user/.bashrc"
+    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
+    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install pillow
+    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
 else
     python3 -m pip install --upgrade pip
     python3 -m pip install pillow
@@ -128,11 +128,11 @@ cp scripts/launch_OUT.sh.default scripts/launch_OUT.sh
 cp scripts/launch_reconciliation.sh.default scripts/launch_reconciliation.sh
 cp scripts/launch_MAIL.sh.default scripts/launch_MAIL.sh
 if [ $pythonVenv = 'true' ]; then
-    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/service.sh
-    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_IN.sh
-    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_OUT.sh
-    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_reconciliation.sh
-    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformaarch/bin/activate#g" scripts/launch_MAIL.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformem/bin/activate#g" scripts/service.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformem/bin/activate#g" scripts/launch_IN.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformem/bin/activate#g" scripts/launch_OUT.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformem/bin/activate#g" scripts/launch_reconciliation.sh
+    sed -i "s#§§PYTHON_VENV§§#source /home/$user/python-venv/opencaptureformem/bin/activate#g" scripts/launch_MAIL.sh
 else
     sed -i "s#§§PYTHON_VENV§§##g" scripts/service.sh
     sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_IN.sh
@@ -205,7 +205,7 @@ if [ "$finalChoice" == 2 ]; then
   touch /etc/systemd/system/oc-worker.service
   su -c "cat > /etc/systemd/system/oc-worker.service << EOF
 [Unit]
-Description=Daemon for Open-Capture for Maarch
+Description=Daemon for Open-Capture for MEM Courrier
 
 [Service]
 Type=simple
@@ -231,8 +231,8 @@ EOF
 else
   mkdir "$defaultPath"/data/log/Supervisor/
   apt install -y supervisor
-  touch /etc/supervisor/conf.d/OpenCapture.conf
-  su -c "cat > /etc/supervisor/conf.d/OpenCapture.conf << EOF
+  touch /etc/supervisor/conf.d/opencapture.conf
+  su -c "cat > /etc/supervisor/conf.d/opencapture.conf << EOF
 [program:OCWorker]
 command=$defaultPath/scripts/service.sh
 process_name=%(program_name)s_%(process_num)02d
@@ -246,12 +246,12 @@ stderr_logfile=$defaultPath/data/log/Supervisor/OC_%(process_num)02d_error.log
 EOF
   "
   
-  chmod 755 /etc/supervisor/conf.d/OpenCapture.conf
+  chmod 755 /etc/supervisor/conf.d/opencapture.conf
   systemctl restart supervisor
   systemctl enable supervisor
 fi
 
 ####################
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
-mkdir /tmp/OpenCapture/
-chown -R "$user":"$group" /tmp/OpenCapture
+mkdir /tmp/opencapture/
+chown -R "$user":"$group" /tmp/opencapture

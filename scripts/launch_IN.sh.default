@@ -1,18 +1,18 @@
 #!/bin/bash
-# This file is part of Open-Capture For Maarch.
+# This file is part of Open-Capture For MEM Courrier.
 
 # Open-Capture is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Open-Capture For Maarch is distributed in the hope that it will be useful,
+# Open-Capture For MEM Courrier is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Open-Capture For Maarch.  If not, see <https://www.gnu.org/licenses/>.
+# along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
@@ -29,11 +29,11 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/opt/maarch/OpenCapture/"
+OCPath="/opt/mem/opencapture/"
 config_file="$OCPath"/src/config/config.ini
-logFile="$OCPath"/data/log/OCforMaarch.log
-errFilepath="$OCPath"/data/error/$script/
-tmpFilepath="$OCPath"/data/pdf/
+logFile="$OCPath"/data/log/OCForMEM.log
+errFilePath="$OCPath"/data/error/$script/
+tmpFilePath="$OCPath"/data/pdf/
 PID=/tmp/securite-$script-$$.pid
 
 echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
@@ -50,16 +50,16 @@ then
   echo $$ > $PID
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
 
-  mv "$filepath" "$tmpFilepath"
+  mv "$filepath" "$tmpFilePath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilepath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false
+  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilePath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false
 
   rm -f $PID
 elif test -f "$filepath" && test "$ext" != 'application/pdf';
 then
   echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
-  mkdir -p "$errFilepath"
-  mv "$filepath" "$errFilepath"
+  mkdir -p "$errFilePath"
+  mv "$filepath" "$errFilePath"
   rm -f $PID
 elif test -d "$filepath";
 then
