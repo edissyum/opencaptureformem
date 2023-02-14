@@ -117,7 +117,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if args['isForm']:
             log.info('Start searching form into e-mail')
             form = process_form(args, config, config_mail, log, web_service, _process, file)
-            if form[1] != 'default':
+            if form and form[1] != 'default':
                 return form
 
     if os.path.splitext(file)[1].lower() == '.pdf':  # Open the pdf and convert it to JPG
