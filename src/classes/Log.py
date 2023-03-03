@@ -17,7 +17,7 @@
 
 import os
 import logging
-from logging.handlers import RotatingFileHandler
+import logging.handlers
 from inspect import getframeinfo, stack
 
 
@@ -31,12 +31,20 @@ def caller_reader(f):
     return wrapper
 
 
+class RotatingFileHandlerUmask(logging.handlers.RotatingFileHandler):
+    def _open(self):
+        prevumask = os.umask(0o000)  # -rw-rw-rw-
+        rtv = logging.handlers.RotatingFileHandler._open(self)
+        os.umask(prevumask)
+        return rtv
+
+
 class Log:
     def __init__(self, path):
         self.LOGGER = logging.getLogger('Open-Capture')
         if self.LOGGER.hasHandlers():
             self.LOGGER.handlers.clear()  # Clear the handlers to avoid double logs
-        log_file = RotatingFileHandler(path, mode='a', maxBytes=5 * 1024 * 1024, backupCount=2, encoding=None, delay=False)
+        log_file = RotatingFileHandlerUmask(path, mode='a', maxBytes=5 * 1024 * 1024, backupCount=2)
         formatter = logging.Formatter('[%(threadName)-14s] [%(file)-22sline %(line_n)-4s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
         log_file.setFormatter(formatter)
         self.LOGGER.addHandler(log_file)
