@@ -18,7 +18,7 @@
 import os
 import time
 import shutil
-import PyPDF2
+import pypdf
 from PIL import Image
 from bs4 import BeautifulSoup
 from pdf2image import convert_from_path
@@ -120,8 +120,8 @@ class Images:
                     if size2 == size:
                         if file.lower().endswith(".pdf"):
                             try:
-                                PyPDF2.PdfFileReader(doc, strict=False)
-                            except PyPDF2.utils.PdfReadError:
+                                pypdf.PdfReader(doc, strict=False)
+                            except pypdf.utils.PdfReadError:
                                 shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
                                 return False
                             return True
