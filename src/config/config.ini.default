@@ -24,6 +24,8 @@ localeOcr           = fra
 localeDatePath      = ${GLOBAL:projectPath}/src/locale/
 
 [SEPARATOR_QR]
+# C128 or QR_CODE
+separationType      = QR_CODE
 # True or False
 exportPdfa          = False
 outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
