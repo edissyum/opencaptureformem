@@ -89,45 +89,45 @@ class Separator:
 
         :param file: Path to pdf file
         """
-        self.Log.info('Start page separation using QR CODE')
+        self.Log.info('Start page separation using ' + self.separation_type)
         self.pages = []
-        # try:
 
-        if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
-            self.remove_blank_page(file)
-        with open(file, 'rb') as pdf_file:
-            pdf = pypdf.PdfReader(pdf_file)
-            self.nb_pages = len(pdf.pages)
+        try:
+            if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
+                self.remove_blank_page(file)
+            with open(file, 'rb') as pdf_file:
+                pdf = pypdf.PdfReader(pdf_file)
+                self.nb_pages = len(pdf.pages)
 
-        if self.Config.cfg['SEPARATOR_QR']['separationtype'] == 'C128':
-            self.get_xml_c128(file)
-        else:
-            self.get_xml_qr_code(file)
+            if self.Config.cfg['SEPARATOR_QR']['separationtype'] == 'C128':
+                self.get_xml_c128(file)
+            else:
+                self.get_xml_qr_code(file)
 
-        self.parse_xml()
-        self.check_empty_docs()
-        self.set_doc_ends()
-        self.extract_and_convert_docs(file)
-        if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
-            self.pdf_list.append(self.output_dir + '/' + os.path.basename(file))
-        self.extract_pj()
-        self.set_doc_ends(True)
-        self.extract_and_convert_docs(file, True)
+            self.parse_xml()
+            self.check_empty_docs()
+            self.set_doc_ends()
+            self.extract_and_convert_docs(file)
+            if not self.pages or self.nb_pages == 1 and self.pages[0]['is_empty'] is False:
+                self.pdf_list.append(self.output_dir + '/' + os.path.basename(file))
+            self.extract_pj()
+            self.set_doc_ends(True)
+            self.extract_and_convert_docs(file, True)
 
-        if len(self.pages) == 0:
-            self.extract_only_pj(file)
-            if self.pj and self.pdf_list[0] == self.output_dir + '/' + os.path.basename(file):
-                del self.pdf_list[0]
+            if len(self.pages) == 0:
+                self.extract_only_pj(file)
+                if self.pj and self.pdf_list[0] == self.output_dir + '/' + os.path.basename(file):
+                    del self.pdf_list[0]
 
-        if len(self.pj) == 0 and len(self.pages) == 0:
-            try:
-                shutil.move(file, self.output_dir)
-            except shutil.Error as _e:
-                self.Log.error('Moving file ' + file + ' error : ' + str(_e))
-            return
-        # except Exception as _e:
-        #     self.error = True
-        #     self.Log.error("INIT : " + str(_e))
+            if len(self.pj) == 0 and len(self.pages) == 0:
+                try:
+                    shutil.move(file, self.output_dir)
+                except shutil.Error as _e:
+                    self.Log.error('Moving file ' + file + ' error : ' + str(_e))
+                return
+        except Exception as _e:
+            self.error = True
+            self.Log.error("INIT : " + str(_e))
 
     @staticmethod
     def sorted_files(data):
