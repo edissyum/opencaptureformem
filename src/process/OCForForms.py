@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
-    json_identifier = config.cfg['GLOBAL']['formpath'] + 'forms_identifier.json'
+    json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
 
     if os.path.isfile(json_identifier):
         identifier = open(json_identifier, 'r').read()
