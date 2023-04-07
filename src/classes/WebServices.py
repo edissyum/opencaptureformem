@@ -422,6 +422,8 @@ class WebServices:
                         if weekday >= 5:
                             continue
                         process_delay -= 1
+                else:
+                    process_limit_date += timedelta(days=process_delay)
         return process_limit_date
 
     def retrieve_entities(self):
