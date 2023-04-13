@@ -253,6 +253,12 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             file = output_file
         file_to_send = open(file, 'rb').read()
 
+    chrono_res_id = False
+    if chrono_number:
+        chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
+        if 'ereconciliationstatus' in config.cfg[_process] and config.cfg[_process]['ereconciliationstatus']:
+            config.cfg[_process]['status'] = config.cfg[_process]['ereconciliationstatus']
+
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         if date != '':
             args['data']['documentDate'] = date
@@ -302,10 +308,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     if res:
         log.info("Insert OK : " + str(res))
-        if chrono_number:
-            chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
-            if chrono_res_id:
-                web_service.link_documents(json.loads(res)['resId'], chrono_res_id['resId'])
+        if chrono_res_id and chrono_number:
+            new_res_id = json.loads(res)['resId']
+            web_service.link_documents(new_res_id, chrono_res_id['resId'])
+
         # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
         if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None:
