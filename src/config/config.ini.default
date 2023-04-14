@@ -57,42 +57,46 @@ certPath            =
 # The process name have to be LOWERCASE
 
 [OCForMEM_incoming]
-status                = INIT
-doctype               = 1202
-typist                = bblier
-priority              = poiuytre1357nbvc
-format                = pdf
-model_id              = 1
+status                  = INIT
+doctype                 = 1202
+typist                  = bblier
+priority                = poiuytre1357nbvc
+format                  = pdf
+model_id                = 1
 # Please use entity id (integer) instead of entity_id (13 instead of COU for example)
-destination           = 13
-custom_mail           =
-custom_fields		  = {}
+destination             = 1
+custom_mail             =
+custom_fields           = {}
 # True or False
-separator_qr          = False
-generate_chrono       = True
-subject               =
-chronoRegex           = 20(1|2|3)[0-9]{1}A/\d{5}
+separator_qr            = False
+generate_chrono         = True
+subject                 =
+chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-eReconciliationStatus = COU
+e_reconciliation_status = COU
+; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
+retrieve_metadata       = True
 
 [OCForMEM_outgoing]
-status                = INIT
-doctype               = 1202
-typist                = bblier
-priority              = poiuytre1357nbvc
-format                = pdf
-model_id              = 2
+status                  = INIT
+doctype                 = 1202
+typist                  = bblier
+priority                = poiuytre1357nbvc
+format                  = pdf
+model_id                = 2
 # Please use entity id (integer) instead of entity_id (13 instead of COU for example)
-destination           = 13
-custom_mail           =
-custom_fields		  = {}
+destination             = 13
+custom_mail             =
+custom_fields           = {}
 # True or False
-separator_qr          = False
-generate_chrono       = True
-subject               =
-chronoRegex           = 20(1|2|3)[0-9]{1}D/\d{5}
+separator_qr            = False
+generate_chrono         = True
+subject                 =
+chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-eReconciliationStatus = COU
+e_reconciliation_status = COU
+; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
+retrieve_metadata       = True
 
 [OCForMEM_reconciliation_default]
 status              = ATTREC

@@ -256,9 +256,23 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     chrono_res_id = False
     if chrono_number:
         chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
-        if 'ereconciliationstatus' in config.cfg[_process] and config.cfg[_process]['ereconciliationstatus']:
-            config.cfg[_process]['status'] = config.cfg[_process]['ereconciliationstatus']
+        if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
+            config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
 
+        if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
+            if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
+                config.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
+            if 'destination' in chrono_res_id and chrono_res_id['destination']:
+                destination = str(chrono_res_id['destination'])
+            listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
+            if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
+                for _list in listinstances['listInstance']:
+                    if _list['item_mode'] == 'dest':
+                        config.cfg[_process]['diffusion_list'] = [{
+                            "id": _list['itemSerialId'],
+                            "type": "user",
+                            "mode": "dest",
+                        }]
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         if date != '':
             args['data']['documentDate'] = date
@@ -306,7 +320,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 
-    if res:
+    print(res)
+    if res and res[0] is not False:
         log.info("Insert OK : " + str(res))
         if chrono_res_id and chrono_number:
             new_res_id = json.loads(res)['resId']
@@ -347,4 +362,4 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
     except shutil.Error as _e:
         log.error('Moving file ' + file + ' error : ' + str(_e))
-    return False
+    return False, ''
