@@ -157,7 +157,7 @@ class WebServices:
             'documentDate': date,
             'arrivaldate': str(datetime.now()),
             'customFields': {},
-            'diffusionList': _process['diffusion_list'],
+            'diffusionList': _process['diffusion_list'] if 'diffusion_list' in _process else [],
             'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
         }
 
