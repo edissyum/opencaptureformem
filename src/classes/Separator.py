@@ -282,7 +282,11 @@ class Separator:
                 return
 
             if re.match(keyword, text) is not None:
-                page['service'] = text.replace(keyword, '')
+                page['service'] = text
+                page['service'] = page['service'].replace('MEM_', '')
+                page['service'] = page['service'].replace('MAARCH_', '')
+                page['service'] = page['service'].replace('PJSTART', '')
+
                 page['index_sep'] = int(num)
                 if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
                     page['is_empty'] = True
