@@ -358,7 +358,7 @@ class Separator:
                     self.qrList = None
                     self.get_xml_qr_code(page['pdf_filename'])
                     pdf = pypdf.PdfReader(open(page['pdf_filename'], 'rb'))
-                    self.nb_pages = pdf.getNumPages()
+                    self.nb_pages = len(pdf.pages)
                     self.parse_xml(True, page['pdf_filename'])
             except Exception as _e:
                 self.Log.error("EACD: " + str(_e))
