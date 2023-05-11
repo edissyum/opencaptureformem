@@ -20,10 +20,11 @@ import os
 import re
 import cv2
 import uuid
-import PyPDF2
+import pypdf
 import shutil
 import pdf2image
 import subprocess
+from pyzbar.pyzbar import decode
 import xml.etree.ElementTree as ET
 
 
@@ -44,6 +45,7 @@ class Separator:
         self.divider = config.cfg['SEPARATOR_QR']['divider']
         self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['exportpdfa']
         tmp_folder_name = os.path.basename(os.path.normpath(tmp_folder))
+        self.separation_type = config.cfg['SEPARATOR_QR']['separationtype']
         self.tmp_dir = config.cfg['SEPARATOR_QR']['tmppath'] + '/' + tmp_folder_name + '/'
         self.output_dir = config.cfg['SEPARATOR_QR']['outputpdfpath'] + '/' + tmp_folder_name + '/'
         self.output_dir_pdfa = config.cfg['SEPARATOR_QR']['outputpdfapath'] + '/' + tmp_folder_name + '/'
@@ -87,15 +89,21 @@ class Separator:
 
         :param file: Path to pdf file
         """
-        self.Log.info('Start page separation using QR CODE')
+        self.Log.info('Start page separation using ' + self.separation_type)
         self.pages = []
+
         try:
             if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
                 self.remove_blank_page(file)
             with open(file, 'rb') as pdf_file:
-                pdf = PyPDF2.PdfFileReader(pdf_file)
+                pdf = pypdf.PdfReader(pdf_file)
                 self.nb_pages = len(pdf.pages)
-            self.get_xml_qr_code(file)
+
+            if self.Config.cfg['SEPARATOR_QR']['separationtype'] == 'C128':
+                self.get_xml_c128(file)
+            else:
+                self.get_xml_qr_code(file)
+
             self.parse_xml()
             self.check_empty_docs()
             self.set_doc_ends()
@@ -184,14 +192,34 @@ class Separator:
                     pass
 
         if blank_page_exists:
-            infile = PyPDF2.PdfFileReader(file)
-            output = PyPDF2.PdfFileWriter()
+            infile = pypdf.PdfReader(file)
+            output = pypdf.PdfWriter()
             for i in self.sorted_files(pages_to_keep):
-                p = infile.getPage(int(i) - 1)
-                output.addPage(p)
+                p = infile.pages[int(i) - 1]
+                output.add_page(p)
 
             with open(file, 'wb') as f:
                 output.write(f)
+
+    def get_xml_c128(self, file):
+        """
+        Retrieve the content of a C128 Code
+
+        :param file: Path to pdf file
+        """
+        pages = pdf2image.convert_from_path(file)
+        barcodes = []
+        cpt = 0
+        for page in pages:
+            detected_barcode = decode(page)
+            if detected_barcode:
+                for barcode in detected_barcode:
+                    if barcode.type == 'CODE128':
+                        barcodes.append({'text': barcode.data.decode('utf-8'), 'attrib': {'num': cpt}})
+            cpt += 1
+
+        if barcodes:
+            self.qrList = barcodes
 
     def get_xml_qr_code(self, file):
         """
@@ -209,7 +237,6 @@ class Separator:
                 file
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = xml.communicate()
-
             if out.decode('utf-8') == "<barcodes xmlns='http://zbar.sourceforge.net/2008/barcode'>\n<source href='" + file + "'>\n</source>\n</barcodes>\n":
                 return
             if err.decode('utf-8'):
@@ -227,19 +254,40 @@ class Separator:
 
         if self.qrList is None:
             return
-        ns = {'bc': 'http://zbar.sourceforge.net/2008/barcode'}
-        indexes = self.qrList[0].findall('bc:index', ns)
+        if self.separation_type == 'QR_CODE':
+            ns = {'bc': 'http://zbar.sourceforge.net/2008/barcode'}
+            indexes = self.qrList[0].findall('bc:index', ns)
+        elif self.separation_type == 'C128':
+            indexes = self.qrList
+        else:
+            return
         cpt = 0
+
         for index in indexes:
             page = {}
-            data = index.find('bc:symbol', ns).find('bc:data', ns)
-            if is_pj:
-                keyword = 'PJSTART'
+            if self.separation_type == 'QR_CODE':
+                data = index.find('bc:symbol', ns).find('bc:data', ns)
+                text = data.text
+                num = index.attrib['num']
+                if is_pj:
+                    keyword = 'PJSTART'
+                else:
+                    keyword = 'MAARCH_|MEM_'
+            elif self.separation_type == 'C128':
+                data = index
+                text = data['text']
+                num = index['attrib']['num']
+                keyword = ''
             else:
-                keyword = 'MAARCH_|MEM_'
-            if re.match(keyword, data.text) is not None:
-                page['service'] = data.text.replace(keyword, '')
-                page['index_sep'] = int(index.attrib['num'])
+                return
+
+            if re.match(keyword, text) is not None:
+                page['service'] = text
+                page['service'] = page['service'].replace('MEM_', '')
+                page['service'] = page['service'].replace('MAARCH_', '')
+                page['service'] = page['service'].replace('PJSTART', '')
+
+                page['index_sep'] = int(num)
                 if page['index_sep'] + 1 >= self.nb_pages:  # If last page is a separator
                     page['is_empty'] = True
                 else:
@@ -313,8 +361,8 @@ class Separator:
                         continue
                     self.qrList = None
                     self.get_xml_qr_code(page['pdf_filename'])
-                    pdf = PyPDF2.PdfFileReader(open(page['pdf_filename'], 'rb'))
-                    self.nb_pages = pdf.getNumPages()
+                    pdf = pypdf.PdfReader(open(page['pdf_filename'], 'rb'))
+                    self.nb_pages = len(pdf.pages)
                     self.parse_xml(True, page['pdf_filename'])
             except Exception as _e:
                 self.Log.error("EACD: " + str(_e))
@@ -379,19 +427,19 @@ def split_pdf(input_path, output_path, pages, original_pages_to_keep=None):
     :param pages: Pages which compose the new PDF
     :param original_pages_to_keep: Number of page of original document when we search for PJ
     """
-    input_pdf = PyPDF2.PdfFileReader(open(input_path, "rb"))
-    output_pdf = PyPDF2.PdfFileWriter()
+    input_pdf = pypdf.PdfReader(open(input_path, "rb"))
+    output_pdf = pypdf.PdfWriter()
     for page in pages:
-        output_pdf.addPage(input_pdf.getPage(page - 1))
+        output_pdf.add_page(input_pdf.pages[page - 1])
     with open(output_path, "wb") as stream:
         output_pdf.write(stream)
 
     if original_pages_to_keep:
-        original_output_pdf = PyPDF2.PdfFileWriter()
-        input_pdf_bis = PyPDF2.PdfFileReader(open(input_path, "rb"))
+        original_output_pdf = pypdf.PdfWriter()
+        input_pdf_bis = pypdf.PdfReader(open(input_path, "rb"))
         os.remove(input_path)
         for page in original_pages_to_keep:
-            original_output_pdf.addPage(input_pdf_bis.getPage(page - 1))
+            original_output_pdf.add_page(input_pdf_bis.pages[page - 1])
 
         with open(input_path, "wb") as streama:
             original_output_pdf.write(streama)

@@ -55,6 +55,7 @@ class FindSubject(Thread):
             self.subject = ''
 
         if self.subject != '':
+            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject).strip()
             self.search_subject_second_line()
             self.Log.info("Find the following subject : " + self.subject)
 

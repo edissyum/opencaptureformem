@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
-    json_identifier = config.cfg['GLOBAL']['formpath'] + 'forms_identifier.json'
+    json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
 
     if os.path.isfile(json_identifier):
         identifier = open(json_identifier, 'r').read()
@@ -76,8 +76,20 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 letterbox_fields = data['LETTERBOX']['data']
 
                 file_content = open(args['file'], 'r')
+
                 text_parsed = BeautifulSoup(file_content, 'html.parser')
+                lines = []
+
+                for row in text_parsed.find_all('tr'):
+                    line = ''
+                    for el in row.find_all('td'):
+                        line += el.text.strip() + ' '
+                    lines.append(line.strip())
+
                 text = text_parsed.findAll(['p'])
+                if lines:
+                    text = text + lines
+
                 results = {
                     contact_table: {},
                 }
@@ -88,7 +100,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                     for line in text_parsed:
                         if line:
                             text.append(line)
-
                 for line in text:
                     if not isinstance(line, str):
                         line = line.get_text()
@@ -104,14 +115,14 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         results[contact_table][column] = contact_fields[field]['correspondance_table'][correspondance]
                             else:
                                 results[contact_table][column] = res[0]
-
                     for field in letterbox_fields:
                         regex = field['regex']
                         column = field['column']
                         regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
                         if regex_return:
                             if column != 'custom':
-                                args['data'][column] = regex_return[0]
+                                args['data'][column] = regex_return[0].strip()
+
                             # If we have a mapping specified, search for value between []
                             if 'mapping' in field:
                                 mapping = field['mapping']
@@ -140,9 +151,9 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                                     }]
                                                 })
                                             else:
-                                                args['data']['customFields'].update({column: value})
+                                                args['data']['customFields'].update({column: value.strip()})
                                         else:
-                                            args['data'][column] = value
+                                            args['data'][column] = value.strip()
                                     cpt = cpt + 1
                                 # Put the rest of the text (not in brackets) into the last map (if the cpt into mapping correponds)
                                 if len(brackets) + 1 == len(mapping):
@@ -150,11 +161,11 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     column = last_map['column']
                                     if last_map['isCustom'] == 'True':
                                         if mapping[cpt]['isAddress'] == 'True':
-                                            args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets
+                                            args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets.strip()
                                         else:
-                                            args['data']['customFields'].update({column: text_without_brackets})
+                                            args['data']['customFields'].update({column: text_without_brackets.strip()})
                                     else:
-                                        args['data'][column] = text_without_brackets
+                                        args['data'][column] = text_without_brackets.strip()
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]

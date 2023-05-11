@@ -86,8 +86,7 @@ class WebServices:
         if chrono_number:
             try:
                 data = {
-                    'chronoNumber': chrono_number,
-                    'light': True
+                    'chronoNumber': chrono_number
                 }
                 res = requests.post(self.baseUrl + '/resources/getByChrono', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout,
                                     verify=self.cert)
@@ -158,6 +157,7 @@ class WebServices:
             'documentDate': date,
             'arrivaldate': str(datetime.now()),
             'customFields': {},
+            'diffusionList': _process['diffusion_list'] if 'diffusion_list' in _process else [],
             'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
         }
 
@@ -422,6 +422,8 @@ class WebServices:
                         if weekday >= 5:
                             continue
                         process_delay -= 1
+                else:
+                    process_limit_date += timedelta(days=process_delay)
         return process_limit_date
 
     def retrieve_entities(self):
@@ -497,4 +499,17 @@ class WebServices:
                 return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.Log.error('CreateContactError : ' + str(e))
+            return False, str(e)
+
+    def retrieve_listinstance(self, res_id):
+        try:
+            res = requests.get(self.baseUrl + '/resources/' + str(res_id) + '/listInstance', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+
+            if res.status_code != 200:
+                self.Log.error('(' + str(res.status_code) + ') RetrieveListInstanceError : ' + str(res.text))
+                return False, str(res.text)
+            else:
+                return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.Log.error('RetrieveListInstanceError : ' + str(e))
             return False, str(e)
