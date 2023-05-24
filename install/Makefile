@@ -40,14 +40,14 @@ else
 fi
 
 if [ "$finalChoice" == 1 ];then
-  echo 'You choose supervisor, how many processes you want to be run simultaneously ? (default : 10)'
-  printf "Enter your choice [%s] : " "${bold}10${normal}"
+  echo 'You choose supervisor, how many processes you want to be run simultaneously ? (default : 5)'
+  printf "Enter your choice [%s] : " "${bold}5${normal}"
   read -r choice
   if [ "$choice" == "" ]; then
-    nbProcess=10
+    nbProcess=5
   elif ! [[ "$choice" =~ ^[0-9]+$ ]]; then
-    echo 'The input is not an integer, select default value (10)'
-    nbProcess=10
+    echo 'The input is not an integer, select default value (5)'
+    nbProcess=5
   else
     nbProcess="$choice"
   fi
