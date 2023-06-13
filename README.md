@@ -38,7 +38,7 @@ Nothing as simple as that :
 
     sudo mkdir /opt/mem/ && sudo chmod -R 775 /opt/mem/ && sudo chown -R $(whoami):$(whoami) /opt/mem/
     sudo apt install git
-    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git *20.03 | tail -n1 |  sed 's/.*\///; s/\^{}//')
+    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/mem/opencapture/
     cd /opt/mem/opencapture/install/
 

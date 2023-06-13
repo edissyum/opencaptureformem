@@ -61,7 +61,7 @@ git config --global user.email "update@ocformem"
 git config --global user.name "Update Open-Capture"
 git pull
 git stash # Remove custom code if needed
-latest_tag=$(git describe --tags "$(git rev-list --tags=*20.03 --max-count=1)")
+latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
 git checkout "$latest_tag"
 git config core.fileMode False
 
