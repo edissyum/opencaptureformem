@@ -170,11 +170,27 @@ if check:
         Log.info('Action after processing e-mail is : ' + action)
         Log.info('Number of e-mail to process : ' + str(len(emails)))
         i = 1
+
+        already_processed_uid = []
+        if os.path.exists(path_without_time + '/unique_id_already_processed'):
+            with open(path_without_time + '/unique_id_already_processed', 'r') as store_uid_file:
+                already_processed_uid = list(filter(None, store_uid_file.read().split(';')))
+                store_uid_file.close()
+
         for msg in emails:
+            if str(msg.uid) in already_processed_uid:
+                Log.info('E-mail with unique id' + str(msg.uid) + ' already processed, skipping...')
+                continue
+
+            with open(path_without_time + '/unique_id_already_processed', 'a') as store_uid_file:
+                store_uid_file.write(str(msg.uid) + ';')
+                store_uid_file.close()
+
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8)
             ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
             _from = ret['mail']['from']
+
             if not import_only_attachments:
                 launch({
                     'cpt': str(i),
