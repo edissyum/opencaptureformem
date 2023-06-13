@@ -31,6 +31,7 @@ Tested with :
 - Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
 - Debian 10 with Python 3.7.3 Tesseract V4.0.0
 - Debian 11.X with Python 3.9.2 Tesseract V4.1.1
+- Debian 11.X with Python 3.11.2 Tesseract V4.1.1
 
 
 ## Install Open-Capture for MEM Courrier
