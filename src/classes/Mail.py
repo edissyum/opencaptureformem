@@ -28,8 +28,7 @@ from imaplib import IMAP4_SSL
 from tnefparse.tnef import TNEF
 from exchangelib.version import EXCHANGE_O365
 from imap_tools import utils, MailBox, MailBoxTls, MailBoxUnencrypted
-from exchangelib import Account, OAuth2Credentials, Configuration, OAUTH2, IMPERSONATION, Version, FileAttachment, \
-    ItemAttachment
+from exchangelib import Account, OAuth2Credentials, Configuration, OAUTH2, IMPERSONATION, Version, FileAttachment
 
 
 class Mail:
