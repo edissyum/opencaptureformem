@@ -33,9 +33,9 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
         for _process in identifier:
             subject = args['data']['subject']
             keyword_subject = identifier[_process]['keyword_subject']
-            args['data']['modelId'] = identifier[_process]['model_id']
 
             if keyword_subject in subject:
+                args['data']['modelId'] = identifier[_process]['model_id']
                 process_found = True
                 process = _process
 

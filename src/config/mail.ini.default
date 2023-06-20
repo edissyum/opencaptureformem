@@ -24,8 +24,14 @@ tenant_id   =
 client_id   =
 secret      =
 
+[EXCHANGE]
+endpoint    = https://outlook.office365.com/EWS/Exchange.asmx
+client_id   =
+tenant_id   =
+secret      =
+
 [MAIL_1]
-; basic or oauth
+; basic, oauth or exchange
 auth_method          = basic
 host                 = outlook.office365.com
 port                 = 993

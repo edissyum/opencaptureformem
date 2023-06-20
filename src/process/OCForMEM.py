@@ -320,7 +320,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
 
-    print(res)
     if res and res[0] is not False:
         log.info("Insert OK : " + str(res))
         if chrono_res_id and chrono_number:
