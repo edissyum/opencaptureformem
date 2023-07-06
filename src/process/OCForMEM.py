@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import re
 import sys
 import json
 import shutil
@@ -51,6 +52,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if args.get('RDFF') not in [None, False]:
         log.info('RDFF is enabled')
         file_name = os.path.basename(file)
+        file_name = re.sub('^MEM_', '', file_name)
+        file_name = re.sub('^MAARCH_', '', file_name)
         if separator.divider not in file_name:
             destination = config.cfg[_process]['destination']
         else:
