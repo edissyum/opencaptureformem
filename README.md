@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2022/12/open_capture_for_mem_courrier.png)
 
-# Open-Capture for MEM Courrier 21.03
+# Open-Capture for MEM Courrier
 Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of Open-Capture for MEM Courrier are :
@@ -26,12 +26,10 @@ The functionnalities of Open-Capture for MEM Courrier are :
 
 # Installation
 ## Linux Distributions
-Tested with :
-- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
-- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
-- Debian 10 with Python 3.7.3 Tesseract V4.0.0
-- Debian 11.X with Python 3.9.2 Tesseract V4.1.1
-- Debian 11.X with Python 3.11.2 Tesseract V4.1.1
+
+Open-Capture for MEM Courrier is only tested on **Debian** distribution.
+
+For the latest version (4.3.0) you need to install **Debian 12** (Bookworm).
 
 
 ## Install Open-Capture for MEM Courrier
@@ -53,7 +51,7 @@ Systemd is perfect for one instance
       # Answer the few questions asked at launch
       # Go grab a coffee ;)
 
-It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
+It will install all the needed dependencies, compile and install Tesseract V5 with french and english locale. If you need more locales, just do :
 
     sudo apt install tesseract-ocr-<langcode>
 
@@ -213,7 +211,7 @@ To avoid lack of memory on the server, do not forget to cron the <code>clean.sh<
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
 
-# Update Open-Capture For MEM Courrier 20.03 and 21.03
+# Update Open-Capture For MEM Courrier
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     cd /opt/mem/opencapture/install/
