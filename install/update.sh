@@ -46,10 +46,10 @@ if [ ! -f "/home/$user/python-venv/opencaptureformem/bin/python3" ]; then
     fi
 fi
 
-# Retrieve the last tags from gitlab
+# Retrieve the last tags from github
 cd "$OCPath" || exit 1
 git config --global user.email "update@ocformem"
-git config --global user.name "Update Open-Capture"
+git config --global user.name "Update Open-Capture For MEM"
 git pull
 git stash # Remove custom code if needed
 latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
