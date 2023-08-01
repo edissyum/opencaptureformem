@@ -9,7 +9,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 OS=$(lsb_release -si)
 VER=$(lsb_release -r)
-defaultPath=/opt/mem/opencaptureformem/
+defaultPath=/opt/edissyum/opencaptureformem/
 imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
 group=$(who am i | awk '{print $1}')
@@ -75,15 +75,6 @@ if [ "$finalChoice" != 1 ];then
     fi
 fi
 
-echo 'Would you use Python virtual environment ? (default : yes)'
-printf "Enter your choice [%s] : " "${bold}yes${normal}/no"
-read -r choice
-if [ "$choice" != "no" ]; then
-    pythonVenv='true'
-else
-    pythonVenv='false'
-fi
-
 ####################
 # Install package
 if [[ "$OS" = 'Debian' && "$VER" == *'9'* ]]; then
@@ -103,17 +94,11 @@ fi
 
 xargs -a apt-requirements.txt apt install -y
 
-if [ $pythonVenv = 'true' ]; then
-    python3 -m venv "/opt/mem/python-venv/opencaptureformem"
-    echo "source /opt/mem/python-venv/opencaptureformem/bin/activate" >> "/home/$user/.bashrc"
-    "/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
-    "/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install pillow
-    "/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
-else
-    python3 -m pip install --upgrade pip
-    python3 -m pip install pillow
-    python3 -m pip install -r pip-requirements.txt
-fi
+python3 -m venv "/opt/mem/python-venv/opencaptureformem"
+echo "source /opt/mem/python-venv/opencaptureformem/bin/activate" >> "/home/$user/.bashrc"
+"/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
+"/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install pillow
+"/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
 
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
@@ -127,19 +112,12 @@ cp scripts/launch_IN.sh.default scripts/launch_IN.sh
 cp scripts/launch_OUT.sh.default scripts/launch_OUT.sh
 cp scripts/launch_reconciliation.sh.default scripts/launch_reconciliation.sh
 cp scripts/launch_MAIL.sh.default scripts/launch_MAIL.sh
-if [ $pythonVenv = 'true' ]; then
-    sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/service.sh
-    sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_IN.sh
-    sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_OUT.sh
-    sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_reconciliation.sh
-    sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_MAIL.sh
-else
-    sed -i "s#§§PYTHON_VENV§§##g" scripts/service.sh
-    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_IN.sh
-    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_OUT.sh
-    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_reconciliation.sh
-    sed -i "s#§§PYTHON_VENV§§##g" scripts/launch_MAIL.sh
-fi
+
+sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/service.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_IN.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_OUT.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_reconciliation.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_MAIL.sh
 
 ####################
 # Makes scripts executable

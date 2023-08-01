@@ -24,22 +24,13 @@ fi
 # Put the default paths.
 # Modify them if needed
 currentDate=$(date +%m%d%Y-%H%M%S)
-OCPath="/opt/mem/opencapture/"
-backupPath="/opt/mem/opencapture.$currentDate/"
+OCPath="/opt/edissyum/opencaptureformem/"
+backupPath="/opt/edissyum/opencaptureformem.$currentDate/"
 
 user=$(who am i | awk '{print $1}')
 
 # Backup all the Open-Capture path
 cp -r "$OCPath" "$backupPath"
-
-echo 'Do you use Python virtual environment while installing Open-Capture For MEM Courrier ? (default : yes)'
-printf "Enter your choice [%s] : " "${bold}yes${normal}/no"
-read -r choice
-if [ "$choice" != "no" ]; then
-    pythonVenv='true'
-else
-    pythonVenv='false'
-fi
 
 if [ ! -f "/home/$user/python-venv/opencaptureformem/bin/python3" ]; then
     echo "#######################################################################################"
@@ -71,17 +62,10 @@ cd install/ || exit 2
 apt update
 xargs -a apt-requirements.txt apt install -y
 
-if [ $pythonVenv = 'true' ]; then
-    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
-    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pillow
-    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
-    "/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade -r pip-requirements.txt
-else
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade pillow
-    python3 -m pip install -r pip-requirements.txt
-    python3 -m pip install --upgrade -r pip-requirements.txt
-fi
+"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
+"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pillow
+"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
+"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade -r pip-requirements.txt
 
 cd $OCPath || exit 3
 find . -name ".gitkeep" -delete
