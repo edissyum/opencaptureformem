@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$EUID" -ne 0 ]
-  then echo "Makefile needed to be launch by user with root privileges"
+  then echo "install.sh needed to be launch by user with root privileges"
   exit 1
 fi
 
@@ -94,7 +94,7 @@ EOF'
   apt install -y -t stretch-backports tesseract-ocr
   apt install -y -t stretch-backports tesseract-ocr-fra
   apt install -y -t stretch-backports tesseract-ocr-eng
-elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && ($VER == *'10'* || $VER == *'11'*) ]]; then
+elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && ($VER == *'11'* || $VER == *'12'*) ]]; then
   apt update
   apt install -y tesseract-ocr
   apt install -y tesseract-ocr-fra

@@ -41,13 +41,13 @@ Nothing as simple as that :
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/mem/opencapture/
     cd /opt/mem/opencapture/install/
 
-The ./Makefile install all the necessary packages and create the service
+The ./install.sh install all the necessary packages and create the service
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
 
-    chmod u+x Makefile
-    sudo ./Makefile
+    chmod u+x install.sh
+    sudo ./install.sh
       # Answer the few questions asked at launch
       # Go grab a coffee ;)
 
