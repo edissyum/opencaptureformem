@@ -35,7 +35,7 @@ For the latest version (4.3.0) you need to install **Debian 12** (Bookworm).
 ## Install Open-Capture for MEM Courrier
 Nothing as simple as that :
 
-    sudo mkdir /opt/mem/ && sudo chmod -R 775 /opt/mem/ && sudo chown -R $(whoami):$(whoami) /opt/mem/
+    sudo mkdir -p /opt/mem/ && sudo chmod -R 775 /opt/mem/ && sudo chown -R $(whoami):$(whoami) /opt/mem/
     sudo apt install git
     latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/mem/opencapture/
