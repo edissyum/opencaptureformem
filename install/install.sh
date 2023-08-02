@@ -94,11 +94,11 @@ fi
 
 xargs -a apt-requirements.txt apt install -y
 
-python3 -m venv "/opt/mem/python-venv/opencaptureformem"
-echo "source /opt/mem/python-venv/opencaptureformem/bin/activate" >> "/home/$user/.bashrc"
-"/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
-"/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install pillow
-"/opt/mem/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
+python3 -m venv "/opt/edissyum/python-venv/opencaptureformem"
+echo "source /opt/edissyum/python-venv/opencaptureformem/bin/activate" >> "/home/$user/.bashrc"
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install pillow
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
 
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
@@ -113,11 +113,11 @@ cp scripts/launch_OUT.sh.default scripts/launch_OUT.sh
 cp scripts/launch_reconciliation.sh.default scripts/launch_reconciliation.sh
 cp scripts/launch_MAIL.sh.default scripts/launch_MAIL.sh
 
-sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/service.sh
-sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_IN.sh
-sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_OUT.sh
-sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_reconciliation.sh
-sed -i "s#§§PYTHON_VENV§§#source /opt/mem/python-venv/opencaptureformem/bin/activate#g" scripts/launch_MAIL.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/service.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_IN.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_OUT.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_reconciliation.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_MAIL.sh
 
 ####################
 # Makes scripts executable
