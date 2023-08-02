@@ -52,6 +52,7 @@ timeDelta           = 62
 upperCaseSubject    = False
 # Path to the .crt file
 certPath            =
+reconciliationType  = QRCODE
 
 # !!!! IMPORTANT !!!!
 # The process name have to be LOWERCASE

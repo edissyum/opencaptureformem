@@ -25,21 +25,24 @@ import mimetypes
 from ssl import SSLError
 from socket import gaierror
 from imaplib import IMAP4_SSL
-from imap_tools import utils, MailBox, MailBoxTls, MailBoxUnencrypted
 from tnefparse.tnef import TNEF
+from exchangelib.version import EXCHANGE_O365
+from imap_tools import utils, MailBox, MailBoxTls, MailBoxUnencrypted
+from exchangelib import Account, OAuth2Credentials, Configuration, OAUTH2, IMPERSONATION, Version, FileAttachment
 
 
 class Mail:
-    def __init__(self, auth_method, oauth, host, port, login, pwd, ws, smtp):
-        self.auth_method = auth_method
-        self.oauth = oauth
+    def __init__(self, auth_method, oauth, exchange, host, port, login, pwd, ws, smtp):
+        self.ws = ws
         self.pwd = pwd
         self.conn = None
         self.port = port
         self.host = host
-        self.login = login
-        self.ws = ws
         self.SMTP = smtp
+        self.oauth = oauth
+        self.login = login
+        self.exchange = exchange
+        self.auth_method = auth_method
 
     def send_notif(self, msg, step):
         if self.SMTP.isUp:
@@ -82,30 +85,47 @@ class Mail:
         """
         Test the connection to the IMAP server
         :param secured_connection: boolean
-        :param log: Log object
         """
-        try:
-            if secured_connection == 'SSL':
-                self.conn = MailBox(host=self.host, port=self.port)
-            elif secured_connection == 'STARTTLS':
-                self.conn = MailBoxTls(host=self.host, port=self.port)
-            else:
-                self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
 
-        except (gaierror, SSLError) as e:
-            error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(e)
-            print(error)
-            self.send_notif(error, 'de la connexion IMAP')
-            sys.exit()
+        if self.auth_method == 'exchange':
+            credentials = OAuth2Credentials(
+                tenant_id=self.exchange['tenant_id'],
+                client_id=self.exchange['client_id'],
+                client_secret=self.exchange['secret']
+            )
 
-        try:
-            if self.auth_method == 'basic':
-                self.conn.login(self.login, self.pwd)
-            elif self.auth_method == 'oauth':
-                result = self.generate_oauth_token()
-                self.conn.client.authenticate("XOAUTH2", lambda x: self.generate_auth_string(result['access_token']).encode("utf-8"))
+            config = Configuration(
+                auth_type=OAUTH2,
+                credentials=credentials,
+                version=Version(build=EXCHANGE_O365),
+                service_endpoint=self.exchange['endpoint']
+            )
 
-        except IMAP4_SSL.error as err:
+            self.conn = Account(self.login, credentials=credentials, config=config, access_type=IMPERSONATION)
+        else:
+            try:
+                if secured_connection == 'SSL':
+                    self.conn = MailBox(host=self.host, port=self.port)
+                elif secured_connection == 'STARTTLS':
+                    self.conn = MailBoxTls(host=self.host, port=self.port)
+                else:
+                    self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
+            except (gaierror, SSLError) as _e:
+                error = 'IMAP Host ' + self.host + ' on port ' + self.port + ' is unreachable : ' + str(_e)
+                print(error)
+                self.send_notif(error, 'de la connexion IMAP')
+                sys.exit()
+
+            try:
+                if self.auth_method == 'basic':
+                    self.conn.login(self.login, self.pwd)
+                elif self.auth_method == 'oauth':
+                    result = self.generate_oauth_token()
+                    self.conn.client.authenticate("XOAUTH2",
+                                                  lambda x: self.generate_auth_string(result['access_token']).encode(
+                                                      "utf-8"))
+
+            except IMAP4_SSL.error as err:
                 error = 'Authentication method : ' + self.auth_method + ' - Error while trying to login to ' \
                         + self.host + ' using ' + self.login + ' : ' + str(err)
                 print(error)
@@ -119,10 +139,16 @@ class Mail:
         :param folder: Folder to check
         :return: Boolean
         """
-        folders = self.conn.folder.list()
-        for f in folders:
-            if folder == f.name:
-                return True
+
+        if self.auth_method == 'exchange':
+            for _f in self.conn.root.walk():
+                if folder == _f.name:
+                    return True
+        else:
+            folders = self.conn.folder.list()
+            for _f in folders:
+                if folder == _f.name:
+                    return True
         return False
 
     def select_folder(self, folder):
@@ -131,17 +157,25 @@ class Mail:
 
         :param folder: Folder to select
         """
-        self.conn.folder.set(folder)
+        if self.auth_method != 'exchange':
+            self.conn.folder.set(folder)
 
-    def retrieve_message(self):
+    def retrieve_message(self, folder_to_crawl):
         """
         Retrieve all the messages into the selected mailbox
 
         :return: list of mails
         """
+
         emails = []
-        for mail in self.conn.fetch():
-            emails.append(mail)
+        if self.auth_method == 'exchange':
+            for _f in self.conn.root.walk():
+                if folder_to_crawl == _f.name:
+                    for mail in _f.all().order_by('-datetime_received'):
+                        emails.append(mail)
+        else:
+            for mail in self.conn.fetch():
+                emails.append(mail)
         return emails
 
     def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
@@ -154,36 +188,63 @@ class Mail:
         :param log: Log object
         :return: dict of Args and file path
         """
-        to_str, cc_str, reply_to, from_val = ('', '', '', '')
-        try:
-            for to in msg.to_values:
-                to_str += to.full + ';'
-        except (TypeError, AttributeError):
-            pass
 
-        try:
-            for cc in msg.cc_values:
-                cc_str += cc.full + ';'
-        except (TypeError, AttributeError):
-            pass
+        if self.auth_method == 'exchange':
+            msg_id = str(msg.conversation_id.id)
+            from_val = msg.sender.name + ' <' + msg.sender.email_address + '>'
+            to_values = [msg.received_by] if not isinstance(msg.received_by, list) else msg.received_by
+            try:
+                cc_values = [msg.cc_recipients] if not isinstance(msg.cc_recipients, list) else msg.cc_recipients
+            except AttributeError:
+                cc_values = []
 
-        try:
-            for rp_to in msg.reply_to_values:
-                reply_to += rp_to.full + ';'
-        except (TypeError, AttributeError):
-            pass
-
-        try:
+            try:
+                reply_to_values = [msg.reply_to_item] if not isinstance(msg.reply_to_item, list) else msg.reply_to_item
+            except AttributeError:
+                reply_to_values = []
+            document_date = msg.datetime_created
+        else:
+            msg_id = msg.uid
+            document_date = msg.date
+            cc_values = msg.cc_values
+            to_values = msg.to_values
             from_val = msg.from_values.full
+            reply_to_values = msg.reply_to_values
+
+        to_str, cc_str, reply_to = ('', '', '')
+        try:
+            for to in to_values:
+                if self.auth_method == 'exchange':
+                    to_str += to.name + ' <' + to.email_address + '>;'
+                else:
+                    to_str += to.full + ';'
         except (TypeError, AttributeError):
             pass
 
-        if len(msg.html) == 0:
+        try:
+            for cc in cc_values:
+                if self.auth_method == 'exchange':
+                    cc_str += cc.name + ' <' + cc.email_address + '>;'
+                else:
+                    cc_str += cc.full + ';'
+        except (TypeError, AttributeError):
+            pass
+
+        try:
+            for rp_to in reply_to_values:
+                if self.auth_method == 'exchange':
+                    reply_to += rp_to.name + ' <' + rp_to.email_address + '>;'
+                else:
+                    reply_to += rp_to.full + ';'
+        except (TypeError, AttributeError):
+            pass
+
+        if self.auth_method != 'exchange' and len(msg.html) == 0:
             file_format = 'txt'
-            file = backup_path + '/mail_' + str(msg.uid) + '/mail_origin/body.txt'
+            file = backup_path + '/mail_' + msg_id + '/mail_origin/body.txt'
         else:
             file_format = 'html'
-            file = backup_path + '/mail_' + str(msg.uid) + '/mail_origin/body.html'
+            file = backup_path + '/mail_' + msg_id + '/mail_origin/body.html'
 
         data = {
             'mail': {
@@ -197,18 +258,18 @@ class Mail:
                 'typist': cfg['typist'],
                 'subject': msg.subject,
                 'destination': cfg['destination'],
-                'documentDate': str(msg.date),
-                'from': msg.from_,
+                'documentDate': str(document_date),
+                'from': from_val,
                 'customFields': {},
             },
             'attachments': []
         }
 
         from_is_reply_to = str2bool(cfg['from_is_reply_to'])
-        if from_is_reply_to and len(msg.reply_to) > 0:
-            data['mail']['from'] = msg.reply_to[0]
+        if from_is_reply_to and len(reply_to_values) > 0:
+            data['mail']['from'] = reply_to_values[0]
         else:
-            data['mail']['from'] = msg.from_
+            data['mail']['from'] = from_val
 
         # Add custom if specified
         if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log):
@@ -235,7 +296,7 @@ class Mail:
             })
 
         attachments = self.retrieve_attachment(msg)
-        attachments_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
+        attachments_path = backup_path + '/mail_' + msg_id + '/attachments/'
         for pj in attachments:
             path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
             if not os.path.isfile(path):
@@ -266,61 +327,73 @@ class Mail:
         :return: Boolean
         """
         # Backup mail
-        primary_mail_path = backup_path + '/mail_' + str(msg.uid) + '/mail_origin/'
+        if self.auth_method == 'exchange':
+            msg_id = str(msg.conversation_id.id)
+            html_body = msg.body
+        else:
+            msg_id = str(msg.uid)
+            html_body = msg.html
+
+        primary_mail_path = backup_path + '/mail_' + msg_id + '/mail_origin/'
         os.makedirs(primary_mail_path)
 
         # Start with headers
-        fp = open(primary_mail_path + 'header.txt', 'w')
-        for header in msg.headers:
-            try:
-                fp.write(header + ' : ' + msg.headers[header][0] + '\n')
-            except UnicodeEncodeError:
-                fp.write(header + ' : ' + msg.headers[header][0].encode('utf-8', 'surrogateescape').decode('utf-8',
-                                                                                                           'replace') + '\n')
-        fp.close()
+        if msg.headers is not None:
+            fp = open(primary_mail_path + 'header.txt', 'w', encoding='UTF-8')
+            for header in msg.headers:
+                if self.auth_method == 'exchange':
+                    header_name = header.name
+                    header_value = header.value
+                else:
+                    header_name = header
+                    header_value = msg.headers[header][0]
+
+                try:
+                    fp.write(header_name + ' : ' + header_value + '\n')
+                except UnicodeEncodeError:
+                    fp.write(header_name + ' : ' + header_value.encode('utf-8', 'surrogateescape').decode('utf-8',                                                                                    'replace') + '\n')
+            fp.close()
 
         # Then body
-        if len(msg.html) == 0:
-            fp = open(primary_mail_path + 'body.txt', 'w')
+        if self.auth_method != 'exchange' and len(msg.html) == 0:
+            fp = open(primary_mail_path + 'body.txt', 'w', encoding='UTF-8')
             if len(msg.text) != 0:
                 fp.write(msg.text)
             else:
                 fp.write(' ')
         else:
-            fp = open(primary_mail_path + 'body.html', 'w')
+            fp = open(primary_mail_path + 'body.html', 'w', encoding='UTF-8')
             if force_utf8:
                 utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-                if not re.search(utf_8_charset.lower(), msg.html.lower()) or re.search(utf_8_charset.lower() + '\s*-->',
-                                                                                       msg.html.lower()) \
-                        or re.search('<!--\s*' + utf_8_charset.lower(), msg.html.lower()):
+                if not re.search(utf_8_charset.lower(), html_body.lower()) or re.search(utf_8_charset.lower() + '\s*-->',
+                                                                                       html_body.lower()) or re.search(
+                    '<!--\s*' + utf_8_charset.lower(), html_body.lower()):
                     fp.write(utf_8_charset)
                     fp.write('\n')
-            fp.write(msg.html)
+            fp.write(html_body)
         fp.close()
 
-        # For safety, backup original stream retrieve from IMAP directly
-        fp = open(primary_mail_path + 'orig.txt', 'w')
-
-        for payload in msg.obj.get_payload():
-            try:
-                fp.write(str(payload))
-            except KeyError:
-                break
-
-        fp.close()
+        if self.auth_method != 'exchange':
+            # For safety, backup original stream retrieve from IMAP directly
+            fp = open(primary_mail_path + 'orig.txt', 'w', encoding='UTF-8')
+            for payload in msg.obj.get_payload():
+                try:
+                    fp.write(str(payload))
+                except KeyError:
+                    break
+            fp.close()
 
         # Backup attachments
         attachments = self.retrieve_attachment(msg)
 
         if len(attachments) > 0:
-            attachment_path = backup_path + '/mail_' + str(msg.uid) + '/attachments/'
+            attachment_path = backup_path + '/mail_' + msg_id + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
                 file_path = os.path.join(attachment_path + sanitize_filename(file['filename']) + file['format'])
                 if not os.path.isfile(file_path) and file['format'] and not os.path.isdir(file_path):
-                    fp = open(file_path, 'wb')
-                    fp.write(file['content'])
-                    fp.close()
+                    with open(file_path, 'wb') as fp:
+                        fp.write(file['content'])
         return True
 
     def move_to_destination_folder(self, msg, destination, log):
@@ -332,12 +405,17 @@ class Mail:
         :param destination: IMAP folder destination
         :return: Boolean
         """
-        try:
-            self.conn.move(msg.uid, destination)
-            return True
-        except utils.UnexpectedCommandStatusError as e:
-            log.error('Error while moving mail to ' + destination + ' folder : ' + str(e))
-            pass
+        if self.auth_method == 'exchange':
+            for _f in self.conn.root.walk():
+                if destination == _f.name:
+                    msg.move(_f)
+        else:
+            try:
+                self.conn.move(msg.uid, destination)
+                return True
+            except utils.UnexpectedCommandStatusError as e:
+                log.error('Error while moving mail to ' + destination + ' folder : ' + str(e))
+                pass
 
     def delete_mail(self, msg, trash_folder, log):
         """
@@ -347,15 +425,24 @@ class Mail:
         :param msg: Mail Data
         :param trash_folder: IMAP trash folder
         """
-        try:
-            if not self.check_if_folder_exist(trash_folder):
-                log.info('Trash folder (' + trash_folder + ') doesnt exist, delete mail (couldn\'t be retrieve)')
-                self.conn.delete(msg.uid)
-            else:
-                self.move_to_destination_folder(msg, trash_folder, log)
-        except utils.UnexpectedCommandStatusError as e:
-            log.error('Error while deleting mail : ' + str(e))
-            pass
+        if self.auth_method == 'exchange':
+            folder_found = False
+            for _f in self.conn.root.walk():
+                if trash_folder == _f.name:
+                    msg.move(_f)
+                    folder_found = True
+            if not folder_found:
+                msg.move_to_trash()
+        else:
+            try:
+                if not self.check_if_folder_exist(trash_folder):
+                    log.info('Trash folder (' + trash_folder + ') doesnt exist, delete mail (couldn\'t be retrieve)')
+                    self.conn.delete(msg.uid)
+                else:
+                    self.move_to_destination_folder(msg, trash_folder, log)
+            except utils.UnexpectedCommandStatusError as e:
+                log.error('Error while deleting mail : ' + str(e))
+                pass
 
     @staticmethod
     def retrieve_attachment(msg):
@@ -367,33 +454,41 @@ class Mail:
         """
         args = []
         for att in msg.attachments:
-            if att.filename == 'winmail.dat':
-                mime_type = ''
-                winmail = TNEF(att.payload, do_checksum=True)
-                for att in winmail.attachments:
-                    for attr in att.mapi_attrs:
-                        if attr.attr_type == 30 and attr.name == 14094:
-                            mime_type = attr.raw_data[0]
-                    file_format = os.path.splitext(att.name)[1]
-                    args.append({
-                        'filename': os.path.splitext(att.name)[0].replace(' ', '_'),
-                        'format': file_format,
-                        'content': att.data,
-                        'mime_type': mime_type
-                    })
-            else:
-                file_format = os.path.splitext(att.filename)[1]
-                if not att.filename and not file_format:
-                    continue
-                elif not file_format or file_format in ['.']:
-                    file_format = mimetypes.guess_extension(att.content_type, strict=False)
-
+            if isinstance(att, FileAttachment):
                 args.append({
-                    'filename': os.path.splitext(att.filename)[0].replace(' ', '_'),
-                    'format': file_format,
-                    'content': att.payload,
+                    'filename': os.path.splitext(att.name.replace(' ', '_'))[0],
+                    'format': os.path.splitext(att.name)[1],
+                    'content': att.content,
                     'mime_type': att.content_type
                 })
+            else:
+                if att.filename == 'winmail.dat':
+                    mime_type = ''
+                    winmail = TNEF(att.payload, do_checksum=True)
+                    for att in winmail.attachments:
+                        for attr in att.mapi_attrs:
+                            if attr.attr_type == 30 and attr.name == 14094:
+                                mime_type = attr.raw_data[0]
+                        file_format = os.path.splitext(att.name)[1]
+                        args.append({
+                            'filename': os.path.splitext(att.name)[0].replace(' ', '_'),
+                            'format': file_format,
+                            'content': att.data,
+                            'mime_type': mime_type
+                        })
+                else:
+                    file_format = os.path.splitext(att.filename)[1]
+                    if not att.filename and not file_format:
+                        continue
+                    elif not file_format or file_format in ['.']:
+                        file_format = mimetypes.guess_extension(att.content_type, strict=False)
+
+                    args.append({
+                        'filename': os.path.splitext(att.filename)[0].replace(' ', '_'),
+                        'format': file_format,
+                        'content': att.payload,
+                        'mime_type': att.content_type
+                    })
         return args
 
     def check_custom_field(self, field, log):

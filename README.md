@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2022/12/open_capture_for_mem_courrier.png)
 
-# Open-Capture for MEM Courrier 21.03
+# Open-Capture for MEM Courrier
 Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 The functionnalities of Open-Capture for MEM Courrier are :
@@ -26,33 +26,32 @@ The functionnalities of Open-Capture for MEM Courrier are :
 
 # Installation
 ## Linux Distributions
-Tested with :
-- Debian 9.6 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
-- Debian 9.8 with Python 3.5.3 & Tesseract v3.04.01 or Tesseract V4.0.0 (stretch-backports)
-- Debian 10 with Python 3.7.3 Tesseract V4.0.0
-- Debian 11.X with Python 3.9.2 Tesseract V4.1.1
+
+Open-Capture for MEM Courrier is only tested on **Debian** distribution.
+
+For the latest version (4.3.0) you need to install **Debian 12** (Bookworm).
 
 
 ## Install Open-Capture for MEM Courrier
 Nothing as simple as that :
 
-    sudo mkdir /opt/mem/ && sudo chmod -R 775 /opt/mem/ && sudo chown -R $(whoami):$(whoami) /opt/mem/
+    sudo mkdir -p /opt/mem/ && sudo chmod -R 775 /opt/mem/ && sudo chown -R $(whoami):$(whoami) /opt/mem/
     sudo apt install git
-    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git *20.03 | tail -n1 |  sed 's/.*\///; s/\^{}//')
+    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/mem/opencapture/
     cd /opt/mem/opencapture/install/
 
-The ./Makefile install all the necessary packages and create the service
+The ./install.sh install all the necessary packages and create the service
 You have the choice between using supervisor or basic systemd
 Supervisor is useful if you need to run multiple instance of Open-Capture in parallel
 Systemd is perfect for one instance
 
-    chmod u+x Makefile
-    sudo ./Makefile
+    chmod u+x install.sh
+    sudo ./install.sh
       # Answer the few questions asked at launch
       # Go grab a coffee ;)
 
-It will install all the needed dependencies, compile and install Tesseract V4.0.0 with french and english locale. If you need more locales, just do :
+It will install all the needed dependencies, compile and install Tesseract V5 with french and english locale. If you need more locales, just do :
 
     sudo apt install tesseract-ocr-<langcode>
 
@@ -212,7 +211,7 @@ To avoid lack of memory on the server, do not forget to cron the <code>clean.sh<
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
 
-# Update Open-Capture For MEM Courrier 20.03 and 21.03
+# Update Open-Capture For MEM Courrier
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
     cd /opt/mem/opencapture/install/

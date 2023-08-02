@@ -19,6 +19,7 @@
 # Bash script to clean MailCollect batches and log
 
 batch_path='/opt/mem/opencapture/data/MailCollect/'
+unique_id_path='/opt/mem/opencapture/data/MailCollect/unique_id_already_processed'
 conservation_time=7
 conservation_time_error_folder=14
 
@@ -31,3 +32,5 @@ for dir in "$batch_path"/*/; do
     fi
   fi
 done
+
+rm "$unique_id_path"

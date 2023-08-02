@@ -10,5 +10,6 @@ pdf2image
 tnefparse
 imap-tools
 pytesseract
+exchangelib
 configparser
 opencv-python

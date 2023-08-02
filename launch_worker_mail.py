@@ -110,6 +110,7 @@ SMTP = SMTP(
 Mail = mailClass.Mail(
     config_mail.cfg[process]['auth_method'],
     config_mail.cfg['OAUTH'],
+    config_mail.cfg['EXCHANGE'],
     config_mail.cfg[process]['host'],
     config_mail.cfg[process]['port'],
     config_mail.cfg[process]['login'],
@@ -149,7 +150,7 @@ else:
 
 if check:
     Mail.select_folder(folder_to_crawl)
-    emails = Mail.retrieve_message()
+    emails = Mail.retrieve_message(folder_to_crawl)
     if len(emails) > 0:
         now = datetime.datetime.now()
         if not os.path.exists(path):
@@ -170,11 +171,36 @@ if check:
         Log.info('Action after processing e-mail is : ' + action)
         Log.info('Number of e-mail to process : ' + str(len(emails)))
         i = 1
+
+        already_processed_uid = []
+        if os.path.exists(path_without_time + '/unique_id_already_processed'):
+            with open(path_without_time + '/unique_id_already_processed', 'r', encoding='UTF-8') as store_uid_file:
+                already_processed_uid = list(filter(None, store_uid_file.read().split(';')))
+                store_uid_file.close()
+
         for msg in emails:
+            if Mail.auth_method == 'exchange':
+                msg_id = str(msg.conversation_id.id)
+            else:
+                msg_id = str(msg.uid)
+
+            if msg_id in already_processed_uid:
+                Log.info('E-mail with unique id' + msg_id + ' already processed, skipping...')
+                continue
+
+            with open(path_without_time + '/unique_id_already_processed', 'a', encoding='UTF-8') as store_uid_file:
+                store_uid_file.write(msg_id + ';')
+                store_uid_file.close()
+
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8)
             ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
             _from = ret['mail']['from']
+            if Mail.auth_method == 'exchange':
+                document_date = msg.datetime_created
+            else:
+                document_date = msg.date
+
             if not import_only_attachments:
                 launch({
                     'cpt': str(i),
@@ -182,8 +208,8 @@ if check:
                     'from': _from,
                     'isMail': True,
                     'isForm': is_form,
-                    'msg_uid': str(msg.uid),
-                    'msg': {'date': msg.date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg.subject, 'uid': msg.uid},
+                    'msg_uid': str(msg_id),
+                    'msg': {'date': document_date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg.subject, 'uid': msg_id},
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],

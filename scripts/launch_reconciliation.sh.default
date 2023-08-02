@@ -56,7 +56,7 @@ convertToJpg(){
 
 readBarCode(){
     # Read the barcode and retrieve the informations it contains
-    zbarimg -q --xml -Sdisable -Sqr.enable "$1" | grep -oP 'CDATA\[[^\]]*' | sed -e "s#CDATA\[##g"
+    python3 ${OCPath}/scripts/read_barcode.py -c "$config_file" -f "$1"
 }
 
 check_attachment(){
