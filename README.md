@@ -35,11 +35,11 @@ For the latest version (4.3.0) you need to install **Debian 12** (Bookworm).
 ## Install Open-Capture for MEM Courrier
 Nothing as simple as that :
 
-    sudo mkdir -p /opt/mem/ && sudo chmod -R 775 /opt/mem/ && sudo chown -R $(whoami):$(whoami) /opt/mem/
+    sudo mkdir -p /opt/edissyum/ && sudo chmod -R 775 /opt/edissyum/ && sudo chown -R $(whoami):$(whoami) /opt/edissyum/
     sudo apt install git
     latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
-    git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/mem/opencapture/
-    cd /opt/mem/opencapture/install/
+    git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/edissyum/opencaptureformem/
+    cd /opt/edissyum/opencaptureformem/install/
 
 The ./install.sh install all the necessary packages and create the service
 You have the choice between using supervisor or basic systemd
@@ -77,7 +77,7 @@ First, add your user into the following file :
 
 Then use <code>incrontab -e</code> and put the following line :
 
-    /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO /opt/mem/opencapture/scripts/launch_IN.sh $@/$#
+    /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO /opt/edissyum/opencaptureformem/scripts/launch_IN.sh $@/$#
     
 ## Configuration
 The file <code>src/config/config.ini</code> is splitted in different categories
@@ -86,7 +86,7 @@ The file <code>src/config/config.ini</code> is splitted in different categories
     - Choose the number of threads used to multi-threads (5 by defaults)
     - Resolution and compressionQuality when PDF are converted to JPG
     - List of char to be remove to sanitize detected email
-    - Set the default path of the project (default : **/opt/mem/opencapture/**)
+    - Set the default path of the project (default : **/opt/edissyum/opencaptureformem/**)
     - tmpPath, no need to modify
     - errorPath, no need to modify
     - Path to the logFile, no need to modify
@@ -120,10 +120,10 @@ To activate auto recontiliation for MEM Courrier outgoing document you must set 
 ### Utilisations
 Here is some examples of possible usages in the launch_XX.sh script:
 
-    python3 /opt/mem/opencapture/launch_worker.py -c /opt/mem/opencapture/src/config/config.ini -f file.pdf -process incoming
-    python3 /opt/mem/opencapture/launch_worker.py -c /opt/mem/opencapture/src/config/config.ini -p /path/to/folder/
-    python3 /opt/mem/opencapture/launch_worker.py -c /opt/mem/opencapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
-    python3 /opt/mem/opencapture/launch_worker.py -c /opt/mem/opencapture/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
+    python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -f file.pdf -process incoming
+    python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/
+    python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
+    python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
@@ -144,19 +144,19 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 
 You have the possibility to capture e-mail directly from your inbox.
     
-Just edit the <code>/opt/mem/opencapture/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
+Just edit the <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
 If you want to have the from, to, cc and replyTo metadatas you have to create the custom fields into MEM Courrier superadmin dashboard and modify the ID into the config file (8, 9, 10, 11 by default) 
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.
 
 IMPORTANT : Do not put space into process name
 
-I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/mem/opencapture/src/config/mail.ini</code> and that's all. 
+I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code> and that's all. 
 The <code>launch_MAIL.sh</code> automatically loop into all the processes and launch them
 
 Don't forget to fill the `typist` with the user_id who scan document (in the default MEM Courrier installation it's `bblier`)
 
-Here is a short list of options you have for mail process into <code>/opt/mem/opencapture/src/config/mail.ini</code>
+Here is a short list of options you have for mail process into <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code>
 
   - hostname, port, login, password : All the informations about the inbox 
   - securedConnection : Choose between SSL or STARTTLS or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is SSL, port must be a secured port (e.g : 993)
@@ -184,12 +184,12 @@ For that, just fill the following informations :
   - smtp_dest_admin_mail : e-mail which receive notifications
   - smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago. 0 to disable it
 
-Hint : If you need to test the SMTP settings, just launch the script <code>/opt/mem/opencapture/scripts/MailCollect/smtp_test.py</code> with your hosts informations
-Hint2 : To know the specific name of different folder, just launch the script <code>/opt/mem/opencapture/scripts/MailCollect/check_folders.py</code> with your hosts informations
+Hint : If you need to test the SMTP settings, just launch the script <code>/opt/edissyum/opencaptureformem/scripts/MailCollect/smtp_test.py</code> with your hosts informations
+Hint2 : To know the specific name of different folder, just launch the script <code>/opt/edissyum/opencaptureformem/scripts/MailCollect/check_folders.py</code> with your hosts informations
 
 To makes the capture of e-mail automatic, just cron the <code>launch_MAIL.sh</code> script :
 
-     */5 8-18 * * 1-5   /opt/mem/opencapture/scripts/launch_MAIL.sh >/dev/null 2>&1
+     */5 8-18 * * 1-5   /opt/edissyum/opencaptureformem/scripts/launch_MAIL.sh >/dev/null 2>&1
 
 By default, run the script at every 5th minute past every hour from 8 through 18 on every day-of-week from Monday through Friday.
 
@@ -206,7 +206,7 @@ Find the <code>minProtocol</code> options and set it to TLSv1.0
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
 To avoid lack of memory on the server, do not forget to cron the <code>clean.sh</code> script : 
 
-    0 2 * * 1-5   /opt/mem/opencapture/scripts/MailCollect/clean.sh >/dev/null 2>&1
+    0 2 * * 1-5   /opt/edissyum/opencaptureformem/scripts/MailCollect/clean.sh >/dev/null 2>&1
 
 By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
 delete all the batch folder older than 7 days
@@ -214,7 +214,7 @@ delete all the batch folder older than 7 days
 # Update Open-Capture For MEM Courrier
 The process of update is very simple. But before you need to modify the file and change lines **54** to put the user and group you want instead of default (edissyum) :
 
-    cd /opt/mem/opencapture/install/
+    cd /opt/edissyum/opencaptureformem/install/
     chmod u+x update.sh
     sudo ./update.sh
 
