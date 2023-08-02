@@ -29,7 +29,7 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/opt/mem/opencapture/"
+OCPath="/opt/edissyum/opencaptureformem/"
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
 errFilepath="$OCPath/data/error/$script/"

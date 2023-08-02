@@ -6,7 +6,7 @@ resolution          = 300
 compressionQuality  = 100
 # Used to fix potential OCR error into mail detection
 sanitizeStr         = {}\[\]()!?§&é~èàç
-projectPath         = /opt/mem/opencapture
+projectPath         = /opt/edissyum/opencaptureformem/
 tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 errorPath           = ${GLOBAL:projectPath}/data/error/
 logFile             = ${GLOBAL:projectPath}/data/log/OCForMEM.log

@@ -1,5 +1,5 @@
 [GLOBAL]
-batchPath             = /opt/mem/opencapture/data/MailCollect/
+batchPath             = /opt/edissyum/opencaptureformem/data/MailCollect/
 # True or False
 smtp_notif_on_error   = False
 smtp_auth             = True
