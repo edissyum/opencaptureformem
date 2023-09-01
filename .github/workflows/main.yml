@@ -7,44 +7,14 @@ on:
 
 jobs:
 
-  opencaptureformem-install:
-    name: Installation opencaptureformem
-    runs-on: ubuntu-latest
+  test-self-hosted:
+    name: Test d'exécuteurs auto-hebergés
+    runs-on: self-hosted
     defaults:
-      run:
-        working-directory: /
-    
-    steps:
+        run:
+          working-directory: /
 
-      - name: Checkout source code
-        uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
+    steps: 
+      - name: System info
+        run: lsb_release -a
         
-      - name: Creation de repertoires
-        run: |
-          sudo mkdir -p /opt/edissyum/ 
-          sudo chmod -R 775 /opt/edissyum/
-          sudo chown -R $(whoami):$(whoami) /opt/edissyum/
-    
-      - name: Récupération du dernier tag
-        run: |
-          sudo apt install -y git crudini
-          git clone -b dev_v4 https://github.com/edissyum/opencaptureformem /opt/edissyum/opencaptureformem/
-
-      - name: Lancement de l'installation
-        run: |
-          cd /opt/edissyum/opencaptureformem/install/
-          chmod u+x install.sh
-          sed -i 's/$(tput bold)/""/gI' install.sh
-          sed -i 's/$(tput sgr0)/""/gI' install.sh
-          sed -i 's/^user=$(who.*/user=$(whoami)/gI' install.sh
-          sed -i 's/^group=$(who.*/user=$(whoami)/gI' install.sh
-          sudo ./install.sh --user runner --supervisor_systemd systemd --secure_rabbit no
-      
-      - name: Test du service OC-Worker
-        run: |
-          sudo systemctl status oc-worker.service
