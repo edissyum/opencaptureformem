@@ -1,96 +1,127 @@
 #!/bin/bash
 
 if [ "$EUID" -ne 0 ]
-  then echo "install.sh needed to be launch by user with root privileges"
-  exit 1
+    then echo "install.sh needed to be launch by user with root privileges"
+    exit 1
 fi
 
 bold=$(tput bold)
 normal=$(tput sgr0)
-OS=$(lsb_release -si)
-VER=$(lsb_release -r)
 defaultPath=/opt/edissyum/opencaptureformem/
 imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
 group=$(who am i | awk '{print $1}')
 
-if [ -z "$user" ]
-then
- printf "The user variable is empty. Please fill it with your desired user : "
- read -r user
- if [ -z "$user" ]
- then
-   echo 'User remain empty, exiting...'
-   exit
- fi
+####################
+# Handle parameters
+parameters="user custom_id supervisor_process path supervisor_systemd secure_rabbit rabbit_user rabbit_password rabbit_host rabbit_port rabbit_vhost"
+opts=$(getopt --longoptions "$(printf "%s:," "$parameters")" --name "$(basename "$0")" --options "" -- "$@")
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --user)
+            user=$2
+            group=$2
+            shift 2;;
+        --supervisor_process)
+            nbProcess=$2
+            shift 2;;
+        --path)
+            defaultPath=$2
+            shift 2;;
+        --supervisor_systemd)
+            supervisorOrSystemd=$2
+            shift 2;;
+        --secure_rabbit)
+            finalRabbitMQSecure=$2
+            shift 2;;
+        --rabbit_user)
+            rabbitMqUser=$2
+            shift 2;;
+        --rabbit_password)
+            rabbitMqPassword=$2
+            shift 2;;
+        --rabbit_host)
+            rabbitMqHost=$2
+            shift 2;;
+        --rabbit_port)
+            rabbitMqPort=$2
+            shift 2;;
+        --rabbit_vhost)
+            rabbitMqVhost=$2
+            shift 2;;
+    *) break;;
+    esac
+done
+
+if [ -z $user ]; then
+    printf "The user variable is empty. Please fill it with your desired user : "
+    read -r user
+    if [ -z $user ]; then
+        echo 'User remain empty, exiting...'
+        exit
+    fi
 fi
 
 ####################
 # User choice
-echo "Do you want to use supervisor (1) or systemd (2) ? (default : 2) "
-echo "If you plan to handle a lot of files and need a reduced time of process, use supervisor"
-echo "WARNING : A lot of Tesseract processes will run in parallel and it can be very resource intensive"
-printf "Enter your choice [1/%s] : " "${bold}2${normal}"
-read -r choice
+if [ -z $supervisorOrSystemd ]; then
+    echo "Do you want to use supervisor (1) or systemd (2) ? (default : 2) "
+    echo "If you plan to handle a lot of files and need a reduced time of process, use supervisor"
+    echo "WARNING : A lot of Tesseract processes will run in parallel and it can be very resource intensive"
+    printf "Enter your choice [1/%s] : " "${bold}2${normal}"
+    read -r choice
 
-if [[ "$choice" == "" || ("$choice" != 1 && "$choice" != 2) ]]; then
-  finalChoice=2
-else
-  finalChoice="$choice"
+    if [[ "$choice" == "" || ("$choice" != 1 && "$choice" != 2) ]]; then
+        finalChoice=2
+    else
+        finalChoice="$choice"
+    fi
+
+    if [ "$finalChoice" == 1 ]; then
+        echo 'You choose supervisor, how many processes you want to be run simultaneously ? (default : 5)'
+        printf "Enter your choice [%s] : " "${bold}5${normal}"
+        read -r choice
+        if [ "$choice" == "" ]; then
+            nbProcess=5
+        elif ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+            echo 'The input is not an integer, select default value (5)'
+            nbProcess=5
+        else
+            nbProcess="$choice"
+        fi
+    fi
 fi
 
-if [ "$finalChoice" == 1 ];then
-  echo 'You choose supervisor, how many processes you want to be run simultaneously ? (default : 5)'
-  printf "Enter your choice [%s] : " "${bold}5${normal}"
-  read -r choice
-  if [ "$choice" == "" ]; then
-    nbProcess=5
-  elif ! [[ "$choice" =~ ^[0-9]+$ ]]; then
-    echo 'The input is not an integer, select default value (5)'
-    nbProcess=5
-  else
-    nbProcess="$choice"
-  fi
-fi
-
-if [ "$finalChoice" != 1 ];then
+if [ "$finalChoice" != 1 ] || [ $supervisorOrSystemd == 'systemd' ]; then
     echo "Do you want to secure RabbitMQ ? (default : no) "
     printf "Enter your choice [yes/%s] : " "${bold}no${normal}"
     read -r rabbitMqSecure
 
     if [[ "$rabbitMqSecure" == "" ||  "$rabbitMqSecure" == "no" || ("$rabbitMqSecure" != 'yes' && "$rabbitMqSecure" != 'no') ]]; then
-      finalRabbitMQSecure='no'
+        finalRabbitMQSecure='no'
     else
-      finalRabbitMQSecure="$rabbitMqSecure"
-      printf "Choose a RabbitMQ user : "
-      read -r rabbitMqUser
-      printf "Set a password for %s : " "${bold}$rabbitMqUser${normal}"
-      read -r rabbitMqPassword
-      printf "Set a host (empty for default one) : "
-      read -r rabbitMqHost
-      printf "Set a port (empty for default one) : "
-      read -r rabbitMqPort
-      printf "Choose a RabbitMQ vhost (Leave empty or type / to keep default one) : "
-      read -r rabbitMqVhost
+        finalRabbitMQSecure="$rabbitMqSecure"
+
+        printf "Choose a RabbitMQ user : "
+        read -r rabbitMqUser
+        printf "Set a password for %s : " "${bold}$rabbitMqUser${normal}"
+        read -r rabbitMqPassword
+        printf "Set a host (empty for default one) : "
+        read -r rabbitMqHost
+        printf "Set a port (empty for default one) : "
+        read -r rabbitMqPort
+        printf "Choose a RabbitMQ vhost (Leave empty or type / to keep default one) : "
+        read -r rabbitMqVhost
     fi
 fi
 
 ####################
 # Install package
-if [[ "$OS" = 'Debian' && "$VER" == *'9'* ]]; then
-  su -c 'cat > /etc/apt/sources.list.d/stretch-backports.list << EOF
-deb http://http.debian.net/debian stretch-backports main contrib non-free
-EOF'
-  apt update
-  apt install -y -t stretch-backports tesseract-ocr
-  apt install -y -t stretch-backports tesseract-ocr-fra
-  apt install -y -t stretch-backports tesseract-ocr-eng
-elif [[ "$OS" = 'Ubuntu' || "$OS" == 'Debian' && ($VER == *'11'* || $VER == *'12'*) ]]; then
-  apt update
-  apt install -y tesseract-ocr
-  apt install -y tesseract-ocr-fra
-  apt install -y tesseract-ocr-eng
-fi
+apt update
+apt install -y tesseract-ocr
+apt install -y tesseract-ocr-fra
+apt install -y tesseract-ocr-eng
 
 xargs -a apt-requirements.txt apt install -y
 
@@ -137,9 +168,9 @@ chown -R "$user":"$group" $defaultPath
 ####################
 # Fix ImageMagick Policies
 if test -f "$imageMagickPolicyFile"; then
-  sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' $imageMagickPolicyFile
+    sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' $imageMagickPolicyFile
 else
-  echo "We could not fix the ImageMagick policy files because it doesn't exists. Please f/ix it manually using the informations in the README"
+    echo "We could not fix the ImageMagick policy files because it doesn't exists. Please f/ix it manually using the informations in the README"
 fi
 
 ####################
@@ -179,9 +210,9 @@ fi
 
 ####################
 # Create the service systemd or supervisor
-if [ "$finalChoice" == 2 ]; then
-  touch /etc/systemd/system/oc-worker.service
-  su -c "cat > /etc/systemd/system/oc-worker.service << EOF
+if [ "$finalChoice" == 2 ] || [ $supervisorOrSystemd == 'systemd' ]; then
+    touch /etc/systemd/system/oc-worker.service
+    su -c "cat > /etc/systemd/system/oc-worker.service << EOF
 [Unit]
 Description=Daemon for Open-Capture for MEM Courrier
 
@@ -201,16 +232,14 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 "
-
-  systemctl daemon-reload
-  systemctl start oc-worker.service
-  systemctl enable oc-worker.service
-
+    systemctl daemon-reload
+    systemctl start oc-worker.service
+    systemctl enable oc-worker.service
 else
-  mkdir "$defaultPath"/data/log/Supervisor/
-  apt install -y supervisor
-  touch /etc/supervisor/conf.d/opencapture.conf
-  su -c "cat > /etc/supervisor/conf.d/opencapture.conf << EOF
+    mkdir "$defaultPath"/data/log/Supervisor/
+    apt install -y supervisor
+    touch /etc/supervisor/conf.d/opencapture.conf
+    su -c "cat > /etc/supervisor/conf.d/opencapture.conf << EOF
 [program:OCWorker]
 command=$defaultPath/scripts/service.sh
 process_name=%(program_name)s_%(process_num)02d
@@ -223,10 +252,9 @@ stopwaitsecs=10
 stderr_logfile=$defaultPath/data/log/Supervisor/OC_%(process_num)02d_error.log
 EOF
   "
-  
-  chmod 755 /etc/supervisor/conf.d/opencapture.conf
-  systemctl restart supervisor
-  systemctl enable supervisor
+    chmod 755 /etc/supervisor/conf.d/opencapture.conf
+    systemctl restart supervisor
+    systemctl enable supervisor
 fi
 
 ####################

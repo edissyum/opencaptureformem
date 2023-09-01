@@ -5,24 +5,24 @@ Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU
 
 The functionnalities of Open-Capture for MEM Courrier are :
 
- - Process PDF or image file as input
- - Process files by batch (in a given folder) or single
- - Output searchable PDF, one or multi pages
- - Split PDF using QRCode and rename splitted PDF file using QRCode content
- - OCR and text recognition :
-    - Find a date and use it as metadata
-    - Find a mail or a phone to reconciliate with an existing contact in MEM Courrier
-    - Find a subject and use it as metadata
- - Insert documents in MEM Courrier with pre-qualified metadata :
-    - Destination with QRCode
-    - Date, contact, object with text recognition
- - Output PDF or PDF/A file
- - Works with **fr_FR** and **en_EN** locales
- - Fully logged, infos and errors
- - For now it deals only with **PDF** or **JPG** files
- - Check integrity of a file to avoid processing incomplete files
- - Handle different process type (List of default process in config.ini : <code>processAvailable</code>) 
- - QR Code recognition from a file to reconcile it with the original document
+- Process PDF or image file as input
+- Process files by batch (in a given folder) or single
+- Output searchable PDF, one or multi pages
+- Split PDF using QRCode and rename splitted PDF file using QRCode content
+- OCR and text recognition :
+   - Find a date and use it as metadata
+   - Find a mail or a phone to reconciliate with an existing contact in MEM Courrier
+   - Find a subject and use it as metadata
+- Insert documents in MEM Courrier with pre-qualified metadata :
+   - Destination with QRCode
+   - Date, contact, object with text recognition
+- Output PDF or PDF/A file
+- Works with **fr_FR** and **en_EN** locales
+- Fully logged, infos and errors
+- For now it deals only with **PDF** or **JPG** files
+- Check integrity of a file to avoid processing incomplete files
+- Handle different process type (List of default process in config.ini : <code>processAvailable</code>)
+- QR Code recognition from a file to reconcile it with the original document
 
 # Installation
 ## Linux Distributions
@@ -51,11 +51,15 @@ Systemd is perfect for one instance
       # Answer the few questions asked at launch
       # Go grab a coffee ;)
 
+You can also launch installation with predefined settings :
+
+    sudo ./install.sh --user edissyum --supervisor_systemd systemd --secure_rabbit no
+
 It will install all the needed dependencies, compile and install Tesseract V5 with french and english locale. If you need more locales, just do :
 
     sudo apt install tesseract-ocr-<langcode>
 
-  Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
+Here is a list of all available languages code : https://www.macports.org/ports.php?by=name&substr=tesseract-
 
 Don't forget to modify the two config file with your specifics need. If you need help, you have more informations about the <code>src/config/config.ini</code> settings into the **_Configuration_** section.
 For the <code>src/config/mail.ini</code> just check the **_IMAP Connector (Open-Capture MailCollect Module)_** section.
@@ -67,47 +71,35 @@ In most cases you had to modify the <code>/etc/ImageMagick-6/policy.xml</code> f
 
     sudo systemctl restart oc-worker.service
 
-Fill the `typist` with the user_id who scan document (in the default MEM Courrier installation it's `bblier`)
-
-## Set up the incron & the cron to start the service
-We want to automatise the capture of document. For that, we'll use incrontab.
-First, add your user into the following file :
-
-> /etc/incron.allow
-
-Then use <code>incrontab -e</code> and put the following line :
-
-    /path/to/capture/ IN_CLOSE_WRITE,IN_MOVED_TO /opt/edissyum/opencaptureformem/scripts/launch_IN.sh $@/$#
-    
 ## Configuration
 The file <code>src/config/config.ini</code> is splitted in different categories
 
- - Global
-    - Choose the number of threads used to multi-threads (5 by defaults)
-    - Resolution and compressionQuality when PDF are converted to JPG
-    - List of char to be remove to sanitize detected email
-    - Set the default path of the project (default : **/opt/edissyum/opencaptureformem/**)
-    - tmpPath, no need to modify
-    - errorPath, no need to modify
-    - Path to the logFile, no need to modify
- - Locale
-    - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
-    - Choose the locale of OCR (see the langcodes of Tesseract)
-    - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
- - Regex
-    - Add extensions to detect URL during text detection
- - Separator_QR
-    - Enable or disable
-    - Choose to export PDF or PDF/A
-    - Path to export PDF or PDF/A, no need to modify
-    - Tmp path, no need to modify
-    - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
-  - Open-Capture for MEM Courrier
-    - Link to **/rest** API of MEM Courrier with User and Password
-    - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
-    - Uppercase the subject automatically
-  - OCForMEM_**process_name**
-     - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
+- Global
+   - Choose the number of threads used to multi-threads (5 by defaults)
+   - Resolution and compressionQuality when PDF are converted to JPG
+   - List of char to be remove to sanitize detected email
+   - Set the default path of the project (default : **/opt/edissyum/opencaptureformem/**)
+   - tmpPath, no need to modify
+   - errorPath, no need to modify
+   - Path to the logFile, no need to modify
+- Locale
+   - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
+   - Choose the locale of OCR (see the langcodes of Tesseract)
+   - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
+- Regex
+   - Add extensions to detect URL during text detection
+- Separator_QR
+   - Enable or disable
+   - Choose to export PDF or PDF/A
+   - Path to export PDF or PDF/A, no need to modify
+   - Tmp path, no need to modify
+   - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
+- Open-Capture for MEM Courrier
+   - Link to **/rest** API of MEM Courrier with User and Password
+   - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
+   - Uppercase the subject automatically
+- OCForMEM_**process_name**
+   - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
 To activate auto recontiliation for MEM Courrier outgoing document you must set this list of values in config.ini file (REATTACH_DOCUMENT part) :
 
@@ -143,46 +135,46 @@ If you want to generate PDF/A instead of PDF, you have to do the following :
 ![Logo Open-Capture MailCollect](https://edissyum.com/wp-content/uploads/2020/04/0_Open-Capture_MailCollect_Module.png)
 
 You have the possibility to capture e-mail directly from your inbox.
-    
+
 Just edit the <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code> and add your process. Modify the default process <code>MAIL_1</code> with your informations (host, port, login, pwd etc..)
-If you want to have the from, to, cc and replyTo metadatas you have to create the custom fields into MEM Courrier superadmin dashboard and modify the ID into the config file (8, 9, 10, 11 by default) 
+If you want to have the from, to, cc and replyTo metadatas you have to create the custom fields into MEM Courrier superadmin dashboard and modify the ID into the config file (8, 9, 10, 11 by default)
 Add other process if you want to capture more than one mailbox or multiple folder,
 by copying <code>MAIL_1</code> and just change the name.
 
 IMPORTANT : Do not put space into process name
 
-I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code> and that's all. 
+I you have multiple processes, don't forget to copy <code>MAIL_1</code> section into <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code> and that's all.
 The <code>launch_MAIL.sh</code> automatically loop into all the processes and launch them
 
 Don't forget to fill the `typist` with the user_id who scan document (in the default MEM Courrier installation it's `bblier`)
 
 Here is a short list of options you have for mail process into <code>/opt/edissyum/opencaptureformem/src/config/mail.ini</code>
 
-  - hostname, port, login, password : All the informations about the inbox 
-  - securedConnection : Choose between SSL or STARTTLS or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is SSL, port must be a secured port (e.g : 993)
-  - folderToCrawl : Which folder needed to be crawl by connector to process email
-  - generate_chrono : If true, MEM Courrier will generate a chrono number
-  - forceUtf8 : If true, force mail encoding into UTF8 to avoid problems
-  - isForm : If True, check if e-mail contains a forms using <code>forms_identifier.json</code> file
-  - priorityToMailSubject : If true, use the subject from mail and do not search subject into the mail
-  - priorityToMailDate : If true, use the date from mail and do not search subject into the mail
-  - priorityToMailFrom : If true, use the FROM field from mail and do not search subject into the mail
-  - folderDestination : if <code>actionAfterProcess</code> is <code>move</code> specify in which folder we had to move the e-mail after process
-  - folderTrash : if <code>actionAfterProcess</code> is <code>delete</code>, specify the name of trash folder. If we use the IMAP delete function, the mail cannot be retrieve
-  - actionAfterProcess : <code>move</code>, <code>delete</code> or <code>none</code>
-  - importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
-  - from_is_reply_to : In some case, the <code>from</code> field is a no-reply email and the real from e-mail is in reply-to. Put <code>True</code> if it's the case
-    If this option is enabled but `reply_to` field is empty, the `from` field will be used
-  - custom_fields : If you need to specify a static custom value, use this and fill it like this : "{"6": "VALUE"}"
-  - custom_mail : The id of the custom where the email(s) adress(es) will be stored
+- hostname, port, login, password : All the informations about the inbox
+- securedConnection : Choose between SSL or STARTTLS or False. It will specify if we have to you IMAP4 or IMAP4_SSL. If <code>securedConnection</code> is SSL, port must be a secured port (e.g : 993)
+- folderToCrawl : Which folder needed to be crawl by connector to process email
+- generate_chrono : If true, MEM Courrier will generate a chrono number
+- forceUtf8 : If true, force mail encoding into UTF8 to avoid problems
+- isForm : If True, check if e-mail contains a forms using <code>forms_identifier.json</code> file
+- priorityToMailSubject : If true, use the subject from mail and do not search subject into the mail
+- priorityToMailDate : If true, use the date from mail and do not search subject into the mail
+- priorityToMailFrom : If true, use the FROM field from mail and do not search subject into the mail
+- folderDestination : if <code>actionAfterProcess</code> is <code>move</code> specify in which folder we had to move the e-mail after process
+- folderTrash : if <code>actionAfterProcess</code> is <code>delete</code>, specify the name of trash folder. If we use the IMAP delete function, the mail cannot be retrieve
+- actionAfterProcess : <code>move</code>, <code>delete</code> or <code>none</code>
+- importOnlyAttachments : If <code>True</code> skip the e-mail body content and process only attachments as a new document (same process as default Open-Capture process)
+- from_is_reply_to : In some case, the <code>from</code> field is a no-reply email and the real from e-mail is in reply-to. Put <code>True</code> if it's the case
+  If this option is enabled but `reply_to` field is empty, the `from` field will be used
+- custom_fields : If you need to specify a static custom value, use this and fill it like this : "{"6": "VALUE"}"
+- custom_mail : The id of the custom where the email(s) adress(es) will be stored
 
 You could also set-up notifications if an error is thrown while collect mail with IMAP.
-For that, just fill the following informations : 
-  - smtp_notif_on_error : enable the notifications service, or not
-  - smtp_host, smtp_port, smtp_login, smtp_pwd : SMTP server informations
-  - smtp_ssl, smtp_starttls : Enable SSL AND/OR STARTTLS
-  - smtp_dest_admin_mail : e-mail which receive notifications
-  - smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago. 0 to disable it
+For that, just fill the following informations :
+- smtp_notif_on_error : enable the notifications service, or not
+- smtp_host, smtp_port, smtp_login, smtp_pwd : SMTP server informations
+- smtp_ssl, smtp_starttls : Enable SSL AND/OR STARTTLS
+- smtp_dest_admin_mail : e-mail which receive notifications
+- smtp_delay : To avoid spam. Prevent sending a new mail if the last one was sent less than X minutes ago. 0 to disable it
 
 Hint : If you need to test the SMTP settings, just launch the script <code>/opt/edissyum/opencaptureformem/scripts/MailCollect/smtp_test.py</code> with your hosts informations
 Hint2 : To know the specific name of different folder, just launch the script <code>/opt/edissyum/opencaptureformem/scripts/MailCollect/check_folders.py</code> with your hosts informations
@@ -204,11 +196,11 @@ Find the <code>minProtocol</code> options and set it to TLSv1.0
 
 ## Clean MailCollect batches
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
-To avoid lack of memory on the server, do not forget to cron the <code>clean.sh</code> script : 
+To avoid lack of memory on the server, do not forget to cron the <code>clean.sh</code> script :
 
     0 2 * * 1-5   /opt/edissyum/opencaptureformem/scripts/MailCollect/clean.sh >/dev/null 2>&1
 
-By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will 
+By default, run the script at 2 AM on every day-of-week from Monday through Friday and it will
 delete all the batch folder older than 7 days
 
 # Update Open-Capture For MEM Courrier
