@@ -43,7 +43,7 @@ jobs:
           sed -i 's/$(tput sgr0)/""/gI' install.sh
           sed -i 's/^user=$(who.*/user=$(whoami)/gI' install.sh
           sed -i 's/^group=$(who.*/user=$(whoami)/gI' install.sh
-          sudo ./install.sh --user edissyum --supervisor_systemd systemd --secure_rabbit no
+          sudo ./install.sh --user runner --supervisor_systemd systemd --secure_rabbit no
       
       - name: Test du service OC-Worker
         run: |
