@@ -265,3 +265,6 @@ By default it is recommended to replace **8M** by **20M** or more if needed
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
+
+# CI / CD
+[![Deployement OpenCaptureformem](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml/badge.svg)](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml)
