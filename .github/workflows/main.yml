@@ -21,11 +21,15 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11.0
-        
+      #- name: Set up Python 3.7
+        #uses: actions/setup-python@v2
+        #with:
+          #python-version: 3.11.0
+      - name: Set up Python
+        run: |
+          sudo apt install -y python3
+          python3 -m pip install --upgrade pip
+
       - name: Creation de repertoires
         run: |
           sudo mkdir -p /opt/edissyum/ 
