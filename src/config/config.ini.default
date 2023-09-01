@@ -40,7 +40,7 @@ blobsratio          = 1E-6
 
 [OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
-host                = http://localhost/maarch/rest/
+host                = http://localhost/mem/rest/
 user                =
 password            =
 processAvailable    = incoming,reconciliation_default,reconciliation_found
