@@ -115,7 +115,7 @@ Here is some examples of possible usages in the launch_XX.sh script:
     python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -f file.pdf -process incoming
     python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/
     python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename
-    python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MAARCH/2019D/1
+    python3 /opt/edissyum/opencaptureformem/launch_worker.py -c /opt/edissyum/opencaptureformem/src/config/config.ini -p /path/to/folder/ --read-destination-from-filename -resid 100 -chrono MEM/2019D/1
 
 --read-destination-from-filename is related to separation with QR CODE. It's reading the filename, based on the **divider** option in config.ini, to find the entity ID
 -f stands for unique file
