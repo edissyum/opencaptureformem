@@ -93,7 +93,7 @@ if [ -z $supervisorOrSystemd ]; then
     fi
 fi
 
-if [ "$finalChoice" != 1 ] || [ $supervisorOrSystemd == 'systemd' ]; then
+if [ -z $finalRabbitMQSecure ]; then
     echo "Do you want to secure RabbitMQ ? (default : no) "
     printf "Enter your choice [yes/%s] : " "${bold}no${normal}"
     read -r rabbitMqSecure
