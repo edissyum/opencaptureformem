@@ -88,8 +88,9 @@ class WebServices:
                 data = {
                     'chronoNumber': chrono_number
                 }
-                res = requests.post(self.baseUrl + '/resources/getByChrono', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout,
-                                    verify=self.cert)
+                res = requests.post(self.baseUrl + '/resources/getByChrono', auth=self.auth, data=json.dumps(data),
+                                    headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                    timeout=self.timeout, verify=self.cert)
                 if res.status_code != 200:
                     self.Log.error('(' + str(res.status_code) + ') getResourceByChrono : ' + str(res.text))
                     return False
