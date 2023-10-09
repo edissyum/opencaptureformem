@@ -94,6 +94,10 @@ separator_qr        = False
 generate_chrono     = True
 subject             =
 chronoRegex         = 20(1|2|3)[0-9]{1}D/\d{5}
+; If chrono is found using chronoRegex, use the following status to the linked document
+e_reconciliation_status = COU
+; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
+retrieve_metadata       = True
 
 [OCForMEM_reconciliation_found]
 is_attachment       = True
