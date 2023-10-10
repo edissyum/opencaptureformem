@@ -33,4 +33,4 @@ for dir in "$batch_path"/*/; do
   fi
 done
 
-rm "$unique_id_path"
+rm -f "$unique_id_path"
