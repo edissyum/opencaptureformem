@@ -127,7 +127,7 @@ class Images:
                             return True
                         elif file.lower().endswith('.html') or file.lower().endswith('.txt'):
                             return True
-                        elif file.lower().endswith('.jpg'):
+                        elif file.lower().endswith('.jpg') or file.lower().endswith('.jpeg'):
                             try:
                                 Image.open(file)
                             except OSError:
