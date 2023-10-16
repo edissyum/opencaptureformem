@@ -52,9 +52,11 @@ class PyTesseract:
         """
         try:
             output_file = tmp_path + '/result.pdf'
-            res = ocrmypdf.ocr(pdf, output_file, output_type='pdf', skip_text=True, language=self.lang, progress_bar=False, jobs=int(self.Config.cfg['GLOBAL']['nbthreads']))
+            res = ocrmypdf.ocr(pdf, output_file, output_type='pdf', skip_text=True, language=self.lang,
+                               progress_bar=False, jobs=int(self.Config.cfg['GLOBAL']['nbthreads']))
             if res.value != 0:
-                ocrmypdf.ocr(pdf, output_file, output_type='pdf', force_ocr=True, language=self.lang, progress_bar=False, jobs=int(self.Config.cfg['GLOBAL']['nbthreads']))
+                ocrmypdf.ocr(pdf, output_file, output_type='pdf', force_ocr=True, language=self.lang,
+                             progress_bar=False, jobs=int(self.Config.cfg['GLOBAL']['nbthreads']))
 
             if separator.convert_to_pdfa == "True":
                 output_file = tmp_path + '/result-pdfa.pdf'
