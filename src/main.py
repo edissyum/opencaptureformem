@@ -177,6 +177,9 @@ def launch(args):
         log = logClass.Log(config.cfg['GLOBAL']['logfile'])
         config_mail = False
 
+    log.info(f"Launching {args['script']} script")
+    log.info(f"{args['file']} is a valid file and PID file created")
+
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
     locale = localeClass.Locale(config)
