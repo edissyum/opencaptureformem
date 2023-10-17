@@ -215,6 +215,7 @@ if check:
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
+                    'script': args['script'],
                     'config_mail': args['config_mail'],
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
