@@ -245,37 +245,49 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         pass
 
     # Create the searchable PDF if necessary
+    file_format = config.cfg[_process]['format']
     if is_ocr is False:
         log.info('Start OCR on document before send it')
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
-        file_to_send = ocr.searchablePdf
+        if ocr.searchablePdf:
+            file_to_send = ocr.searchablePdf
+        else:
+            if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
+                output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
+                separator.convert_to_pdfa_function(output_file, file, log)
+                file = output_file
+            with open(file, 'rb') as f:
+                file_to_send = f.read()
+            file_format = os.path.splitext(file)[1].lower().replace('.', '')
     else:
         if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
             output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
             separator.convert_to_pdfa_function(output_file, file, log)
             file = output_file
-        file_to_send = open(file, 'rb').read()
+        with open(file, 'rb') as f:
+            file_to_send = f.read()
 
     chrono_res_id = False
     if chrono_number:
         chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
-        if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
-            config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
+        if chrono_res_id:
+            if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
+                config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
 
-        if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
-            if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
-                config.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
-            if 'destination' in chrono_res_id and chrono_res_id['destination']:
-                destination = str(chrono_res_id['destination'])
-            listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
-            if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
-                for _list in listinstances['listInstance']:
-                    if _list['item_mode'] == 'dest':
-                        config.cfg[_process]['diffusion_list'] = [{
-                            "id": _list['itemSerialId'],
-                            "type": "user",
-                            "mode": "dest",
-                        }]
+            if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
+                if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
+                    config.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
+                if 'destination' in chrono_res_id and chrono_res_id['destination']:
+                    destination = str(chrono_res_id['destination'])
+                listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
+                if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
+                    for _list in listinstances['listInstance']:
+                        if _list['item_mode'] == 'dest':
+                            config.cfg[_process]['diffusion_list'] = [{
+                                "id": _list['itemSerialId'],
+                                "type": "user",
+                                "mode": "dest",
+                            }]
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         if date != '':
             args['data']['documentDate'] = date
@@ -321,7 +333,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
-        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
+        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail, file_format)
 
     if res and res[0] is not False:
         log.info("Insert OK : " + str(res))

@@ -40,10 +40,10 @@ blobsratio          = 1E-6
 
 [OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
-host                = http://localhost/maarch/rest/
+host                = http://localhost/mem/rest/
 user                =
 password            =
-processAvailable    = incoming,outgoing,reconciliation_default,reconciliation_found
+processAvailable    = incoming,reconciliation_default,reconciliation_found
 defaultProcess      = incoming
 # Delta between date found and today date, in days
 # -1 to disable
@@ -78,27 +78,6 @@ e_reconciliation_status = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
 
-[OCForMEM_outgoing]
-status                  = INIT
-doctype                 = 1202
-typist                  = bblier
-priority                = poiuytre1357nbvc
-format                  = pdf
-model_id                = 2
-# Please use entity id (integer) instead of entity_id (13 instead of COU for example)
-destination             = 13
-custom_mail             =
-custom_fields           = {}
-# True or False
-separator_qr            = False
-generate_chrono         = True
-subject                 =
-chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
-; If chrono is found using chronoRegex, use the following status to the linked document
-e_reconciliation_status = COU
-; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
-retrieve_metadata       = True
-
 [OCForMEM_reconciliation_default]
 status              = ATTREC
 doctype             = 1202
@@ -115,6 +94,10 @@ separator_qr        = False
 generate_chrono     = True
 subject             =
 chronoRegex         = 20(1|2|3)[0-9]{1}D/\d{5}
+; If chrono is found using chronoRegex, use the following status to the linked document
+e_reconciliation_status = COU
+; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
+retrieve_metadata       = True
 
 [OCForMEM_reconciliation_found]
 is_attachment       = True
