@@ -245,7 +245,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         pass
 
     # Create the searchable PDF if necessary
-    file_format = config.cfg[_process]['format']
+    if args.get('isMail') is not None and args.get('isMail') in [True]:
+        file_format = 'html'
+    else:
+        file_format = config.cfg[_process]['format']
     if is_ocr is False:
         log.info('Start OCR on document before send it')
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
