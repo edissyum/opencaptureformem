@@ -29,47 +29,45 @@ spaces="                               "
 scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
-OCPath="/opt/edissyum/opencaptureformem/"
+OCPath="/home/nathan/PycharmProjects/oc_for_mem/"
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
 errFilePath="$OCPath"/data/error/$script/
 tmpFilePath="$OCPath"/data/pdf/
 PID=/tmp/securite-$script-$$.pid
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
-
 filepath=$1
 filename=$(basename "$filepath")
+destination=$(basename "$(dirname "$filepath")")
 ext=$(file -b --mime-type "$filepath")
 
-§§PYTHON_VENV§§
+#§§PYTHON_VENV§§
 
-if ! test -e $PID && test "$ext" = 'application/pdf' && test -f "$filepath";
+if ! test -e $PID && (test "$ext" = 'application/pdf' || test "$ext" = 'image/jpeg' || test "$ext" = 'image/png') && test -f "$filepath";
 then
-  touch $PID
-  echo $$ > $PID
-  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a valid file and PID file created" >> "$logFile"
+    touch $PID
+    echo $$ > $PID
 
-  mv "$filepath" "$tmpFilePath"
+    mv "$filepath" "$tmpFilePath"
 
-  python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilePath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false
+    # To use the folder as destination replace --read-destination-from-filename by --destination "$destination"
+    python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilePath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false --script $script
 
-  rm -f $PID
+    rm -f $PID
 elif test -f "$filepath" && test "$ext" != 'application/pdf';
 then
-  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
-  mkdir -p "$errFilePath"
-  mv "$filepath" "$errFilePath"
-  rm -f $PID
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
+    mkdir -p "$errFilePath"
+    mv "$filepath" "$errFilePath"
+    rm -f $PID
 elif test -d "$filepath";
 then
-  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO $filepath is a directory. Do not process it" >> "$logFile"
-  rm -f $PID
+    rm -f $PID
 elif ! test -f "$filepath";
 then
-  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename doesn't exists or cannot be read" >> "$logFile"
-  rm -f $PID
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename doesn't exists or cannot be read" >> "$logFile"
+    rm -f $PID
 else
-  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
 fi
 

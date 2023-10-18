@@ -61,6 +61,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--config", required=True, help="path to config.ini")
 ap.add_argument("-cm", "--config_mail", required=True, help="path to mail.ini")
 ap.add_argument('-p', "--process", required=True, default='MAIL_1')
+ap.add_argument("-s", '--script', required=False, help="Script name")
+
 args = vars(ap.parse_args())
 
 if not os.path.exists(args['config']) or not os.path.exists(args['config_mail']):
@@ -213,6 +215,7 @@ if check:
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
+                    'script': args['script'],
                     'config_mail': args['config_mail'],
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),

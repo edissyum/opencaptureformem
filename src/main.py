@@ -177,6 +177,9 @@ def launch(args):
         log = logClass.Log(config.cfg['GLOBAL']['logfile'])
         config_mail = False
 
+    log.info(f"Launching {args['script']} script")
+    log.info(f"{args['file']} is a valid file and PID file created")
+
     tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
     locale = localeClass.Locale(config)
@@ -209,7 +212,7 @@ def launch(args):
     if args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
-            if separator.enabled:
+            if separator.enabled and path.lower().endswith('.pdf'):
                 separator.run(path)
                 if separator.error:  # in case the file is not a pdf or no qrcode was found, process as an image
                     process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder)

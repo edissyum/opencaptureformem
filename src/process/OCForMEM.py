@@ -245,16 +245,30 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         pass
 
     # Create the searchable PDF if necessary
+    if args.get('isMail') is not None and args.get('isMail') in [True]:
+        file_format = 'html'
+    else:
+        file_format = config.cfg[_process]['format']
     if is_ocr is False:
         log.info('Start OCR on document before send it')
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
-        file_to_send = ocr.searchablePdf
+        if ocr.searchablePdf:
+            file_to_send = ocr.searchablePdf
+        else:
+            if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
+                output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
+                separator.convert_to_pdfa_function(output_file, file, log)
+                file = output_file
+            with open(file, 'rb') as f:
+                file_to_send = f.read()
+            file_format = os.path.splitext(file)[1].lower().replace('.', '')
     else:
         if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
             output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
             separator.convert_to_pdfa_function(output_file, file, log)
             file = output_file
-        file_to_send = open(file, 'rb').read()
+        with open(file, 'rb') as f:
+            file_to_send = f.read()
 
     chrono_res_id = False
     if chrono_number:
@@ -322,7 +336,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
-        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail)
+        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail, file_format)
 
     if res and res[0] is not False:
         log.info("Insert OK : " + str(res))

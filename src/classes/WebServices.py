@@ -112,7 +112,8 @@ class WebServices:
             return False
         return True
 
-    def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail):
+    def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail,
+                         file_format):
         """
         Insert document into MEM Courrier Database
 
@@ -124,6 +125,7 @@ class WebServices:
         :param destination: Destination (default or found with QR Code or by reading the filename)
         :param _process: Part of config file, only with process configuration
         :param custom_mail: custom to add all the e-mail found
+        :param file_format: extension of the document
         :return: res_id from MEM Courrier
         """
         if not contact:
@@ -149,7 +151,7 @@ class WebServices:
             'status': _process['status'],
             'chrono': True if _process['generate_chrono'] == 'True' else '',
             'doctype': _process['doctype'],
-            'format': _process['format'],
+            'format': file_format,
             'modelId': _process['model_id'],
             'typist': _process['typist'],
             'subject': subject,
