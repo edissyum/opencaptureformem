@@ -19,7 +19,7 @@
 # Bash script to clean MailCollect batches and log
 
 batch_path='/opt/edissyum/opencaptureformem/data/MailCollect/'
-unique_id_path='/opt/edissyum/opencaptureformem/data/MailCollect/unique_id_already_processed'
+unique_id_path='/opt/edissyum/opencaptureformem/data/MailCollect/unique_id_already_processed_*'
 conservation_time=7
 conservation_time_error_folder=14
 

@@ -173,10 +173,10 @@ if check:
         i = 1
 
         already_processed_uid = []
-        if os.path.exists(path_without_time + '/unique_id_already_processed'):
-            with open(path_without_time + '/unique_id_already_processed', 'r', encoding='UTF-8') as store_uid_file:
-                already_processed_uid = list(filter(None, store_uid_file.read().split(';')))
-                store_uid_file.close()
+        if os.path.exists(path_without_time + f'/unique_id_already_processed_{process}'):
+            with open(path_without_time + f'/unique_id_already_processed_{process}', 'r', encoding='UTF-8') as uid_file:
+                already_processed_uid = list(filter(None, uid_file.read().split(';')))
+                uid_file.close()
 
         for msg in emails:
             if Mail.auth_method == 'exchange':
@@ -188,9 +188,9 @@ if check:
                 Log.info('E-mail with unique id' + msg_id + ' already processed, skipping...')
                 continue
 
-            with open(path_without_time + '/unique_id_already_processed', 'a', encoding='UTF-8') as store_uid_file:
-                store_uid_file.write(msg_id + ';')
-                store_uid_file.close()
+            with open(path_without_time + f'/unique_id_already_processed_{process}', 'a', encoding='UTF-8') as uid_file:
+                uid_file.write(msg_id + ';')
+                uid_file.close()
 
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8)
