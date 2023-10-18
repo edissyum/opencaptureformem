@@ -19,18 +19,17 @@
 # Bash script to clean MailCollect batches and log
 
 batch_path='/opt/edissyum/opencaptureformem/data/MailCollect/'
-unique_id_path='/opt/edissyum/opencaptureformem/data/MailCollect/unique_id_already_processed_*'
 conservation_time=7
 conservation_time_error_folder=14
 
 for dir in "$batch_path"/*/; do
-  if [ -d "$dir" ]; then
-    if [[ $dir != *"_ERROR"* ]]; then
-      find "$dir" -mindepth 1 -maxdepth 1 -type d -mtime +$conservation_time -exec rm -rf {} ';'
-    else
-      find "$dir" -mindepth 2 -maxdepth 2 -type d -mtime +$conservation_time_error_folder -exec rm -rf {} ';'
+    if [ -d "$dir" ]; then
+        if [[ $dir != *"_ERROR"* ]]; then
+            find "$dir" -mindepth 1 -maxdepth 1 -type d -mtime +$conservation_time -exec rm -rf {} ';'
+        else
+            find "$dir" -mindepth 2 -maxdepth 2 -type d -mtime +$conservation_time_error_folder -exec rm -rf {} ';'
+        fi
     fi
-  fi
 done
 
-rm -f "$unique_id_path"
+find "$batch_path" -name "unique_id_already_processed_*" -exec rm -rf {} ';'
