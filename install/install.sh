@@ -140,7 +140,6 @@ git config core.fileMode False
 # Copy default service script
 cp scripts/service.sh.default scripts/service.sh
 cp scripts/launch_IN.sh.default scripts/launch_IN.sh
-cp scripts/launch_OUT.sh.default scripts/launch_OUT.sh
 cp scripts/launch_reconciliation.sh.default scripts/launch_reconciliation.sh
 cp scripts/launch_MAIL.sh.default scripts/launch_MAIL.sh
 
