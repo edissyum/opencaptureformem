@@ -77,27 +77,31 @@ chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 e_reconciliation_status = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
+# None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+compress_type           = None
 
 [OCForMEM_reconciliation_default]
-status              = ATTREC
-doctype             = 1202
-typist              = bblier
-priority            = poiuytre1357nbvc
-format              = pdf
-model_id            = 5
+status                  = ATTREC
+doctype                 = 1202
+typist                  = bblier
+priority                = poiuytre1357nbvc
+format                  = pdf
+model_id                = 5
 # Please use entity id (integer) instead of entity_id (13 instead of COU for example)
-destination         = 13
-reconciliation      =
-custom_mail         =
+destination             = 13
+reconciliation          =
+custom_mail             =
 # True or False
-separator_qr        = False
-generate_chrono     = True
-subject             =
-chronoRegex         = 20(1|2|3)[0-9]{1}D/\d{5}
+separator_qr            = False
+generate_chrono         = True
+subject                 =
+chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
 e_reconciliation_status = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
+# None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+compress_type           = None
 
 [OCForMEM_reconciliation_found]
 is_attachment       = True
@@ -113,6 +117,8 @@ reconciliation      =
 separator_qr        = False
 generate_chrono     = False
 subject             =
+# None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+compress_type       = None
 
 [REATTACH_DOCUMENT]
 active              = True
