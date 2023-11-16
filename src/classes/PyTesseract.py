@@ -62,6 +62,6 @@ class PyTesseract:
                 output_file = tmp_path + '/result-pdfa.pdf'
                 separator.convert_to_pdfa_function(output_file, tmp_path + '/result.pdf', self.Log)
 
-            self.searchablePdf = open(output_file, 'rb').read()
+            self.searchablePdf = output_file
         except (ocrmypdf.exceptions.PriorOcrFoundError, ocrmypdf.exceptions.DpiError) as error:
             self.Log.error(error)

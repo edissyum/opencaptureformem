@@ -20,11 +20,12 @@ import re
 import sys
 import json
 import shutil
+import subprocess
 from .FindDate import FindDate
+from .FindChrono import FindChrono
 from .OCForForms import process_form
 from .FindSubject import FindSubject
 from .FindContact import FindContact
-from .FindChrono import FindChrono
 
 
 def get_process_name(args, config):
@@ -37,6 +38,23 @@ def get_process_name(args, config):
             _process = 'OCForMEM_' + config.cfg['OCForMEM']['defaultprocess'].lower()
 
     return _process
+
+
+def compress_pdf(args, config, file, log):
+    if args.get('isMail') is None or args.get('isMail') is False and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+        if 'compress_type' in config and config['compress_type'] and config['compress_type'] != 'None':
+            log.info('Compress PDF : ' + config['compress_type'])
+            compressed_file_path = '/tmp/min_' + os.path.basename(file)
+
+            gs_command = (f"gs#-sDEVICE=pdfwrite#-dCompatibilityLevel=1.4#-dPDFSETTINGS=/{config['compress_type']}"
+                          f"#-dNOPAUSE#-dQUIET#-o#{compressed_file_path}#{file}")
+            gs_args = gs_command.split('#')
+            subprocess.check_call(gs_args)
+
+            try:
+                shutil.move(compressed_file_path, file)
+            except (shutil.Error, FileNotFoundError) as _e:
+                log.error('Moving file ' + compressed_file_path + ' error : ' + str(_e))
 
 
 def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail=None):
@@ -249,16 +267,25 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         file_format = 'html'
     else:
         file_format = config.cfg[_process]['format']
+
     if is_ocr is False:
         log.info('Start OCR on document before send it')
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
         if ocr.searchablePdf:
-            file_to_send = ocr.searchablePdf
+            # Compress pdf if necessary
+            compress_pdf(args, config.cfg[_process], ocr.searchablePdf, log)
+
+            with open(ocr.searchablePdf, 'rb') as f:
+                file_to_send = f.read()
         else:
             if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
                 output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
                 separator.convert_to_pdfa_function(output_file, file, log)
                 file = output_file
+
+            # Compress pdf if necessary
+            compress_pdf(args, config.cfg[_process], file, log)
+
             with open(file, 'rb') as f:
                 file_to_send = f.read()
             file_format = os.path.splitext(file)[1].lower().replace('.', '')
@@ -267,6 +294,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
             separator.convert_to_pdfa_function(output_file, file, log)
             file = output_file
+
+        # Compress pdf if necessary
+        compress_pdf(args, config.cfg[_process], file, log)
+
         with open(file, 'rb') as f:
             file_to_send = f.read()
 
