@@ -19,6 +19,8 @@ import os
 import re
 import json
 import shutil
+import locale
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 
@@ -148,6 +150,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                 for value in brackets:
                                     if cpt < len(mapping):
                                         column = mapping[cpt]['column']
+                                        print(column)
                                         if mapping[cpt]['isCustom'] == 'True':
                                             if mapping[cpt]['isAddress'] == 'True':
                                                 latitude = value.split(',')[0]
@@ -177,6 +180,11 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if last_map['isCustom'] == 'True':
                                         if mapping[cpt]['isAddress'] == 'True':
                                             args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets.strip()
+                                        elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
+                                            locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                                            _date_format = mapping[cpt]['dateFormat']
+                                            _date = datetime.strptime(text_without_brackets.strip(), _date_format)
+                                            args['data']['customFields'].update({column: str(_date)})
                                         else:
                                             args['data']['customFields'].update({column: text_without_brackets.strip()})
                                     else:
