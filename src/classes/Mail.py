@@ -267,7 +267,7 @@ class Mail:
 
         from_is_reply_to = str2bool(cfg['from_is_reply_to'])
         if from_is_reply_to and len(reply_to_values) > 0:
-            data['mail']['from'] = reply_to_values[0]
+            data['mail']['from'] = reply_to_values[0].email
         else:
             data['mail']['from'] = from_val
 
