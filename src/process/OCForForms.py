@@ -19,12 +19,13 @@ import os
 import re
 import json
 import shutil
+import locale
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
     json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
-
     if os.path.isfile(json_identifier):
         identifier = open(json_identifier, 'r').read()
         identifier = json.loads(identifier)
@@ -35,7 +36,15 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
             keyword_subject = identifier[_process]['keyword_subject']
 
             if keyword_subject in subject:
-                args['data']['modelId'] = identifier[_process]['model_id']
+                if 'model_id' in identifier[_process] and identifier[_process]['model_id'] is not None:
+                    args['data']['modelId'] = identifier[_process]['model_id']
+
+                if 'destination' in identifier[_process] and identifier[_process]['destination'] is not None:
+                    args['data']['destination'] = identifier[_process]['destination']
+
+                if 'dest_user' in identifier[_process] and identifier[_process]['dest_user'] is not None:
+                    args['data']['dest_user'] = identifier[_process]['dest_user']
+
                 process_found = True
                 process = _process
 
@@ -95,15 +104,23 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 }
                 if (not text and file_content) or len(text) <= 1:
                     file_content = open(args['file'], 'r')
-                    text_parsed = file_content.read().split('\n')
+                    text_parsed = file_content.read()
+                    text_parsed = re.sub(r'\s+', ' ', text_parsed)
+                    text_parsed = re.sub(r'\t', '', text_parsed)
+                    text_parsed = re.sub(r'<br>', '\n', text_parsed)
+                    text_parsed = text_parsed.split('\n')
+
                     text = []
                     for line in text_parsed:
                         if line:
                             text.append(line)
+
                 for line in text:
                     if not isinstance(line, str):
                         line = line.get_text()
                     line = line.replace('<br>', '').replace('&nbsp;', '')
+                    line = line.replace('<b>', '').replace('</b>', '')
+
                     for field in contact_fields:
                         regex = contact_fields[field]['regex']
                         column = contact_fields[field]['column']
@@ -114,7 +131,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if res[0].lower() == correspondance.lower():
                                         results[contact_table][column] = contact_fields[field]['correspondance_table'][correspondance]
                             else:
-                                results[contact_table][column] = res[0]
+                                results[contact_table][column] = res[0].strip()
                     for field in letterbox_fields:
                         regex = field['regex']
                         column = field['column']
@@ -133,6 +150,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                 for value in brackets:
                                     if cpt < len(mapping):
                                         column = mapping[cpt]['column']
+                                        print(column)
                                         if mapping[cpt]['isCustom'] == 'True':
                                             if mapping[cpt]['isAddress'] == 'True':
                                                 latitude = value.split(',')[0]
@@ -162,6 +180,11 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if last_map['isCustom'] == 'True':
                                         if mapping[cpt]['isAddress'] == 'True':
                                             args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets.strip()
+                                        elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
+                                            locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                                            _date_format = mapping[cpt]['dateFormat']
+                                            _date = datetime.strptime(text_without_brackets.strip(), _date_format)
+                                            args['data']['customFields'].update({column: str(_date)})
                                         else:
                                             args['data']['customFields'].update({column: text_without_brackets.strip()})
                                     else:
@@ -169,7 +192,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
-
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[process_name])
                 if res:
                     log.info('Insert form from EMAIL OK : ' + str(res))
