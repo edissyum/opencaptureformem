@@ -195,7 +195,7 @@ if check:
                 uid_file.close()
 
             # Backup all the e-mail into batch path
-            Mail.backup_email(msg, batch_path, force_utf8)
+            Mail.backup_email(msg, batch_path, force_utf8, Log)
             ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
             _from = ret['mail']['from']
             if Mail.auth_method == 'exchange':

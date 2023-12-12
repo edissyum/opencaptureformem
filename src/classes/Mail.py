@@ -298,6 +298,10 @@ class Mail:
         attachments = self.retrieve_attachment(msg)
         attachments_path = backup_path + '/mail_' + msg_id + '/attachments/'
         for pj in attachments:
+            if pj['format'] is None:
+                log.error(f"Attachment {pj['filename']} doesn't have extension, skipping it")
+                continue
+
             path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
             if not os.path.isfile(path):
                 pj['format'] = '.txt'
@@ -317,13 +321,14 @@ class Mail:
 
         return data, file
 
-    def backup_email(self, msg, backup_path, force_utf8):
+    def backup_email(self, msg, backup_path, force_utf8, log):
         """
         Backup e-mail into path before send it to MEM Courrier
 
         :param force_utf8: Force HTML UTF-8 encoding
         :param msg: Mail data
         :param backup_path: Backup path
+        :param log: Log class instance
         :return: Boolean
         """
         # Backup mail
@@ -351,7 +356,8 @@ class Mail:
                 try:
                     fp.write(header_name + ' : ' + header_value + '\n')
                 except UnicodeEncodeError:
-                    fp.write(header_name + ' : ' + header_value.encode('utf-8', 'surrogateescape').decode('utf-8',                                                                                    'replace') + '\n')
+                    fp.write(header_name + ' : ' + header_value.encode('utf-8', 'surrogateescape').decode('utf-8',
+                                                                                                          'replace') + '\n')
             fp.close()
 
         # Then body
@@ -365,9 +371,9 @@ class Mail:
             fp = open(primary_mail_path + 'body.html', 'w', encoding='UTF-8')
             if force_utf8:
                 utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-                if not re.search(utf_8_charset.lower(), html_body.lower()) or re.search(utf_8_charset.lower() + '\s*-->',
-                                                                                       html_body.lower()) or re.search(
-                    '<!--\s*' + utf_8_charset.lower(), html_body.lower()):
+                if (not re.search(utf_8_charset.lower(), html_body.lower()) or re.search(utf_8_charset.lower() +
+                                                                                         '\s*-->', html_body.lower())
+                        or re.search('<!--\s*' + utf_8_charset.lower(), html_body.lower())):
                     fp.write(utf_8_charset)
                     fp.write('\n')
             fp.write(html_body)
@@ -390,6 +396,10 @@ class Mail:
             attachment_path = backup_path + '/mail_' + msg_id + '/attachments/'
             os.mkdir(attachment_path)
             for file in attachments:
+                if file['format'] is None:
+                    log.error(f"Attachment {file['filename']} doesn't have extension, skipping it")
+                    continue
+
                 file_path = os.path.join(attachment_path + sanitize_filename(file['filename']) + file['format'])
                 if not os.path.isfile(file_path) and file['format'] and not os.path.isdir(file_path):
                     with open(file_path, 'wb') as fp:
