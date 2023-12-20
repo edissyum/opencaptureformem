@@ -138,12 +138,15 @@ class WebServices:
 
         if not subject:
             subject = ''
+            if 'subject' in _process and _process['subject']:
+                subject = _process['subject']
         else:
             if config.cfg['OCForMEM']['uppercasesubject'] == 'True':
                 subject = subject.upper()
 
-        if 'subject' in _process and _process['subject']:
-            subject = _process['subject']
+            if 'override_subject' in _process and _process['override_subject'] == 'True':
+                if 'subject' in _process and _process['subject']:
+                    subject = _process['subject']
 
         data = {
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),

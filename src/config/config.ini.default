@@ -41,7 +41,7 @@ blobsratio          = 1E-6
 [OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
 host                = http://localhost/mem/rest/
-user                =
+user                = ws_opencapture
 password            =
 processAvailable    = incoming,reconciliation_default,reconciliation_found
 defaultProcess      = incoming
@@ -59,8 +59,8 @@ reconciliationType  = QRCODE
 
 [OCForMEM_incoming]
 status                  = INIT
-doctype                 = 1202
-typist                  = bblier
+doctype                 = 1013
+typist                  = ws_opencapture
 priority                = poiuytre1357nbvc
 format                  = pdf
 model_id                = 1
@@ -72,6 +72,8 @@ custom_fields           = {}
 separator_qr            = False
 generate_chrono         = True
 subject                 =
+; If True and subject found by LAD, override the subject with the one specify in the configuration
+override_subject        = False
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
 e_reconciliation_status = COU
@@ -82,8 +84,8 @@ compress_type           = None
 
 [OCForMEM_reconciliation_default]
 status                  = ATTREC
-doctype                 = 1202
-typist                  = bblier
+doctype                 = 1013
+typist                  = ws_opencapture
 priority                = poiuytre1357nbvc
 format                  = pdf
 model_id                = 5
@@ -95,6 +97,8 @@ custom_mail             =
 separator_qr            = False
 generate_chrono         = True
 subject                 =
+; If True and subject found by LAD, override the subject with the one specify in the configuration
+override_subject        = False
 chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
 e_reconciliation_status = COU
