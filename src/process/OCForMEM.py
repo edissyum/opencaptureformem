@@ -40,8 +40,9 @@ def get_process_name(args, config):
     return _process
 
 
-def compress_pdf(args, config, file, log):
+def compress_pdf(args, config, process, file, log):
     if args.get('isMail') is None or args.get('isMail') is False and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+        config = config[process]
         if 'compress_type' in config and config['compress_type'] and config['compress_type'] != 'None':
             log.info('Compress PDF : ' + config['compress_type'])
             compressed_file_path = '/tmp/min_' + os.path.basename(file)
@@ -273,7 +274,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
         if ocr.searchablePdf:
             # Compress pdf if necessary
-            compress_pdf(args, config.cfg[_process], ocr.searchablePdf, log)
+            compress_pdf(args, config.cfg, _process, ocr.searchablePdf, log)
 
             with open(ocr.searchablePdf, 'rb') as f:
                 file_to_send = f.read()
@@ -284,7 +285,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 file = output_file
 
             # Compress pdf if necessary
-            compress_pdf(args, config.cfg[_process], file, log)
+            compress_pdf(args, config.cfg, _process, file, log)
 
             with open(file, 'rb') as f:
                 file_to_send = f.read()
@@ -296,32 +297,52 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             file = output_file
 
         # Compress pdf if necessary
-        compress_pdf(args, config.cfg[_process], file, log)
+        compress_pdf(args, config.cfg, _process, file, log)
 
         with open(file, 'rb') as f:
             file_to_send = f.read()
 
     chrono_res_id = False
     if chrono_number:
+        log.info('Chrono found in body : ' + chrono_number)
         chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
         if chrono_res_id:
-            if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
-                config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
+            if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+                if 'e_reconciliation_status' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation_status']:
+                    config_mail.cfg[_process]['status'] = config_mail.cfg[_process]['e_reconciliation_status']
+                if 'retrieve_metadata' in config_mail.cfg[_process] and config_mail.cfg[_process]['retrieve_metadata']:
+                    if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
+                        config_mail.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
+                    if 'destination' in chrono_res_id and chrono_res_id['destination']:
+                        destination = str(chrono_res_id['destination'])
+                    listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
+                    if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
+                        for _list in listinstances['listInstance']:
+                            if _list['item_mode'] == 'dest':
+                                config_mail.cfg[_process]['diffusion_list'] = [{
+                                    "id": _list['itemSerialId'],
+                                    "type": "user",
+                                    "mode": "dest",
+                                }]
+            else:
+                if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
+                    config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
 
-            if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
-                if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
-                    config.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
-                if 'destination' in chrono_res_id and chrono_res_id['destination']:
-                    destination = str(chrono_res_id['destination'])
-                listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
-                if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
-                    for _list in listinstances['listInstance']:
-                        if _list['item_mode'] == 'dest':
-                            config.cfg[_process]['diffusion_list'] = [{
-                                "id": _list['itemSerialId'],
-                                "type": "user",
-                                "mode": "dest",
-                            }]
+                if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
+                    if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
+                        config.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
+                    if 'destination' in chrono_res_id and chrono_res_id['destination']:
+                        destination = str(chrono_res_id['destination'])
+                    listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
+                    if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
+                        for _list in listinstances['listInstance']:
+                            if _list['item_mode'] == 'dest':
+                                config.cfg[_process]['diffusion_list'] = [{
+                                    "id": _list['itemSerialId'],
+                                    "type": "user",
+                                    "mode": "dest",
+                                }]
+
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         if date != '':
             args['data']['documentDate'] = date
@@ -344,7 +365,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if res:
             log.info('Insert email OK : ' + str(res))
             if chrono_number:
-                chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
+                log.info('Chrono found in mail body : ' + chrono_number)
                 if chrono_res_id:
                     web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
             else:
@@ -352,6 +373,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 chrono_class.run()
                 chrono_number = chrono_class.chrono
                 if chrono_number:
+                    log.info('Chrono found in mail subject : ' + chrono_number)
                     chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
                     if chrono_res_id:
                         web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
