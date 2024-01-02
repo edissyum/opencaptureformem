@@ -82,8 +82,8 @@ class PyTesseract:
                         pdf_to_merge.append(tmp_path + '/' + file)
 
             merger = pypdf.PdfMerger()
-            for pdf in pdf_to_merge:
-                merger.append(pdf)
+            for _p in pdf_to_merge:
+                merger.append(_p)
             merger.write(output_file)
             merger.close()
         else:
