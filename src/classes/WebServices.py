@@ -106,7 +106,8 @@ class WebServices:
         }
 
         res = requests.post(self.baseUrl + '/resources/' + str(res_id_master) + '/linkedResources', auth=self.auth,
-                            data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+                            data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                            timeout=self.timeout, verify=self.cert)
         if res.status_code not in (200, 204):
             self.Log.error('(' + str(res.status_code) + ') linkDocumentError : ' + str(res.text))
             return False
