@@ -303,23 +303,33 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             file_to_send = f.read()
 
     chrono_res_id = False
+
     if chrono_number:
         log.info('Chrono found in body : ' + chrono_number)
+
+    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+        chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
+        chrono_class.run()
+        chrono_number = chrono_class.chrono
+        if chrono_number:
+            log.info('Chrono found in mail subject : ' + chrono_number)
+
+    if chrono_number:
         chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
         if chrono_res_id:
             if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
                 if 'e_reconciliation_status' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation_status']:
-                    config_mail.cfg[_process]['status'] = config_mail.cfg[_process]['e_reconciliation_status']
+                    args['data']['status'] = config_mail.cfg[_process]['e_reconciliation_status']
                 if 'retrieve_metadata' in config_mail.cfg[_process] and config_mail.cfg[_process]['retrieve_metadata']:
                     if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
-                        config_mail.cfg[_process]['doctype'] = str(chrono_res_id['doctype'])
+                        args['data']['doctype'] = str(chrono_res_id['doctype'])
                     if 'destination' in chrono_res_id and chrono_res_id['destination']:
-                        destination = str(chrono_res_id['destination'])
+                        args['data']['destination'] = str(chrono_res_id['destination'])
                     listinstances = web_service.retrieve_listinstance(chrono_res_id['resId'])
                     if 'listInstance' in listinstances and listinstances['listInstance'] and len(listinstances['listInstance']) > 0:
                         for _list in listinstances['listInstance']:
                             if _list['item_mode'] == 'dest':
-                                config_mail.cfg[_process]['diffusion_list'] = [{
+                                args['data']['diffusionList'] = [{
                                     "id": _list['itemSerialId'],
                                     "type": "user",
                                     "mode": "dest",
@@ -365,18 +375,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if res:
             log.info('Insert email OK : ' + str(res))
             if chrono_number:
-                log.info('Chrono found in mail body : ' + chrono_number)
                 if chrono_res_id:
                     web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
-            else:
-                chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
-                chrono_class.run()
-                chrono_number = chrono_class.chrono
-                if chrono_number:
-                    log.info('Chrono found in mail subject : ' + chrono_number)
-                    chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
-                    if chrono_res_id:
-                        web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
             return res
         try:
             shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
