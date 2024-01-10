@@ -106,7 +106,8 @@ class WebServices:
         }
 
         res = requests.post(self.baseUrl + '/resources/' + str(res_id_master) + '/linkedResources', auth=self.auth,
-                            data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'})
+                            data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                            timeout=self.timeout, verify=self.cert)
         if res.status_code not in (200, 204):
             self.Log.error('(' + str(res.status_code) + ') linkDocumentError : ' + str(res.text))
             return False
@@ -138,12 +139,15 @@ class WebServices:
 
         if not subject:
             subject = ''
+            if 'subject' in _process and _process['subject']:
+                subject = _process['subject']
         else:
             if config.cfg['OCForMEM']['uppercasesubject'] == 'True':
                 subject = subject.upper()
 
-        if 'subject' in _process and _process['subject']:
-            subject = _process['subject']
+            if 'override_subject' in _process and _process['override_subject'] == 'True':
+                if 'subject' in _process and _process['subject']:
+                    subject = _process['subject']
 
         data = {
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
