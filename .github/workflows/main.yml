@@ -27,6 +27,7 @@ jobs:
 
       - name: Directory creation
         run: |
+          sudo rm -rf /opt/edissyum/
           sudo mkdir -p /opt/edissyum/
           sudo chmod -R 775 /opt/edissyum/
           sudo chown -R $(whoami):$(whoami) /opt/edissyum/
