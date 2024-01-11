@@ -29,7 +29,7 @@ The functionnalities of Open-Capture for MEM Courrier are :
 
 Open-Capture for MEM Courrier is only tested on **Debian** distribution.
 
-For the latest version (4.3.0) you need to install **Debian 12** (Bookworm).
+For the latest version (4.3.X) you need to install **Debian 12** (Bookworm).
 
 
 ## Install Open-Capture for MEM Courrier
