@@ -35,12 +35,12 @@ secret      =
 auth_method          = basic
 host                 = outlook.office365.com
 port                 = 993
-login                = test@outlook.com
 ; SSL or STARTTLS or False
 securedConnection    = SSL
 
+login                =
 ; Only for basic authentication. If you have $ in your password, you must double it
-password             = test
+password             =
 
 ; True or False
 isForm               = False
@@ -80,4 +80,3 @@ custom_mail_cc       = 10
 custom_mail_reply_to = 11
 ; Double quote on both side of the json. eg : {"1": "NO"}
 custom_fields        = {}
-
