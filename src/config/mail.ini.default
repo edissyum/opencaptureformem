@@ -80,4 +80,3 @@ custom_mail_cc       = 10
 custom_mail_reply_to = 11
 ; Double quote on both side of the json. eg : {"1": "NO"}
 custom_fields        = {}
-
