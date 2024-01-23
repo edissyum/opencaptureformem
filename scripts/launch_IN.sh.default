@@ -33,7 +33,7 @@ OCPath="/opt/edissyum/opencaptureformem/"
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
 errFilePath="$OCPath"/data/error/$script/
-tmpFilePath="$OCPath"/data/pdf/
+tmpFilePath="$OCPath"/data/tmp/
 PID=/tmp/securite-$script-$$.pid
 
 filepath=$1
@@ -42,35 +42,39 @@ filename=$(basename "$filepath")
 destination=$(basename "$(dirname "$filepath")")
 ext=$(file -b --mime-type "$filepath")
 
-mv "$filepath" $folder/$(echo "$filename" | sed -e 's/[^A-Za-z0-9._-]/_/g');
+fixedFilename=$(echo "$filename" | sed -e 's/[^A-Za-z0-9._-]/_/g');
+fixedFilePath=$folder/$fixedFilename
+if [[ "$fixedFilename" != "$filename" ]];
+then
+    mv "$filepath" "$fixedFilePath" 2>/dev/null
+fi
 
 §§PYTHON_VENV§§
 
-if ! test -e $PID && (test "$ext" = 'application/pdf' || test "$ext" = 'image/jpeg' || test "$ext" = 'image/png') && test -f "$filepath";
+if ! test -e $PID && (test "$ext" = 'application/pdf' || test "$ext" = 'image/jpeg' || test "$ext" = 'image/png') && test -f "$fixedFilePath";
 then
     touch $PID
     echo $$ > $PID
-
-    mv "$filepath" "$tmpFilePath"
+    echo $tmpFilePath
+    mv "$fixedFilePath" "$tmpFilePath"
 
     # To use the folder as destination replace --read-destination-from-filename by --destination "$destination"
-    python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilePath"/"$filename" --read-destination-from-filename --process "$process" --keep-pdf-debug false --script $script
+    python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilePath"/"$fixedFilename" --read-destination-from-filename --process "$process" --keep-pdf-debug false --script $script
 
     rm -f $PID
-elif test -f "$filepath" && test "$ext" != 'application/pdf';
+elif test -f "$fixedFilePath" && test "$ext" != 'application/pdf';
 then
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename is a not valid PDF file" >> "$logFile"
     mkdir -p "$errFilePath"
     mv "$filepath" "$errFilePath"
     rm -f $PID
-elif test -d "$filepath";
+elif test -d "$fixedFilePath";
 then
     rm -f $PID
-elif ! test -f "$filepath";
+elif ! test -f "$fixedFilePath";
 then
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") ERROR $filename doesn't exists or cannot be read" >> "$logFile"
     rm -f $PID
 else
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") WARNING capture on $filepath already active : PID exists : $PID" >> "$logFile"
 fi
-
