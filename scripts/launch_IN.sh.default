@@ -37,9 +37,12 @@ tmpFilePath="$OCPath"/data/pdf/
 PID=/tmp/securite-$script-$$.pid
 
 filepath=$1
+folder=$(dirname "$filepath")
 filename=$(basename "$filepath")
 destination=$(basename "$(dirname "$filepath")")
 ext=$(file -b --mime-type "$filepath")
+
+mv "$filepath" $folder/$(echo "$filename" | sed -e 's/[^A-Za-z0-9._-]/_/g');
 
 §§PYTHON_VENV§§
 
