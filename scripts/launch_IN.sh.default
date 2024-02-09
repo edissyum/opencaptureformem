@@ -55,7 +55,6 @@ if ! test -e $PID && (test "$ext" = 'application/pdf' || test "$ext" = 'image/jp
 then
     touch $PID
     echo $$ > $PID
-    echo $tmpFilePath
     mv "$fixedFilePath" "$tmpFilePath"
 
     # To use the folder as destination replace --read-destination-from-filename by --destination "$destination"
