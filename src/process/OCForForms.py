@@ -150,7 +150,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                 for value in brackets:
                                     if cpt < len(mapping):
                                         column = mapping[cpt]['column']
-                                        print(column)
                                         if mapping[cpt]['isCustom'] == 'True':
                                             if mapping[cpt]['isAddress'] == 'True':
                                                 latitude = value.split(',')[0]

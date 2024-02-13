@@ -23,44 +23,53 @@ from datetime import datetime
 class FindDate(Thread):
     def __init__(self, text, locale, log, config):
         Thread.__init__(self, name='dateThread')
-        self.Log = log
+        self.log = log
         self.date = ''
         self.text = text
-        self.Locale = locale
-        self.Config = config
+        self.locale = locale
+        self.config = config
 
-    def format_date(self, _date):
+    def format_date(self, _date, regex=False):
         self.date = _date.group().replace('1er', '01')  # Replace some possible inconvenient char
         self.date = self.date.replace(',', ' ')  # Replace some possible inconvenient char
         self.date = self.date.replace('/', ' ')  # Replace some possible inconvenient char
         self.date = self.date.replace('-', ' ')  # Replace some possible inconvenient char
         self.date = self.date.replace('.', ' ')  # Replace some possible inconvenient char
-        date_convert = self.Locale.arrayDate
+        date_convert = self.locale.arrayDate
         for key in date_convert:
             for month in date_convert[key]:
                 if month.lower() in self.date.lower():
                     self.date = (self.date.lower().replace(month.lower(), key))
                     break
 
+        format_date_regex = self.locale.dateTimeFormat
+        if regex:
+            format_date_regex = regex
+
         try:
-            self.date = datetime.strptime(self.date, self.Locale.dateTimeFormat).strftime(self.Locale.formatDate)
+            self.date = datetime.strptime(self.date, format_date_regex).strftime(self.locale.formatDate)
             # Check if the date of the document isn't too old. 62 (default value) is equivalent of 2 months
             today = datetime.now()
-            doc_date = datetime.strptime(self.date, self.Locale.formatDate)
+            doc_date = datetime.strptime(self.date, self.locale.formatDate)
             timedelta = today - doc_date
-            if int(self.Config.cfg['OCForMEM']['timedelta']) != -1:
-                if timedelta.days > int(self.Config.cfg['OCForMEM']['timedelta']) or timedelta.days < 0:
-                    self.Log.info("Date is older than " + str(self.Config.cfg['OCForMEM']['timedelta']) + " days or in the future: " + self.date)
+            if int(self.config.cfg['OCForMEM']['timedelta']) != -1:
+                if timedelta.days > int(self.config.cfg['OCForMEM']['timedelta']) or timedelta.days < 0:
+                    self.log.info("Date is older than " + str(self.config.cfg['OCForMEM']['timedelta']) +
+                                  " days or in the future: " + self.date)
                     self.date = ''
             elif timedelta.days < 0:
-                self.Log.info("Date is in the future: " + self.date)
+                self.log.info("Date is in the future: " + self.date)
                 self.date = ''
 
             if self.date:
-                self.Log.info("Date found : " + self.date)
+                self.log.info("Date found : " + self.date)
             return True
-        except ValueError:
-            self.Log.info("Date wasn't in a good format : " + self.date)
+        except ValueError as _e:
+            if not regex:
+                self.log.info("Date wasn't in a good format, try using with year on two digits (without century) : " +
+                              self.date)
+                return self.format_date(_date, regex=format_date_regex.replace('%Y', '%y'))
+            self.log.info("Date wasn't in a good format : " + self.date)
             self.date = ''
 
     def run(self):
@@ -69,12 +78,14 @@ class FindDate(Thread):
         This will search for a date into the text of original PDF
 
         """
-        for _date in re.finditer(r"" + self.Locale.regexDate + "", re.sub(r'(\d)\s+(\d)', r'\1\2', self.text)):  # The re.sub is useful to fix space between numerics
+
+        for _date in re.finditer(r"" + self.locale.regexDate + "",  # The re.sub is useful to fix space between numerics
+                                 re.sub(r'(\d)\s+(\d)', r'\1\2', self.text)):
             if self.format_date(_date):
                 return True
 
         if not self.date:
-            for _date in re.finditer(r"" + self.Locale.regexDate + "", self.text):
+            for _date in re.finditer(r"" + self.locale.regexDate + "", self.text):
                 if self.format_date(_date):
                     return True
-
+        return False
