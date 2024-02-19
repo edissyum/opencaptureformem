@@ -132,6 +132,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         results[contact_table][column] = contact_fields[field]['correspondance_table'][correspondance]
                             else:
                                 results[contact_table][column] = res[0].strip()
+
                     for field in letterbox_fields:
                         regex = field['regex']
                         column = field['column']
@@ -172,6 +173,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                         else:
                                             args['data'][column] = value.strip()
                                     cpt = cpt + 1
+
                                 # Put the rest of the text (not in brackets) into the last map (if the cpt into mapping correponds)
                                 if len(brackets) + 1 == len(mapping):
                                     last_map = mapping[len(mapping) - 1]
@@ -188,6 +190,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                             args['data']['customFields'].update({column: text_without_brackets.strip()})
                                     else:
                                         args['data'][column] = text_without_brackets.strip()
+
                 res_contact = web_service.create_contact(results[contact_table])
                 if res_contact[0]:
                     args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
