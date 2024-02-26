@@ -15,6 +15,7 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
+import re
 import json
 import base64
 import requests
@@ -26,7 +27,7 @@ from datetime import datetime, time, timedelta
 class WebServices:
     def __init__(self, host, user, pwd, log, timeout, cert_path):
         self.log = log
-        self.base_url = host
+        self.base_url = re.sub(r'(/)+$', '', host)
         self.auth = HTTPBasicAuth(user, pwd)
         self.timeout = int(timeout)
         self.cert = cert_path
@@ -52,7 +53,7 @@ class WebServices:
         """
         if mail:
             try:
-                res = requests.get(self.base_url + 'getContactByMail', auth=self.auth, params={'mail': mail},
+                res = requests.get(self.base_url + '/getContactByMail', auth=self.auth, params={'mail': mail},
                                    timeout=self.timeout, verify=self.cert)
 
                 if res.status_code != 200:
@@ -73,7 +74,7 @@ class WebServices:
         :return: Contact from MEM Courrier
         """
         try:
-            res = requests.get(self.base_url + 'getContactByPhone', auth=self.auth, params={'phone': phone},
+            res = requests.get(self.base_url + '/getContactByPhone', auth=self.auth, params={'phone': phone},
                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
@@ -177,7 +178,7 @@ class WebServices:
             data['customFields'][_process['custom_mail']] = custom_mail
 
         try:
-            res = requests.post(self.base_url + 'resources', auth=self.auth, data=json.dumps(data),
+            res = requests.post(self.base_url + '/resources', auth=self.auth, data=json.dumps(data),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
 
@@ -209,7 +210,7 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.base_url + 'attachments', auth=self.auth, data=json.dumps(data),
+            res = requests.post(self.base_url + '/attachments', auth=self.auth, data=json.dumps(data),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
 
@@ -240,7 +241,7 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.base_url + 'reconciliation/add', auth=self.auth, data=json.dumps(data),
+            res = requests.post(self.base_url + '/reconciliation/add', auth=self.auth, data=json.dumps(data),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
 
@@ -260,7 +261,7 @@ class WebServices:
         :return: Info of attachment from MEM Courrier database
         """
         try:
-            res = requests.post(self.base_url + 'reconciliation/check', auth=self.auth, data={'chrono': chrono},
+            res = requests.post(self.base_url + '/reconciliation/check', auth=self.auth, data={'chrono': chrono},
                                 timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
@@ -283,7 +284,7 @@ class WebServices:
             'clause': "alt_identifier='" + chrono + "' AND status <> 'DEL'",
         })
         try:
-            res = requests.post(self.base_url + 'res/list', auth=self.auth, data=args,
+            res = requests.post(self.base_url + '/res/list', auth=self.auth, data=args,
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
 
@@ -313,7 +314,7 @@ class WebServices:
         basket = config.cfg['REATTACH_DOCUMENT']['basket']
 
         try:
-            res = requests.put(self.base_url + 'resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/'
+            res = requests.put(self.base_url + '/resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/'
                                + basket + '/actions/' + action_id, auth=self.auth, data=args,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
@@ -347,7 +348,7 @@ class WebServices:
             })
 
         try:
-            res = requests.put(self.base_url + 'res/resource/status', auth=self.auth, data=args,
+            res = requests.put(self.base_url + '/res/resource/status', auth=self.auth, data=args,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
 
@@ -380,7 +381,7 @@ class WebServices:
             args['customFields'].update(json.loads(_process.get('custom_fields')))
 
         try:
-            res = requests.post(self.base_url + 'resources', auth=self.auth, data=json.dumps(args),
+            res = requests.post(self.base_url + '/resources', auth=self.auth, data=json.dumps(args),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
 
@@ -413,7 +414,7 @@ class WebServices:
             data['encodedFile'] = base64.b64encode(f.read()).decode('UTF-8')
 
         try:
-            res = requests.post(self.base_url + 'attachments', auth=self.auth, data=json.dumps(data),
+            res = requests.post(self.base_url + '/attachments', auth=self.auth, data=json.dumps(data),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
 
@@ -452,7 +453,7 @@ class WebServices:
 
     def retrieve_entities(self):
         try:
-            res = requests.get(self.base_url + 'entities', auth=self.auth,
+            res = requests.get(self.base_url + '/entities', auth=self.auth,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
 
@@ -466,7 +467,7 @@ class WebServices:
 
     def retrieve_doctype(self, doctype):
         try:
-            res = requests.get(self.base_url + 'doctypes/types/' + doctype, auth=self.auth,
+            res = requests.get(self.base_url + '/doctypes/types/' + doctype, auth=self.auth,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
 
@@ -480,7 +481,7 @@ class WebServices:
 
     def retrieve_workings_days(self):
         try:
-            res = requests.get(self.base_url + 'parameters/workingDays', auth=self.auth,
+            res = requests.get(self.base_url + '/parameters/workingDays', auth=self.auth,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
 
@@ -494,7 +495,7 @@ class WebServices:
 
     def retrieve_users(self):
         try:
-            res = requests.get(self.base_url + 'users', auth=self.auth,
+            res = requests.get(self.base_url + '/users', auth=self.auth,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
 
@@ -508,7 +509,7 @@ class WebServices:
 
     def retrieve_custom_fields(self):
         try:
-            res = requests.get(self.base_url + 'customFields', auth=self.auth,
+            res = requests.get(self.base_url + '/customFields', auth=self.auth,
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
 
