@@ -69,7 +69,7 @@ model_id                = 1
 priority                = poiuytre1357nbvc
 status                  = MAQUAL
 doctype                 = 103
-typist                  = bblier
+typist                  = ws_opencapture
 destination             = COU
 
 ; True or False
