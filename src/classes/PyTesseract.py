@@ -15,22 +15,20 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
-import os
-import uuid
+import io
 import pypdf
-import shutil
 import pytesseract
 from pdf2image import convert_from_path
 
 
 class PyTesseract:
     def __init__(self, locale, log, config):
-        self.Log = log
+        self.log = log
         self.text = ''
         self.tool = ''
         self.lang = locale
-        self.Config = config
-        self.searchablePdf = ''
+        self.config = config
+        self.searchable_pdf = ''
 
     def text_builder(self, img):
         """
@@ -44,53 +42,39 @@ class PyTesseract:
                 lang=self.lang
             )
         except pytesseract.pytesseract.TesseractError as t:
-            self.Log.error('Tesseract ERROR : ' + str(t))
+            self.log.error('Tesseract ERROR : ' + str(t))
 
     def generate_searchable_pdf(self, pdf, tmp_path, separator):
         """
-        Start from standard PDF, with no OCR, and create a searchable PDF, with OCR. Thanks to pytesseract python lib
+        Start from standard PDF, with no OCR, and create a searchable PDF, with OCR.
+        Thanks to pytesseract python lib
 
         :param pdf: Path to original pdf (not searchable, without OCR)
         :param tmp_path: Path to store the final pdf, searchable with OCR
         :param separator: Class Separator instance
         """
 
-        images = convert_from_path(pdf, dpi=400)
-        cpt = 1
-        _uuid = str(uuid.uuid4())
+        with open(pdf, 'rb') as file:
+            pdf_reader = pypdf.PdfReader(file)
+            page_count = len(pdf_reader.pages)
+
         output_file = tmp_path + '/result.pdf'
+        merger = pypdf.PdfMerger()
 
-        for i in range(len(images)):
-            output = tmp_path + '/to_merge_' + _uuid + '-' + str(cpt).zfill(3)
-            images[i].save(output + '.jpg', 'JPEG')
-            pdf_content = pytesseract.image_to_pdf_or_hocr(output + '.jpg', extension='pdf')
-
-            try:
-                os.remove(output + '.jpg')
-            except FileNotFoundError:
-                pass
-
-            with open(output + '.pdf', 'w+b') as f:
-                f.write(pdf_content)
-            cpt = cpt + 1
-
-        if cpt > 2:
-            pdf_to_merge = []
-            for file in sorted(os.listdir(tmp_path)):
-                if file.startswith('to_merge_'):
-                    if file.endswith('.pdf'):
-                        pdf_to_merge.append(tmp_path + '/' + file)
-
-            merger = pypdf.PdfMerger()
-            for _p in pdf_to_merge:
-                merger.append(_p)
-            merger.write(output_file)
-            merger.close()
-        else:
-            shutil.move(tmp_path + '/to_merge_' + _uuid + '-001.pdf', tmp_path + '/result.pdf')
+        cpt = 1
+        for chunk_idx in range(0, page_count, 10):
+            start_page = 0 if chunk_idx == 0 else chunk_idx + 1
+            end_page = min(chunk_idx + 10, page_count)
+            chunk_images = convert_from_path(pdf, first_page=start_page, last_page=end_page, dpi=300)
+            for image in chunk_images:
+                pdf_content = pytesseract.image_to_pdf_or_hocr(image, extension='pdf')
+                merger.append(pypdf.PdfReader(io.BytesIO(pdf_content)))
+                cpt = cpt + 1
+        merger.write(output_file)
+        merger.close()
 
         if separator.convert_to_pdfa == "True":
             output_file = tmp_path + '/result-pdfa.pdf'
-            separator.convert_to_pdfa_function(output_file, tmp_path + '/result.pdf', self.Log)
+            separator.convert_to_pdfa_function(output_file, tmp_path + '/result.pdf', self.log)
 
-        self.searchablePdf = output_file
+        self.searchable_pdf = output_file
