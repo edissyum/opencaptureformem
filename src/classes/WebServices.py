@@ -15,18 +15,19 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
+import re
 import json
 import base64
 import requests
 import holidays
-from datetime import datetime, time, timedelta
 from requests.auth import HTTPBasicAuth
+from datetime import datetime, time, timedelta
 
 
 class WebServices:
     def __init__(self, host, user, pwd, log, timeout, cert_path):
-        self.Log = log
-        self.baseUrl = host
+        self.log = log
+        self.base_url = re.sub(r'(/)+$', '', host)
         self.auth = HTTPBasicAuth(user, pwd)
         self.timeout = int(timeout)
         self.cert = cert_path
@@ -37,10 +38,10 @@ class WebServices:
         Check if remote host is UP
         """
         try:
-            requests.get(self.baseUrl, timeout=self.timeout, verify=self.cert)
+            requests.get(self.base_url, timeout=self.timeout, verify=self.cert)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('Error connecting to the host. Exiting program..')
-            self.Log.error('More information : ' + str(e))
+            self.log.error('Error connecting to the host. Exiting program..')
+            self.log.error('More information : ' + str(e))
             raise
 
     def retrieve_contact_by_mail(self, mail):
@@ -52,17 +53,18 @@ class WebServices:
         """
         if mail:
             try:
-                res = requests.get(self.baseUrl + 'getContactByMail', auth=self.auth, params={'mail': mail}, timeout=self.timeout, verify=self.cert)
+                res = requests.get(self.base_url + '/getContactByMail', auth=self.auth, params={'mail': mail},
+                                   timeout=self.timeout, verify=self.cert)
+
                 if res.status_code != 200:
-                    self.Log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
+                    self.log.error('(' + str(res.status_code) + ') GetContactByMailError : ' + str(res.text))
                     return False, str(res.text)
-                else:
-                    return json.loads(res.text)
+                return json.loads(res.text)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                self.Log.error('GetContactByMailError : ' + str(e))
+                self.log.error('GetContactByMailError : ' + str(e))
                 return False, str(e)
         else:
-            self.Log.info('GetContactByMailInfo : No email found')
+            self.log.info('GetContactByMailInfo : No email found')
 
     def retrieve_contact_by_phone(self, phone):
         """
@@ -72,14 +74,15 @@ class WebServices:
         :return: Contact from MEM Courrier
         """
         try:
-            res = requests.get(self.baseUrl + 'getContactByPhone', auth=self.auth, params={'phone': phone}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/getContactByPhone', auth=self.auth, params={'phone': phone},
+                               timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') \n GetContactByPhoneError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('GetContactByPhoneError : ' + str(e))
+            self.log.error('GetContactByPhoneError : ' + str(e))
             return False, str(e)
 
     def retrieve_document_by_chrono(self, chrono_number):
@@ -88,16 +91,15 @@ class WebServices:
                 data = {
                     'chronoNumber': chrono_number
                 }
-                res = requests.post(self.baseUrl + '/resources/getByChrono', auth=self.auth, data=json.dumps(data),
+                res = requests.post(self.base_url + '/resources/getByChrono', auth=self.auth, data=json.dumps(data),
                                     headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                     timeout=self.timeout, verify=self.cert)
                 if res.status_code != 200:
-                    self.Log.error('(' + str(res.status_code) + ') getResourceByChrono : ' + str(res.text))
+                    self.log.error('(' + str(res.status_code) + ') getResourceByChrono : ' + str(res.text))
                     return False
-                else:
-                    return json.loads(res.text)
+                return json.loads(res.text)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                self.Log.error('InsertIntoMEMError : ' + str(e))
+                self.log.error('InsertIntoMEMError : ' + str(e))
                 return False, str(e)
 
     def link_documents(self, res_id_master, res_id):
@@ -105,11 +107,12 @@ class WebServices:
             'linkedResources': [res_id]
         }
 
-        res = requests.post(self.baseUrl + '/resources/' + str(res_id_master) + '/linkedResources', auth=self.auth,
+        res = requests.post(self.base_url + '/resources/' + str(res_id_master) + '/linkedResources', auth=self.auth,
                             data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'},
                             timeout=self.timeout, verify=self.cert)
+
         if res.status_code not in (200, 204):
-            self.Log.error('(' + str(res.status_code) + ') linkDocumentError : ' + str(res.text))
+            self.log.error('(' + str(res.status_code) + ') linkDocumentError : ' + str(res.text))
             return False
         return True
 
@@ -175,15 +178,16 @@ class WebServices:
             data['customFields'][_process['custom_mail']] = custom_mail
 
         try:
-            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/resources', auth=self.auth, data=json.dumps(data),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertIntoMEMError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') InsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return res.text
+            return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('InsertIntoMEMError : ' + str(e))
+            self.log.error('InsertIntoMEMError : ' + str(e))
             return False, str(e)
 
     def insert_attachment(self, file_content, config, res_id, _process):
@@ -206,15 +210,16 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/attachments', auth=self.auth, data=json.dumps(data),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMEMError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return res.text
+            return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('InsertAttachmentsIntoMEMError : ' + str(e))
+            self.log.error('InsertAttachmentsIntoMEMError : ' + str(e))
             return False, str(e)
 
     def insert_attachment_reconciliation(self, file_content, chrono, _process, config):
@@ -236,15 +241,16 @@ class WebServices:
         }
 
         try:
-            res = requests.post(self.baseUrl + 'reconciliation/add', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/reconciliation/add', auth=self.auth, data=json.dumps(data),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMEMError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return res.text
+            return res.text
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('InsertAttachmentsReconciliationIntoMEMError : ' + str(e))
+            self.log.error('InsertAttachmentsReconciliationIntoMEMError : ' + str(e))
             return False, str(e)
 
     def check_attachment(self, chrono):
@@ -255,14 +261,15 @@ class WebServices:
         :return: Info of attachment from MEM Courrier database
         """
         try:
-            res = requests.post(self.baseUrl + 'reconciliation/check', auth=self.auth, data={'chrono': chrono}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/reconciliation/check', auth=self.auth, data={'chrono': chrono},
+                                timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') CheckAttachmentError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('CheckAttachmentError : ' + str(e))
+            self.log.error('CheckAttachmentError : ' + str(e))
             return False, str(e)
 
     # BEGIN OBR01
@@ -277,14 +284,16 @@ class WebServices:
             'clause': "alt_identifier='" + chrono + "' AND status <> 'DEL'",
         })
         try:
-            res = requests.post(self.baseUrl + 'res/list', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/res/list', auth=self.auth, data=args,
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') CheckDocumentError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') CheckDocumentError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('CheckDocumentError : ' + str(e))
+            self.log.error('CheckDocumentError : ' + str(e))
             return False, str(e)
 
     def reattach_to_document(self, res_id_origin, res_id_signed, typist, config):
@@ -305,16 +314,17 @@ class WebServices:
         basket = config.cfg['REATTACH_DOCUMENT']['basket']
 
         try:
-            res = requests.put(self.baseUrl + 'resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/' + basket + '/actions/' + action_id, auth=self.auth, data=args,
-                headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.put(self.base_url + '/resourcesList/users/' + str(typist) + '/groups/' + group + '/baskets/'
+                               + basket + '/actions/' + action_id, auth=self.auth, data=args,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 204:
-                self.Log.error('(' + str(res.status_code) + ') ReattachToDocumentError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') ReattachToDocumentError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return True
+            return True
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('ReattachToDocumentError : ' + str(e))
+            self.log.error('ReattachToDocumentError : ' + str(e))
             return False, str(e)
 
     def change_status(self, res_id, config):
@@ -338,14 +348,16 @@ class WebServices:
             })
 
         try:
-            res = requests.put(self.baseUrl + 'res/resource/status', auth=self.auth, data=args, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.put(self.base_url + '/res/resource/status', auth=self.auth, data=args,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') ChangeStatusError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') ChangeStatusError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return True
+            return True
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('ChangeStatusError : ' + str(e))
+            self.log.error('ChangeStatusError : ' + str(e))
             return False, str(e)
     # END OBR01
 
@@ -357,7 +369,9 @@ class WebServices:
         :param args: Array of argument, same as insert_with_args
         :return: res_id or Boolean if issue happen
         """
-        args['encodedFile'] = base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8')
+        with open(args['file'], 'rb') as f:
+            args['encodedFile'] = base64.b64encode(f.read()).decode('UTF-8')
+
         args['arrivalDate'] = str(datetime.now())
         args['processLimitDate'] = str(self.calcul_process_limit_date(args['doctype']))
 
@@ -367,15 +381,16 @@ class WebServices:
             args['customFields'].update(json.loads(_process.get('custom_fields')))
 
         try:
-            res = requests.post(self.baseUrl + 'resources', auth=self.auth, data=json.dumps(args), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/resources', auth=self.auth, data=json.dumps(args),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') MailInsertIntoMEMError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') MailInsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return True, json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('MailInsertIntoMEMError : ' + str(e))
+            self.log.error('MailInsertIntoMEMError : ' + str(e))
             return False, str(e)
 
     def insert_attachment_from_mail(self, args, res_id):
@@ -390,22 +405,25 @@ class WebServices:
         data = {
             'status': args['status'],
             'title': args['subject'],
-            'encodedFile': base64.b64encode(open(args['file'], 'rb').read()).decode('UTF-8'),
             'format': args['format'],
             'resIdMaster': res_id,
             'type': 'simple_attachment'
         }
 
+        with open(args['file'], 'rb') as f:
+            data['encodedFile'] = base64.b64encode(f.read()).decode('UTF-8')
+
         try:
-            res = requests.post(self.baseUrl + 'attachments', auth=self.auth, data=json.dumps(data), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/attachments', auth=self.auth, data=json.dumps(data),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMEMError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') MailInsertAttachmentsIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return True, json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('MailInsertAttachmentsIntoMEMError : ' + str(e))
+            self.log.error('MailInsertAttachmentsIntoMEMError : ' + str(e))
             return False, str(e)
 
     def calcul_process_limit_date(self, doctype):
@@ -435,88 +453,98 @@ class WebServices:
 
     def retrieve_entities(self):
         try:
-            res = requests.get(self.baseUrl + 'entities', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/entities', auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMEMEntitiesError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') RetrieveMEMEntitiesError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveMEMEntitiesError : ' + str(e))
+            self.log.error('RetrieveMEMEntitiesError : ' + str(e))
             return False, str(e)
 
     def retrieve_doctype(self, doctype):
         try:
-            res = requests.get(self.baseUrl + 'doctypes/types/' + doctype, auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/doctypes/types/' + doctype, auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveDoctypeError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') RetrieveDoctypeError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveDoctypeError : ' + str(e))
+            self.log.error('RetrieveDoctypeError : ' + str(e))
             return False, str(e)
 
     def retrieve_workings_days(self):
         try:
-            res = requests.get(self.baseUrl + 'parameters/workingDays', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/parameters/workingDays', auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveWorkingDaysError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') RetrieveWorkingDaysError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveWorkingDaysError : ' + str(e))
+            self.log.error('RetrieveWorkingDaysError : ' + str(e))
             return False, str(e)
 
     def retrieve_users(self):
         try:
-            res = requests.get(self.baseUrl + 'users', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/users', auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMEMUserError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') RetrieveMEMUserError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveMEMUserError : ' + str(e))
+            self.log.error('RetrieveMEMUserError : ' + str(e))
             return False, str(e)
 
     def retrieve_custom_fields(self):
         try:
-            res = requests.get(self.baseUrl + 'customFields', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/customFields', auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveMEMCustomFieldsError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') RetrieveMEMCustomFieldsError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveMEMCustomFieldsError : ' + str(e))
+            self.log.error('RetrieveMEMCustomFieldsError : ' + str(e))
             return False, str(e)
 
     def create_contact(self, contact):
         try:
-            res = requests.post(self.baseUrl + '/contacts', auth=self.auth, data=json.dumps(contact), headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/contacts', auth=self.auth, data=json.dumps(contact),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('CreateContactError : ' + str(res.text))
+                self.log.error('CreateContactError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return True, json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('CreateContactError : ' + str(e))
+            self.log.error('CreateContactError : ' + str(e))
             return False, str(e)
 
     def retrieve_listinstance(self, res_id):
         try:
-            res = requests.get(self.baseUrl + '/resources/' + str(res_id) + '/listInstance', auth=self.auth, headers={'Connection': 'close', 'Content-Type': 'application/json'}, timeout=self.timeout, verify=self.cert)
+            res = requests.get(self.base_url + '/resources/' + str(res_id) + '/listInstance', auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
 
             if res.status_code != 200:
-                self.Log.error('(' + str(res.status_code) + ') RetrieveListInstanceError : ' + str(res.text))
+                self.log.error('(' + str(res.status_code) + ') RetrieveListInstanceError : ' + str(res.text))
                 return False, str(res.text)
-            else:
-                return json.loads(res.text)
+            return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            self.Log.error('RetrieveListInstanceError : ' + str(e))
+            self.log.error('RetrieveListInstanceError : ' + str(e))
             return False, str(e)

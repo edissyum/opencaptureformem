@@ -277,7 +277,7 @@ class Separator:
                 data = index
                 text = data['text']
                 num = index['attrib']['num']
-                keyword = ''
+                keyword = 'MAARCH_|MEM_'
             else:
                 return
 

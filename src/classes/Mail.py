@@ -21,6 +21,7 @@ import sys
 import msal
 import json
 import shutil
+import base64
 import mimetypes
 from ssl import SSLError
 from socket import gaierror
@@ -302,22 +303,38 @@ class Mail:
                 log.error(f"Attachment {pj['filename']} doesn't have extension, skipping it")
                 continue
 
-            path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
-            if not os.path.isfile(path):
-                pj['format'] = '.txt'
-                f = open(path, 'w')
-                f.write('Erreur lors de la remontée de cette pièce jointe')
-                f.close()
+            if os.path.isfile(file) and file_format == 'html':
+                with open(file, 'r', encoding='UTF-8') as f:
+                    html_content = f.read()
+                    attachment_content_id_in_html = re.search(r'src="cid\:\s*' + pj['content_id'], html_content)
 
-            data['attachments'].append({
-                'status': 'TRA',
-                'collId': 'letterbox_coll',
-                'table': 'res_attachments',
-                'subject': pj['filename'] + pj['format'],
-                'filename': sanitize_filename(pj['filename']),
-                'format': pj['format'][1:],
-                'file': path,
-            })
+                    if attachment_content_id_in_html:
+                        updated_html = re.sub(r'src="cid\:\s*' + pj['content_id'],
+                                              f"src='data:image/{pj['format'].replace('.', '')};"
+                                              f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
+                                              html_content)
+
+                with open(file, 'w', encoding='UTF-8') as f:
+                    f.write(updated_html)
+                    f.close()
+
+            if not attachment_content_id_in_html:
+                path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
+                if not os.path.isfile(path):
+                    pj['format'] = '.txt'
+                    with open(path, 'w', encoding='UTF-8') as f:
+                        f.write('Erreur lors de la remontée de cette pièce jointe')
+                        f.close()
+
+                data['attachments'].append({
+                    'status': 'TRA',
+                    'collId': 'letterbox_coll',
+                    'table': 'res_attachments',
+                    'subject': pj['filename'] + pj['format'],
+                    'filename': sanitize_filename(pj['filename']),
+                    'format': pj['format'][1:],
+                    'file': path,
+                })
 
         return data, file
 
@@ -344,50 +361,50 @@ class Mail:
 
         # Start with headers
         if msg.headers is not None:
-            fp = open(primary_mail_path + 'header.txt', 'w', encoding='UTF-8')
-            for header in msg.headers:
-                if self.auth_method == 'exchange':
-                    header_name = header.name
-                    header_value = header.value
-                else:
-                    header_name = header
-                    header_value = msg.headers[header][0]
+            with open(primary_mail_path + 'header.txt', 'w', encoding='UTF-8') as fp:
+                for header in msg.headers:
+                    if self.auth_method == 'exchange':
+                        header_name = header.name
+                        header_value = header.value
+                    else:
+                        header_name = header
+                        header_value = msg.headers[header][0]
 
-                try:
-                    fp.write(header_name + ' : ' + header_value + '\n')
-                except UnicodeEncodeError:
-                    fp.write(header_name + ' : ' + header_value.encode('utf-8', 'surrogateescape').decode('utf-8',
-                                                                                                          'replace') + '\n')
-            fp.close()
+                    try:
+                        fp.write(header_name + ' : ' + header_value + '\n')
+                    except UnicodeEncodeError:
+                        fp.write(header_name + ' : ' + header_value.encode('utf-8', 'surrogateescape')
+                                 .decode('utf-8', 'replace') + '\n')
+                fp.close()
 
         # Then body
         if self.auth_method != 'exchange' and len(msg.html) == 0:
-            fp = open(primary_mail_path + 'body.txt', 'w', encoding='UTF-8')
-            if len(msg.text) != 0:
-                fp.write(msg.text)
-            else:
-                fp.write(' ')
+            with open(primary_mail_path + 'body.txt', 'w', encoding='UTF-8') as fp:
+                if len(msg.text) != 0:
+                    fp.write(msg.text)
+                else:
+                    fp.write(' ')
         else:
-            fp = open(primary_mail_path + 'body.html', 'w', encoding='UTF-8')
-            if force_utf8:
-                utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-                if (not re.search(utf_8_charset.lower(), html_body.lower()) or re.search(utf_8_charset.lower() +
-                                                                                         '\s*-->', html_body.lower())
-                        or re.search('<!--\s*' + utf_8_charset.lower(), html_body.lower())):
-                    fp.write(utf_8_charset)
-                    fp.write('\n')
-            fp.write(html_body)
-        fp.close()
+            with open(primary_mail_path + 'body.html', 'w', encoding='UTF-8') as fp:
+                if force_utf8:
+                    utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
+                    if (not re.search(utf_8_charset.lower(), html_body.lower()) or
+                            re.search(utf_8_charset.lower() + '\s*-->', html_body.lower()) or
+                            re.search('<!--\s*' + utf_8_charset.lower(), html_body.lower())):
+                        fp.write(utf_8_charset)
+                        fp.write('\n')
+                fp.write(html_body)
+            fp.close()
 
         if self.auth_method != 'exchange':
             # For safety, backup original stream retrieve from IMAP directly
-            fp = open(primary_mail_path + 'orig.txt', 'w', encoding='UTF-8')
-            for payload in msg.obj.get_payload():
-                try:
-                    fp.write(str(payload))
-                except KeyError:
-                    break
-            fp.close()
+            with open(primary_mail_path + 'orig.txt', 'w', encoding='UTF-8') as fp:
+                for payload in msg.obj.get_payload():
+                    try:
+                        fp.write(str(payload))
+                    except KeyError:
+                        break
+                fp.close()
 
         # Backup attachments
         attachments = self.retrieve_attachment(msg)
@@ -497,6 +514,7 @@ class Mail:
                         'filename': os.path.splitext(att.filename)[0].replace(' ', '_'),
                         'format': file_format,
                         'content': att.payload,
+                        'content_id': att.content_id,
                         'mime_type': att.content_type
                     })
         return args

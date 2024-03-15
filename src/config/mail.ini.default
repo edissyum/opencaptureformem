@@ -32,32 +32,32 @@ secret      =
 
 [MAIL_1]
 ; basic, oauth or exchange
-auth_method          = basic
-host                 = outlook.office365.com
-port                 = 993
+auth_method             = basic
+host                    = outlook.office365.com
+port                    = 993
 ; SSL or STARTTLS or False
-securedConnection    = SSL
+securedConnection       = SSL
 
-login                =
+login                   =
 ; Only for basic authentication. If you have $ in your password, you must double it
-password             =
+password                =
 
 ; True or False
-isForm               = False
-generate_chrono      = True
-forceUtf8            = True
-priorityToMailSubject= False
-priorityToMailDate   = False
-priorityToMailFrom   = False
-importOnlyAttachments= False
-extensionsAllowed    = pdf,jpg,jpeg,png,docx,odt,doc
+isForm                  = False
+generate_chrono         = True
+forceUtf8               = True
+priorityToMailSubject   = False
+priorityToMailDate      = False
+priorityToMailFrom      = False
+importOnlyAttachments   = False
+extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
-folderToCrawl        = _MEM
-folderDestination    = _MEM_ARCHIVES
+folderToCrawl           = _MEM
+folderDestination       = _MEM_ARCHIVES
 ; If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
-folderTrash          = Trash
+folderTrash             = Trash
 ; move, delete or none
-actionAfterProcess   = move
+actionAfterProcess      = move
 
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
@@ -69,14 +69,14 @@ model_id                = 1
 priority                = poiuytre1357nbvc
 status                  = MAQUAL
 doctype                 = 103
-typist                  = bblier
+typist                  = ws_opencapture
 destination             = COU
 
 ; True or False
-from_is_reply_to     = False
-custom_mail_from     = 8
-custom_mail_to       = 9
-custom_mail_cc       = 10
-custom_mail_reply_to = 11
+from_is_reply_to        = False
+custom_mail_from        = 8
+custom_mail_to          = 9
+custom_mail_cc          = 10
+custom_mail_reply_to    = 11
 ; Double quote on both side of the json. eg : {"1": "NO"}
-custom_fields        = {}
+custom_fields           = {}
