@@ -272,11 +272,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if is_ocr is False:
         log.info('Start OCR on document before send it')
         ocr.generate_searchable_pdf(file, tmp_folder, separator)
-        if ocr.searchablePdf:
+        if ocr.searchable_pdf:
             # Compress pdf if necessary
-            compress_pdf(args, config.cfg, _process, ocr.searchablePdf, log)
+            compress_pdf(args, config.cfg, _process, ocr.searchable_pdf, log)
 
-            with open(ocr.searchablePdf, 'rb') as f:
+            with open(ocr.searchable_pdf, 'rb') as f:
                 file_to_send = f.read()
         else:
             if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
