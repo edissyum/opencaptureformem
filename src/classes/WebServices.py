@@ -99,7 +99,7 @@ class WebServices:
                     return False
                 return json.loads(res.text)
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-                self.log.error('InsertIntoMEMError : ' + str(e))
+                self.log.error('getResourceByChrono : ' + str(e))
                 return False, str(e)
 
     def link_documents(self, res_id_master, res_id):
