@@ -59,7 +59,7 @@ reconciliationType  = QRCODE
 
 [OCForMEM_incoming]
 status                  = INIT
-doctype                 = 1013
+doctype                 = 1204
 typist                  = ws_opencapture
 priority                = poiuytre1357nbvc
 format                  = pdf
@@ -84,7 +84,7 @@ compress_type           = None
 
 [OCForMEM_reconciliation_default]
 status                  = ATTREC
-doctype                 = 1013
+doctype                 = 1204
 typist                  = ws_opencapture
 priority                = poiuytre1357nbvc
 format                  = pdf
