@@ -32,7 +32,7 @@ user=$(who am i | awk '{print $1}')
 # Backup all the Open-Capture path
 cp -r "$OCPath" "$backupPath"
 
-if [ ! -f "/home/$user/python-venv/opencaptureformem/bin/python3" ]; then
+if [ ! -f "/opt/edissyum/python-venv/opencaptureformem/bin/python3" ]; then
     echo "#######################################################################################"
     echo "            The default Python Virtual environment path doesn't exist"
     echo "  Do you want to exit update ? If no, the script will use default Python installation"
@@ -62,10 +62,10 @@ cd install/ || exit 2
 apt update
 xargs -a apt-requirements.txt apt install -y
 
-"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
-"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pillow
-"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
-"/home/$user/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade -r pip-requirements.txt
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pillow
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade -r pip-requirements.txt
 
 cd $OCPath || exit 3
 find . -name ".gitkeep" -delete
