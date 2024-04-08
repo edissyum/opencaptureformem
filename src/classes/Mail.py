@@ -314,9 +314,9 @@ class Mail:
                                               f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
                                               html_content)
 
-                with open(file, 'w', encoding='UTF-8') as f:
-                    f.write(updated_html)
-                    f.close()
+                        with open(file, 'w', encoding='UTF-8') as file:
+                            file.write(updated_html)
+                            file.close()
 
             if not attachment_content_id_in_html:
                 path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
