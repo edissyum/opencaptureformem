@@ -27,8 +27,10 @@ from bs4 import BeautifulSoup
 def process_form(args, config, config_mail, log, web_service, process_name, file):
     json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
     if os.path.isfile(json_identifier):
-        identifier = open(json_identifier, 'r').read()
-        identifier = json.loads(identifier)
+        with open(json_identifier, 'r', encoding='UTF-8') as identifier:
+            identifier = identifier.read()
+            identifier = json.loads(identifier)
+
         process_found = False
         process = False
         for _process in identifier:
@@ -53,7 +55,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
                 if identifier[process].get('destination') is not None:
                     destination = identifier[_process].get('destination')
-                    if type(destination) is not int:
+                    if not isinstance(destination, int):
                         destinations = web_service.retrieve_entities()
                         for dest in destinations['entities']:
                             if destination == dest['id']:
@@ -78,42 +80,45 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
         if process_found:
             json_file = config.cfg['GLOBAL']['formpath'] + identifier[process]['json_file']
             if os.path.isfile(json_file):
-                data = open(json_file, 'r').read()
-                data = json.loads(data)['FIELDS']
-                contact_fields = data['CONTACT']['data']
-                contact_table = data['CONTACT']['table']
-                letterbox_fields = data['LETTERBOX']['data']
+                with open(json_file, 'r', encoding='UTF-8') as data:
+                    data = json.loads(data.read())['FIELDS']
+                    contact_fields = data['CONTACT']['data']
+                    contact_table = data['CONTACT']['table']
+                    letterbox_fields = data['LETTERBOX']['data']
 
-                file_content = open(args['file'], 'r')
+                with open(args['file'], 'r', encoding='UTF-8') as file_content:
+                    text_parsed = BeautifulSoup(file_content, 'html.parser')
 
-                text_parsed = BeautifulSoup(file_content, 'html.parser')
                 lines = []
 
+                cpt = 0
                 for row in text_parsed.find_all('tr'):
                     line = ''
                     for el in row.find_all('td'):
-                        line += el.text.strip() + ' '
+                        if el.text.strip() not in line:
+                            line += el.text.strip() + ' '
                     lines.append(line.strip())
+                    cpt += 1
 
                 text = text_parsed.findAll(['p'])
                 if lines:
                     text = text + lines
 
                 results = {
-                    contact_table: {},
+                    contact_table: {}
                 }
                 if (not text and file_content) or len(text) <= 1:
-                    file_content = open(args['file'], 'r')
-                    text_parsed = file_content.read()
-                    text_parsed = re.sub(r'\s+', ' ', text_parsed)
-                    text_parsed = re.sub(r'\t', '', text_parsed)
-                    text_parsed = re.sub(r'<br>', '\n', text_parsed)
-                    text_parsed = text_parsed.split('\n')
+                    with open(args['file'], 'r', encoding='UTF-8') as file_content:
+                        text_parsed = file_content.read()
+                        text_parsed = re.sub(r'\s+', ' ', text_parsed)
+                        text_parsed = re.sub(r'\t', '', text_parsed)
+                        text_parsed = re.sub(r'<br>', '\n', text_parsed)
+                        text_parsed = text_parsed.split('\n')
 
-                    text = []
-                    for line in text_parsed:
-                        if line:
-                            text.append(line)
+                        text = []
+                        for line in text_parsed:
+                            if line:
+                                text.append(line)
 
                 for line in text:
                     if not isinstance(line, str):
@@ -139,7 +144,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                         regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
                         if regex_return:
                             if column != 'custom':
-                                args['data'][column] = regex_return[0].strip()
+                                args['data'][column] = re.sub(r'\s+', ' ', regex_return[0].strip())
 
                             # If we have a mapping specified, search for value between []
                             if 'mapping' in field:
@@ -198,12 +203,12 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 if res:
                     log.info('Insert form from EMAIL OK : ' + str(res))
                     return res
-                else:
-                    try:
-                        shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
-                    except shutil.Error as e:
-                        log.error('Moving file ' + file + ' error : ' + str(e))
-                    return False, res
+
+                try:
+                    shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                except shutil.Error as e:
+                    log.error('Moving file ' + file + ' error : ' + str(e))
+                return False, res
 
         else:
             log.error('No process was found, the mail will be processed normally')
