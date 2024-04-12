@@ -25,6 +25,7 @@ import tempfile
 # useful to use the worker and avoid ModuleNotFoundError
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from kuyruk import Kuyruk
+from kuyruk.config import Config
 from src.classes.SMTP import SMTP
 import src.classes.Log as logClass
 import src.classes.Locale as localeClass
@@ -37,22 +38,23 @@ import src.classes.WebServices as webserviceClass
 from src.process.OCForMEM import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
-OCForMEM = Kuyruk()
+rabbit_custom = Config()
 
 if os.path.isfile('./src/config/rabbitMQ.json'):
-    with open('./src/config/rabbitMQ.json', 'r') as f:
+    with open('./src/config/rabbitMQ.json', 'r', encoding='UTF-8') as f:
         rabbitMQData = json.load(f)
-
     if rabbitMQData['host']:
-        OCForMEM.config.RABBIT_HOST = rabbitMQData['host']
+        rabbit_custom.RABBIT_HOST = rabbitMQData['host']
     if rabbitMQData['port']:
-        OCForMEM.config.RABBIT_PORT = rabbitMQData['port']
+        rabbit_custom.RABBIT_PORT = rabbitMQData['port']
     if rabbitMQData['username']:
-        OCForMEM.config.RABBIT_USER = rabbitMQData['username']
+        rabbit_custom.RABBIT_USER = rabbitMQData['username']
     if rabbitMQData['password']:
-        OCForMEM.config.RABBIT_PASSWORD = rabbitMQData['password']
+        rabbit_custom.RABBIT_PASSWORD = rabbitMQData['password']
     if rabbitMQData['vhost'] and rabbitMQData['vhost'] != '/':
-        OCForMEM.config.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
+        rabbit_custom.RABBIT_VIRTUAL_HOST = rabbitMQData['vhost']
+
+OCForMEM = Kuyruk(config=rabbit_custom)
 
 
 def str2bool(value):
