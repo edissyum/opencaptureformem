@@ -55,6 +55,11 @@ You can also launch installation with predefined settings :
 
     sudo ./install.sh --user edissyum --supervisor_systemd systemd --secure_rabbit no
 
+Or with secured RabbitMQ :
+
+    sudo ./install.sh --user edissyum --supervisor_systemd systemd --secure_rabbit yes --rabbit_user edissyum --rabbit_password edissyum --rabbit_host localhost --rabbit_port 5672 --rabbit_vhost opencapture
+
+
 It will install all the needed dependencies, compile and install Tesseract V5 with french and english locale. If you need more locales, just do :
 
     sudo apt install tesseract-ocr-<langcode>
