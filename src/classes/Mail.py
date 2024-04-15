@@ -296,6 +296,7 @@ class Mail:
                 cfg['custom_mail_reply_to']: reply_to[:-1]
             })
 
+        attachment_content_id_in_html = None
         attachments = self.retrieve_attachment(msg)
         attachments_path = backup_path + '/mail_' + msg_id + '/attachments/'
         for pj in attachments:
@@ -303,7 +304,7 @@ class Mail:
                 log.error(f"Attachment {pj['filename']} doesn't have extension, skipping it")
                 continue
 
-            if os.path.isfile(file) and file_format == 'html':
+            if (os.path.isfile(file) or file) and file_format == 'html':
                 with open(file, 'r', encoding='UTF-8') as f:
                     html_content = f.read()
                     attachment_content_id_in_html = re.search(r'src="cid\:\s*' + pj['content_id'], html_content)
@@ -314,9 +315,9 @@ class Mail:
                                               f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
                                               html_content)
 
-                        with open(file, 'w', encoding='UTF-8') as file:
-                            file.write(updated_html)
-                            file.close()
+                        with open(file, 'w', encoding='UTF-8') as new_file:
+                            new_file.write(updated_html)
+                            new_file.close()
 
             if not attachment_content_id_in_html:
                 path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
