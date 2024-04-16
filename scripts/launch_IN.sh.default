@@ -30,6 +30,8 @@ scriptName="launch_$script.sh"
 scriptName=${scriptName:0:31}${spaces:0:$((31-${#scriptName}))}
 
 OCPath="/opt/edissyum/opencaptureformem/"
+cd $OCPath
+
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
 errFilePath="$OCPath"/data/error/$script/

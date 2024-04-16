@@ -193,16 +193,16 @@ if [[ "$finalRabbitMQSecure" != "no" ]]; then
     rabbitmqctl add_user "$rabbitMqUser" "$rabbitMqPassword"
     rabbitmqctl set_permissions --vhost "$vhost" "$rabbitMqUser" ".*" ".*" ".*"
 
-    jq '.username = "$rabbitMqUser"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
-    jq '.password = "$rabbitMqPassword"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
-    jq '.vhost = "$vhost"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    jq '.username = "'$rabbitMqUser'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    jq '.password = "'$rabbitMqPassword'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    jq '.vhost = "'$vhost'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
 
     if [[ "rabbitMqHost" != "" ]]; then
-        jq '.host = "$rabbitMqHost"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+        jq '.host = "'$rabbitMqHost'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
     fi
 
     if [[ "rabbitMqPort" != "" ]]; then
-        jq '.port = "$rabbitMqPort"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+        jq '.port = "'$rabbitMqPort'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
     fi
 fi
 
