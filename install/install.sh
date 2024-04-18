@@ -207,6 +207,12 @@ if [[ "$finalRabbitMQSecure" != "no" ]]; then
 fi
 
 ####################
+# Create input folder for fs-watcher
+mkdir -p /var/share/{entrant,sortant}/
+chmod -R 775 /var/share/
+chown -R "$user":"$group" /var/share/
+
+####################
 # Setting up fs-watcher service
 mkdir -p /var/log/watcher/
 touch /var/log/watcher/daemon.log
