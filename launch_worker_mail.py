@@ -235,6 +235,8 @@ if check:
                     for attachment in ret['attachments']:
                         if attachment['format'].lower() == 'pdf':
                             launch({
+                                'cpt': str(cpt),
+                                'script': args['script'],
                                 'isMail': 'attachments',
                                 'data': ret['mail'],
                                 'from': _from,

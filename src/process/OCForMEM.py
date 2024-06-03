@@ -27,6 +27,9 @@ from .OCForForms import process_form
 from .FindSubject import FindSubject
 from .FindContact import FindContact
 
+from pdf2image import convert_from_path
+from PIL import Image
+from pyzbar.pyzbar import decode
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
@@ -266,6 +269,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     # Create the searchable PDF if necessary
     if args.get('isMail') is not None and args.get('isMail') in [True]:
         file_format = 'html'
+    elif args.get('isMail') is not None and args.get('isMail') in ['attachments']:
+        file_format = args['format']
     else:
         file_format = config.cfg[_process]['format']
 
@@ -307,7 +312,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if chrono_number:
         log.info('Chrono found in body : ' + chrono_number)
 
-    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True]:
         chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
         chrono_class.run()
         chrono_number = chrono_class.chrono
@@ -371,7 +376,50 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['file'] = args['file']
             args['data']['format'] = args['format']
 
-        res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+        chrono = ''
+        if file.lower().endswith('.pdf'):
+            try:
+                images = convert_from_path(file)
+            except Exception as e:
+                log.error(f"Failed to convert PDF to images: {e}")
+                return False, None
+
+            detected_barcodes = []
+            for img in images:
+                detected_barcodes.extend(decode(img))
+
+            log.info(f"Detected barcodes: {detected_barcodes}")
+
+            if 'reconciliationtype' not in config.cfg['OCForMEM']:
+                reconciliation_type = 'QRCODE'
+            else:
+                reconciliation_type = config.cfg['OCForMEM']['reconciliationtype']
+
+            for barcode in detected_barcodes:
+                if barcode.type == reconciliation_type:
+                    log.info(f"Detected barcode data: {barcode.data.decode('utf-8')}")
+                    chrono = barcode.data.decode('utf-8')
+                    response = web_service.check_attachment(chrono)
+                    if response:
+                        log.info(response['result'])
+                    else:
+                        log.info('KO')
+                    break
+            log.info(detected_barcodes)
+
+        if ('ereconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process][
+            'ereconciliation'] == 'True') and (
+                'is_attachment' in config.cfg[config_mail.cfg[_process]['processreconciliationsuccess']] and
+                config.cfg[config_mail.cfg[_process]['processreconciliationsuccess']]['is_attachment'] != ''):
+            log.info('E-reconciliation enabled')
+            if chrono != '':
+                log.info('Insert attachment reconciliation')
+                res = web_service.insert_attachment_reconciliation(file_to_send, chrono, config_mail.cfg[_process]['processreconciliationsuccess'], config)
+            else:
+                log.info('Insert letterbox from mail')
+                res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+        else:
+            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         if res:
             log.info('Insert email OK : ' + str(res))
             if chrono_number:
