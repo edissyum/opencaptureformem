@@ -131,6 +131,9 @@ echo "source /opt/edissyum/python-venv/opencaptureformem/bin/activate" >> "/home
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install pillow
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
 
+chown -R "$user":"$group" "/opt/edissyum/python-venv/opencaptureformem"
+chmod -R 775 "/opt/edissyum/python-venv/opencaptureformem"
+
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
 
