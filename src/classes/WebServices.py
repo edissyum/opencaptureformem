@@ -465,6 +465,20 @@ class WebServices:
             self.log.error('RetrieveMEMEntitiesError : ' + str(e))
             return False, str(e)
 
+    def retrieve_doctypes(self):
+        try:
+            res = requests.get(self.base_url + '/doctypes', auth=self.auth,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+
+            if res.status_code != 200:
+                self.log.error('(' + str(res.status_code) + ') RetrieveMEMDoctypesError : ' + str(res.text))
+                return False, str(res.text)
+            return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('RetrieveMEMDoctypesError : ' + str(e))
+            return False, str(e)
+
     def retrieve_doctype(self, doctype):
         try:
             res = requests.get(self.base_url + '/doctypes/types/' + doctype, auth=self.auth,
