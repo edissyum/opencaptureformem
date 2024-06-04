@@ -236,11 +236,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                             if check_doctype(doctypes_list, prediction['type_id']):
                                 log.info('Document type found using IA : ' + prediction['type_id'])
                                 config.cfg[_process]['doctype'] = prediction['type_id']
-                        if 'dest_user' in prediction:
-                            ia_destination = check_destination(destinations_list, prediction['dest_user'].lower())
+                        if 'entity_id' in prediction:
+                            ia_destination = check_destination(destinations_list, prediction['entity_id'].lower())
                             if ia_destination:
                                 destination = ia_destination
-                                log.info('Destination found using IA : ' + prediction['dest_user'].upper())
+                                log.info('Destination found using IA : ' + prediction['entity_id'].upper())
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
