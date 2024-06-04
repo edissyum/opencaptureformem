@@ -400,11 +400,12 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 for barcode in detected_barcodes:
                     if barcode.type == reconciliation_type:
                         log.info(f"Detected barcode data: {barcode.data.decode('utf-8')}")
-                        chrono = barcode.data.decode('utf-8')
-                        response = web_service.check_attachment(chrono)
-                        if response:
-                            log.info(response['result'])
+                        response = web_service.check_attachment(barcode.data.decode('utf-8'))
+                        if response[0]: # True or false
+                            chrono = barcode.data.decode('utf-8')
+                            log.info('OK')
                         else:
+                            chrono = ''
                             log.info('KO')
                         break
                 log.info(detected_barcodes)
