@@ -187,7 +187,7 @@ if check:
                 msg_id = str(msg.uid)
 
             if msg_id in already_processed_uid:
-                Log.info('E-mail with unique id' + msg_id + ' already processed, skipping...')
+                Log.info('E-mail with unique id ' + msg_id + ' already processed, skipping...')
                 continue
 
             with open(path_without_time + f'/unique_id_already_processed_{process}', 'a', encoding='UTF-8') as uid_file:
@@ -235,6 +235,8 @@ if check:
                     for attachment in ret['attachments']:
                         if attachment['format'].lower() == 'pdf':
                             launch({
+                                'cpt': str(cpt),
+                                'script': args['script'],
                                 'isMail': 'attachments',
                                 'data': ret['mail'],
                                 'from': _from,

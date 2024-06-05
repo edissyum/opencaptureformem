@@ -39,9 +39,8 @@ from src.process.OCForMEM import process, get_process_name
 from src.classes.Mail import move_batch_to_error, send_email_error_pj
 
 rabbit_custom = Config()
-
-if os.path.isfile('./src/config/rabbitMQ.json'):
-    with open('./src/config/rabbitMQ.json', 'r', encoding='UTF-8') as f:
+if os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + '/config/rabbitMQ.json'):
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/config/rabbitMQ.json', 'r', encoding='UTF-8') as f:
         rabbitMQData = json.load(f)
     if rabbitMQData['host']:
         rabbit_custom.RABBIT_HOST = rabbitMQData['host']
@@ -148,7 +147,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
             return res
 
 
-@OCForMEM.task()
+# @OCForMEM.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
