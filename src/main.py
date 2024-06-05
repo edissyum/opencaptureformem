@@ -211,6 +211,9 @@ def launch(args):
     if args.get('isMail') is None or args.get('isMail') is False:
         separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
 
+    if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+        separator.enabled = str2bool(config.cfg['OCForMEM_reconciliation_default']['separator_qr'])
+
     if args.get('file') is not None:
         path = args['file']
         if check_file(image, path, config, log):
@@ -222,9 +225,17 @@ def launch(args):
                     for file in separator.pdf_list:
                         res = process_file(image, file, config, log, args, separator, ocr, locale, web_service, tmp_folder, config_mail, smtp)
                         if res[0]:
-                            res = json.loads(res[1])
-                            if 'resId' in res:
-                                res_id = res['resId']
+                            if isinstance(res[1], dict):
+                                res_data = res[1]
+                            else:
+                                try:
+                                    res_data = json.loads(res[1])
+                                except json.JSONDecodeError as e:
+                                    # Is already a dict
+                                    res_data = res[1]
+
+                            if 'resId' in res_data:
+                                res_id = res_data['resId']
                                 for pj in separator.pj_list:
                                     document_filename = os.path.basename(file)
                                     pj_filename = re.sub(r"#\d", "", os.path.basename(pj).replace('PJ_', ''))

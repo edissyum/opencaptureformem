@@ -401,20 +401,21 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     if barcode.type == reconciliation_type:
                         log.info(f"Detected barcode data: {barcode.data.decode('utf-8')}")
                         response = web_service.check_attachment(barcode.data.decode('utf-8'))
-                        if response[0]: # True or false
+                        if isinstance(response, dict):
                             chrono = barcode.data.decode('utf-8')
                             log.info('OK')
-                        else:
-                            chrono = ''
-                            log.info('KO')
-                        break
-                log.info(detected_barcodes)
+                        elif isinstance(response, tuple):
+                            if not response[0]:
+                                chrono = ''
+                                log.info('KO')
+                                log.error(f"Error response: {response[1]}")
 
             if chrono != '':
                 log.info('Insert attachment reconciliation')
                 res = web_service.insert_attachment_reconciliation(file_to_send, chrono, config_mail.cfg[_process]['processreconciliationsuccess'], config)
             else:
                 log.info('Insert letterbox from mail')
+                args['data']['file'] = file
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         else:
             log.info('Insert letterbox from mail default')
