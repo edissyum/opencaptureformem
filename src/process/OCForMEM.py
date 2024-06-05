@@ -396,8 +396,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
         if chrono_res_id:
             if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
-                if 'e_reconciliation_status' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation_status']:
-                    args['data']['status'] = config_mail.cfg[_process]['e_reconciliation_status']
+                if 'e_link_status' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_link_status']:
+                    args['data']['status'] = config_mail.cfg[_process]['e_link_status']
                 if 'retrieve_metadata' in config_mail.cfg[_process] and config_mail.cfg[_process]['retrieve_metadata']:
                     if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
                         args['data']['doctype'] = str(chrono_res_id['doctype'])
@@ -413,8 +413,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                                     "mode": "dest",
                                 }]
             else:
-                if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
-                    config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
+                if 'e_link_status' in config.cfg[_process] and config.cfg[_process]['e_link_status']:
+                    config.cfg[_process]['status'] = config.cfg[_process]['e_link_status']
 
                 if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
                     if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
