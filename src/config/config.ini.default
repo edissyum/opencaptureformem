@@ -81,7 +81,7 @@ subject                 =
 override_subject        = False
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-e_reconciliation_status = COU
+e_link_status           = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
@@ -108,7 +108,7 @@ subject                 =
 override_subject        = False
 chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-e_reconciliation_status = COU
+e_link_status           = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
