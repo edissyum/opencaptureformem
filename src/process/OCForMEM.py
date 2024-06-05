@@ -61,6 +61,9 @@ def search_entity_and_doctype(trained_model, img):
     prediction = processor.token2json(prediction)
     return prediction
 
+from pdf2image import convert_from_path
+from PIL import Image
+from pyzbar.pyzbar import decode
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
@@ -446,7 +449,50 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['file'] = args['file']
             args['data']['format'] = args['format']
 
-        res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+        if 'ereconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['ereconciliation'] == 'True':
+            log.info('E-reconciliation enabled, trying to read barcode')
+            chrono = ''
+            if file.lower().endswith('.pdf'):
+                try:
+                    images = convert_from_path(file)
+                except Exception as e:
+                    log.error(f"Failed to convert PDF to images: {e}")
+                    return False, None
+
+                detected_barcodes = []
+                for img in images:
+                    detected_barcodes.extend(decode(img))
+
+                log.info(f"Detected barcodes: {detected_barcodes}")
+
+                if 'reconciliationtype' not in config.cfg['OCForMEM']:
+                    reconciliation_type = 'QRCODE'
+                else:
+                    reconciliation_type = config.cfg['OCForMEM']['reconciliationtype']
+
+                for barcode in detected_barcodes:
+                    if barcode.type == reconciliation_type:
+                        log.info(f"Detected barcode data: {barcode.data.decode('utf-8')}")
+                        response = web_service.check_attachment(barcode.data.decode('utf-8'))
+                        if isinstance(response, dict):
+                            chrono = barcode.data.decode('utf-8')
+                            log.info('OK')
+                        elif isinstance(response, tuple):
+                            if not response[0]:
+                                chrono = ''
+                                log.info('KO')
+                                log.error(f"Error response: {response[1]}")
+
+            if chrono != '':
+                log.info('Insert attachment reconciliation')
+                res = web_service.insert_attachment_reconciliation(file_to_send, chrono, config_mail.cfg[_process]['processreconciliationsuccess'], config)
+            else:
+                log.info('Insert letterbox from mail')
+                args['data']['file'] = file
+                res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+        else:
+            log.info('Insert letterbox from mail default')
+            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         if res:
             log.info('Insert email OK : ' + str(res))
             if chrono_number:
