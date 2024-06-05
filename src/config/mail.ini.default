@@ -72,7 +72,7 @@ retrieve_metadata       = True
 model_id                = 1
 priority                = poiuytre1357nbvc
 status                  = MAQUAL
-doctype                 = 103
+doctype                 = 1206
 typist                  = ws_opencapture
 destination             = COU
 
