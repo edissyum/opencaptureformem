@@ -259,5 +259,10 @@ In case some big files would be sent, you have to increase the **post_max_size**
 
 By default it is recommended to replace **8M** by **20M** or more if needed
 
+## Use AI
+Open-Capture for MEM Courrier is using AI to detect some informations automatically. By now, you can retrieve MEM Courrier destination and type_id.
+We can't provide an AI model because it's specific to each company. But we can help you to create yours, contact us.
+
+
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
