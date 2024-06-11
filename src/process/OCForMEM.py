@@ -19,14 +19,51 @@ import os
 import re
 import sys
 import json
+import torch
 import shutil
+import warnings
 import subprocess
+import transformers
 from .FindDate import FindDate
 from .FindChrono import FindChrono
-from .OCForForms import process_form
 from .FindSubject import FindSubject
 from .FindContact import FindContact
+from .OCForForms import process_form
 
+
+def search_entity_and_doctype(trained_model, img):
+    warnings.filterwarnings('ignore')
+    transformers.logging.set_verbosity_error()
+
+    processor = transformers.DonutProcessor.from_pretrained(trained_model, local_files_only=True)
+    model = transformers.VisionEncoderDecoderModel.from_pretrained(trained_model, local_files_only=True)
+
+    pixel_values = processor(img, random_padding="test", return_tensors="pt").pixel_values.squeeze()
+    pixel_values = torch.tensor(pixel_values).unsqueeze(0)
+    task_prompt = "<s>"
+    decoder_input_ids = processor.tokenizer(task_prompt, add_special_tokens=False, return_tensors="pt").input_ids
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    outputs = model.generate(
+        pixel_values.to(device),
+        decoder_input_ids=decoder_input_ids.to(device),
+        max_length=model.decoder.config.max_position_embeddings,
+        early_stopping=True,
+        pad_token_id=processor.tokenizer.pad_token_id,
+        eos_token_id=processor.tokenizer.eos_token_id,
+        use_cache=True,
+        num_beams=1,
+        bad_words_ids=[[processor.tokenizer.unk_token_id]],
+        return_dict_in_generate=True,
+    )
+    prediction = processor.batch_decode(outputs.sequences)[0]
+    prediction = processor.token2json(prediction)
+    return prediction
+
+from pdf2image import convert_from_path
+from PIL import Image
+from pyzbar.pyzbar import decode
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
@@ -41,7 +78,7 @@ def get_process_name(args, config):
 
 
 def compress_pdf(args, config, process, file, log):
-    if args.get('isMail') is None or args.get('isMail') is False and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+    if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
         config = config[process]
         if 'compress_type' in config and config['compress_type'] and config['compress_type'] != 'None':
             log.info('Compress PDF : ' + config['compress_type'])
@@ -56,6 +93,29 @@ def compress_pdf(args, config, process, file, log):
                 shutil.move(compressed_file_path, file)
             except (shutil.Error, FileNotFoundError) as _e:
                 log.error('Moving file ' + compressed_file_path + ' error : ' + str(_e))
+
+
+def check_destination(destinations, destination):
+    if isinstance(destination, int) or destination.isnumeric():
+        for dest in destinations['entities']:
+            if int(destination) == int(dest['serialId']):
+                return destination
+
+    if type(destination) is not int:
+        for dest in destinations['entities']:
+            if str(destination).lower() == str(dest['id']).lower():
+                destination = dest['serialId']
+                return destination
+    return False
+
+
+def check_doctype(doctypes, doctype):
+    if isinstance(doctype, int) or doctype.isnumeric():
+        for doct in doctypes['structure']:
+            if 'type_id' in doct and int(doctype) == int(doct['type_id']):
+                print(doctype, doct['type_id'])
+                return True
+    return False
 
 
 def process(args, file, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail=None):
@@ -93,27 +153,25 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         log.info("Destination can't be found, using default destination : " + destination)
 
     # Check if the destination is valid
-    destinations = web_service.retrieve_entities()
-    is_destination_valid = False
-    for dest in destinations['entities']:
-        if destination == dest['serialId']:
-            is_destination_valid = True
+    destinations_list = web_service.retrieve_entities()
+    destination = check_destination(destinations_list, destination.lower())
+    if destination and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+        args['data']['destination'] = destination
 
-    if type(destination) is not int or not is_destination_valid:
-        for dest in destinations['entities']:
-            if str(destination) == str(dest['id']):
-                destination = dest['serialId']
-                is_destination_valid = True
-                if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
-                    args['data']['destination'] = destination
+    # Check if the status is valid
+    doctypes_list = web_service.retrieve_doctypes()
+    if not check_doctype(doctypes_list, config.cfg[_process]['doctype']):
+        log.error('Document type not found, exit...')
+        exit(os.EX_CONFIG)
 
     # If destination still not good, try with default destination
-    if type(destination) is not int or not is_destination_valid:
+    if type(destination) is not int or not destination:
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             destination = args['data']['destination']
         else:
             destination = config.cfg[_process]['destination']
-        for dest in destinations['entities']:
+
+        for dest in destinations_list['entities']:
             if destination == dest['id']:
                 destination = dest['serialId']
                 if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
@@ -169,9 +227,27 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
+    if not args.get('isMail'):
+        if 'IA' in config.cfg and 'enabled' in config.cfg['IA'] and config.cfg['IA']['enabled'].lower() == 'true':
+            if 'doctype_entity' in config.cfg['IA']:
+                trained_model = config.cfg['IA']['doctype_entity']
+                if os.path.isdir(trained_model):
+                    log.info('Search destination and doctype with IA model')
+                    prediction = search_entity_and_doctype(trained_model, image.img)
+                    if prediction:
+                        if 'doctype' in prediction:
+                            if check_doctype(doctypes_list, prediction['doctype']):
+                                log.info('Document type found using IA : ' + prediction['doctype'])
+                                config.cfg[_process]['doctype'] = prediction['doctype']
+                        if 'destination' in prediction:
+                            ia_destination = check_destination(destinations_list, prediction['destination'].lower())
+                            if ia_destination:
+                                destination = ia_destination
+                                log.info('Destination found using IA : ' + prediction['destination'].upper())
+
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
-        if args.get('isMail') is None or args.get('isMail') is False and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+        if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
             ocr.text_builder(image.img)
 
         # Find subject of document
@@ -266,6 +342,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     # Create the searchable PDF if necessary
     if args.get('isMail') is not None and args.get('isMail') in [True]:
         file_format = 'html'
+    elif args.get('isMail') is not None and args.get('isMail') in ['attachments']:
+        file_format = args['format']
     else:
         file_format = config.cfg[_process]['format']
 
@@ -279,7 +357,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             with open(ocr.searchable_pdf, 'rb') as f:
                 file_to_send = f.read()
         else:
-            if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
+            if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (not args.get('isMail')):
                 output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
                 separator.convert_to_pdfa_function(output_file, file, log)
                 file = output_file
@@ -291,7 +369,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 file_to_send = f.read()
             file_format = os.path.splitext(file)[1].lower().replace('.', '')
     else:
-        if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (args.get('isMail') is None or args.get('isMail') is False):
+        if separator.convert_to_pdfa == 'True' and os.path.splitext(file)[1].lower() == '.pdf' and (not args.get('isMail')):
             output_file = file.replace(separator.output_dir, separator.output_dir_pdfa)
             separator.convert_to_pdfa_function(output_file, file, log)
             file = output_file
@@ -307,7 +385,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if chrono_number:
         log.info('Chrono found in body : ' + chrono_number)
 
-    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True]:
         chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
         chrono_class.run()
         chrono_number = chrono_class.chrono
@@ -318,8 +396,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         chrono_res_id = web_service.retrieve_document_by_chrono(chrono_number)
         if chrono_res_id:
             if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
-                if 'e_reconciliation_status' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation_status']:
-                    args['data']['status'] = config_mail.cfg[_process]['e_reconciliation_status']
+                if 'e_link_status' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_link_status']:
+                    args['data']['status'] = config_mail.cfg[_process]['e_link_status']
                 if 'retrieve_metadata' in config_mail.cfg[_process] and config_mail.cfg[_process]['retrieve_metadata']:
                     if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
                         args['data']['doctype'] = str(chrono_res_id['doctype'])
@@ -335,8 +413,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                                     "mode": "dest",
                                 }]
             else:
-                if 'e_reconciliation_status' in config.cfg[_process] and config.cfg[_process]['e_reconciliation_status']:
-                    config.cfg[_process]['status'] = config.cfg[_process]['e_reconciliation_status']
+                if 'e_link_status' in config.cfg[_process] and config.cfg[_process]['e_link_status']:
+                    config.cfg[_process]['status'] = config.cfg[_process]['e_link_status']
 
                 if 'retrieve_metadata' in config.cfg[_process] and config.cfg[_process]['retrieve_metadata']:
                     if 'doctype' in chrono_res_id and chrono_res_id['doctype']:
@@ -371,7 +449,49 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['file'] = args['file']
             args['data']['format'] = args['format']
 
-        res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+        if 'ereconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['ereconciliation'] == 'True':
+            log.info('E-reconciliation enabled, trying to read barcode')
+            chrono = ''
+            if file.lower().endswith('.pdf'):
+                try:
+                    images = convert_from_path(file)
+                except Exception as e:
+                    log.error(f"Failed to convert PDF to images: {e}")
+                    return False, None
+
+                detected_barcodes = []
+                for img in images:
+                    detected_barcodes.extend(decode(img))
+
+                log.info(f"Detected barcodes: {detected_barcodes}")
+
+                if 'reconciliationtype' not in config.cfg['OCForMEM']:
+                    reconciliation_type = 'QRCODE'
+                else:
+                    reconciliation_type = config.cfg['OCForMEM']['reconciliationtype']
+
+                for barcode in detected_barcodes:
+                    if barcode.type == reconciliation_type:
+                        log.info(f"Detected barcode data : {barcode.data.decode('utf-8')}")
+                        response = web_service.check_attachment(barcode.data.decode('utf-8'))
+                        if isinstance(response, dict) and response[0]:
+                            chrono = barcode.data.decode('utf-8')
+                        elif isinstance(response, tuple) or not response[0]:
+                            chrono = ''
+                            log.error(f"Error response: {response[1]}")
+
+            if chrono != '':
+                log.info('Start RECONCILIATION process')
+                res = web_service.insert_attachment_reconciliation(file_to_send, chrono,
+                                                                   'OCForMEM_reconciliation_found', config)
+            else:
+                log.info('Start DEFAULT process')
+                args['data']['file'] = file
+                res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+        else:
+            log.info('Insert letterbox from mail default')
+            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+
         if res:
             log.info('Insert email OK : ' + str(res))
             if chrono_number:

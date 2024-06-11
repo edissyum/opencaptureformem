@@ -38,6 +38,11 @@ removeBlankPage     = True
 # Recognition threshold
 blobsratio          = 1E-6
 
+[IA]
+; True or False
+enabled             = True
+doctype_entity      = ${GLOBAL:projectPath}/data/ia/doctype_entity/
+
 [OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
 host                = http://localhost/mem/rest/
@@ -76,11 +81,13 @@ subject                 =
 override_subject        = False
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-e_reconciliation_status = COU
+e_link_status           = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
 compress_type           = None
+; Use AI to find doctype and entity_id (True or False)
+doctype_entity_ai       = False
 
 [OCForMEM_reconciliation_default]
 status                  = ATTREC
@@ -101,7 +108,7 @@ subject                 =
 override_subject        = False
 chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-e_reconciliation_status = COU
+e_link_status           = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)

@@ -59,7 +59,6 @@ Or with secured RabbitMQ :
 
     sudo ./install.sh --user edissyum --supervisor_systemd systemd --secure_rabbit yes --rabbit_user edissyum --rabbit_password edissyum --rabbit_host localhost --rabbit_port 5672 --rabbit_vhost opencapture
 
-
 It will install all the needed dependencies, compile and install Tesseract V5 with french and english locale. If you need more locales, just do :
 
     sudo apt install tesseract-ocr-<langcode>
@@ -259,6 +258,11 @@ In case some big files would be sent, you have to increase the **post_max_size**
 >/etc/php/7.X/apache2/php.ini
 
 By default it is recommended to replace **8M** by **20M** or more if needed
+
+## Use AI
+Open-Capture for MEM Courrier is using AI to detect some informations automatically. By now, you can retrieve MEM Courrier destination and type_id.
+
+We can't provide an AI model because it's specific to each company. But we can help you to create yours, contact us.
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.

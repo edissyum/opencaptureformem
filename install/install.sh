@@ -131,6 +131,9 @@ echo "source /opt/edissyum/python-venv/opencaptureformem/bin/activate" >> "/home
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install pillow
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
 
+chown -R "$user":"$group" "/opt/edissyum/python-venv/opencaptureformem"
+chmod -R 775 "/opt/edissyum/python-venv/opencaptureformem"
+
 cd $defaultPath || exit 2
 find . -name ".gitkeep" -delete
 
@@ -205,6 +208,41 @@ if [[ "$finalRabbitMQSecure" != "no" ]]; then
         jq '.port = "'$rabbitMqPort'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
     fi
 fi
+
+####################
+# Create input folder for fs-watcher
+mkdir -p /var/share/{entrant,sortant}/
+chmod -R 775 /var/share/
+chown -R "$user":"$group" /var/share/
+
+####################
+# Setting up fs-watcher service
+mkdir -p /var/log/watcher/
+touch /var/log/watcher/daemon.log
+chmod -R 775 /var/log/watcher/
+
+sed -i "s#§§OC_PATH§§#$defaultPath#g" $defaultPath/src/config/watcher.ini.default
+cp $defaultPath/src/config/watcher.ini.default /etc/watcher.ini
+
+touch /etc/systemd/system/fs-watcher.service
+su -c "cat > /etc/systemd/system/fs-watcher.service << EOF
+[Unit]
+Description=filesystem watcher
+After=basic.target
+
+[Service]
+ExecStart=/opt/edissyum/python-venv/opencaptureformem/bin/watcher -c /etc/watcher.ini start
+ExecStop=/opt/edissyum/python-venv/opencaptureformem/bin/watcher -c /etc/watcher.ini stop
+Type=simple
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+
+systemctl daemon-reload
+systemctl enable --now fs-watcher
 
 ####################
 # Create the service systemd or supervisor
