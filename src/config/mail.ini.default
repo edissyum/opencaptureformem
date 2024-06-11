@@ -52,9 +52,8 @@ priorityToMailFrom      = False
 importOnlyAttachments   = False
 extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
+; True or False
 eReconciliation         = False
-processReconciliationFailed = OCForMEM_reconciliation_default
-processReconciliationSuccess = OCForMEM_reconciliation_found
 
 folderToCrawl           = _MEM
 folderDestination       = _MEM_ARCHIVES
@@ -72,7 +71,7 @@ retrieve_metadata       = True
 model_id                = 1
 priority                = poiuytre1357nbvc
 status                  = MAQUAL
-doctype                 = 103
+doctype                 = 1206
 typist                  = ws_opencapture
 destination             = COU
 

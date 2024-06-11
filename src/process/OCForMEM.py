@@ -232,18 +232,18 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             if 'doctype_entity' in config.cfg['IA']:
                 trained_model = config.cfg['IA']['doctype_entity']
                 if os.path.isdir(trained_model):
-                    log.info('Search entity_id and doctype with IA model')
+                    log.info('Search destination and doctype with IA model')
                     prediction = search_entity_and_doctype(trained_model, image.img)
                     if prediction:
-                        if 'type_id' in prediction:
-                            if check_doctype(doctypes_list, prediction['type_id']):
-                                log.info('Document type found using IA : ' + prediction['type_id'])
-                                config.cfg[_process]['doctype'] = prediction['type_id']
-                        if 'entity_id' in prediction:
-                            ia_destination = check_destination(destinations_list, prediction['entity_id'].lower())
+                        if 'doctype' in prediction:
+                            if check_doctype(doctypes_list, prediction['doctype']):
+                                log.info('Document type found using IA : ' + prediction['doctype'])
+                                config.cfg[_process]['doctype'] = prediction['doctype']
+                        if 'destination' in prediction:
+                            ia_destination = check_destination(destinations_list, prediction['destination'].lower())
                             if ia_destination:
                                 destination = ia_destination
-                                log.info('Destination found using IA : ' + prediction['entity_id'].upper())
+                                log.info('Destination found using IA : ' + prediction['destination'].upper())
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
@@ -472,27 +472,26 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
                 for barcode in detected_barcodes:
                     if barcode.type == reconciliation_type:
-                        log.info(f"Detected barcode data: {barcode.data.decode('utf-8')}")
+                        log.info(f"Detected barcode data : {barcode.data.decode('utf-8')}")
                         response = web_service.check_attachment(barcode.data.decode('utf-8'))
-                        if isinstance(response, dict):
+                        if isinstance(response, dict) and response[0]:
                             chrono = barcode.data.decode('utf-8')
-                            log.info('OK')
-                        elif isinstance(response, tuple):
-                            if not response[0]:
-                                chrono = ''
-                                log.info('KO')
-                                log.error(f"Error response: {response[1]}")
+                        elif isinstance(response, tuple) or not response[0]:
+                            chrono = ''
+                            log.error(f"Error response: {response[1]}")
 
             if chrono != '':
-                log.info('Insert attachment reconciliation')
-                res = web_service.insert_attachment_reconciliation(file_to_send, chrono, config_mail.cfg[_process]['processreconciliationsuccess'], config)
+                log.info('Start RECONCILIATION process')
+                res = web_service.insert_attachment_reconciliation(file_to_send, chrono,
+                                                                   'OCForMEM_reconciliation_found', config)
             else:
-                log.info('Insert letterbox from mail')
+                log.info('Start DEFAULT process')
                 args['data']['file'] = file
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         else:
             log.info('Insert letterbox from mail default')
             res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+
         if res:
             log.info('Insert email OK : ' + str(res))
             if chrono_number:
