@@ -264,6 +264,5 @@ Open-Capture for MEM Courrier is using AI to detect some informations automatica
 
 We can't provide an AI model because it's specific to each company. But we can help you to create yours, contact us.
 
-
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
