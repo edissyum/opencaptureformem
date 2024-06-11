@@ -6,7 +6,7 @@ on:
 jobs:
 
   test-self-hosted:
-    name: Retrieve application
+    name: Installation test
     runs-on: self-hosted
     defaults:
         run:
