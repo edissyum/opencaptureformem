@@ -231,7 +231,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if 'IA' in config.cfg and 'enabled' in config.cfg['IA'] and config.cfg['IA']['enabled'].lower() == 'true':
             if 'doctype_entity' in config.cfg['IA']:
                 trained_model = config.cfg['IA']['doctype_entity']
-                if os.path.isdir(trained_model):
+                if os.path.isdir(trained_model) and os.listdir(trained_model):
                     log.info('Search destination and doctype with IA model')
                     prediction = search_entity_and_doctype(trained_model, image.img)
                     if prediction:
