@@ -6,7 +6,7 @@ on:
 jobs:
 
   test-self-hosted:
-    name: Retrieve application
+    name: Installation test
     runs-on: self-hosted
     defaults:
         run:
@@ -35,7 +35,7 @@ jobs:
       - name: Retrieve the latest tag
         run: |
           sudo apt install -y git crudini
-          git clone -b dev_v4 https://github.com/edissyum/opencaptureformem /opt/edissyum/opencaptureformem/
+          git clone -b dev https://github.com/edissyum/opencaptureformem /opt/edissyum/opencaptureformem/
 
       - name: Launch installation
         run: |

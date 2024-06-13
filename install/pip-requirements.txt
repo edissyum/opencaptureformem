@@ -1,6 +1,7 @@
 bs4
 msal
 pypdf
+torch
 kuyruk
 pyzbar
 holidays
@@ -11,5 +12,6 @@ fs-watcher
 imap-tools
 pytesseract
 exchangelib
+transformers
 configparser
 opencv-python
