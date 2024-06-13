@@ -40,7 +40,7 @@ blobsratio          = 1E-6
 
 [IA]
 ; True or False
-enabled             = True
+enabled             = False
 doctype_entity      = ${GLOBAL:projectPath}/data/ia/doctype_entity/
 
 [OCForMEM]
