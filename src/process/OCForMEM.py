@@ -100,8 +100,7 @@ def check_destination(destinations, destination):
         for dest in destinations['entities']:
             if int(destination) == int(dest['serialId']):
                 return destination
-
-    if type(destination) is not int:
+    else:
         for dest in destinations['entities']:
             if str(destination).lower() == str(dest['id']).lower():
                 destination = dest['serialId']
@@ -154,7 +153,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     # Check if the destination is valid
     destinations_list = web_service.retrieve_entities()
-    destination = check_destination(destinations_list, destination.lower())
+    destination = check_destination(destinations_list, destination)
     if destination and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         args['data']['destination'] = destination
 
@@ -240,7 +239,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                                 log.info('Document type found using IA : ' + prediction['doctype'])
                                 config.cfg[_process]['doctype'] = prediction['doctype']
                         if 'destination' in prediction:
-                            ia_destination = check_destination(destinations_list, prediction['destination'].lower())
+                            ia_destination = check_destination(destinations_list, prediction['destination'])
                             if ia_destination:
                                 destination = ia_destination
                                 log.info('Destination found using IA : ' + prediction['destination'].upper())
