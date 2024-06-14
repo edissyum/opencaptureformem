@@ -54,7 +54,7 @@ class FindSubject(Thread):
         else:
             self.subject = ''
 
-        if self.subject != '':
+        if self.subject:
             self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject).strip()
             self.search_subject_second_line()
             self.Log.info("Find the following subject : " + self.subject)
@@ -63,28 +63,32 @@ class FindSubject(Thread):
         not_allowed_symbol = [':', '.']
         text = self.text.split('\n')
         cpt = 0
+        if not self.subject:
+            return
+
         for line in text:
-            find = False
-            if self.subject in line:
-                next_line = text[cpt + 1]
-                if next_line:
-                    for letter in next_line:
-                        if letter in not_allowed_symbol:  # Check if the line doesn't contain some specific char
-                            find = True
+            if line:
+                find = False
+                if self.subject in line:
+                    next_line = text[cpt + 1]
+                    if next_line:
+                        for letter in next_line:
+                            if letter in not_allowed_symbol:  # Check if the line doesn't contain some specific char
+                                find = True
+                                break
+                        if find:
+                            continue
+                        first_char = next_line[0]
+                        if first_char.lower() == first_char:  # Check if first letter of line is not an upper one
+                            self.subject += ' ' + next_line
                             break
-                    if find:
-                        continue
-                    first_char = next_line[0]
-                    if first_char.lower() == first_char:  # Check if first letter of line is not an upper one
-                        self.subject += ' ' + next_line
+                cpt = cpt + 1
+                char_cpt = 0
+                for char in self.subject:
+                    if char in not_allowed_symbol:
+                        self.subject = self.subject[:char_cpt]
                         break
-            cpt = cpt + 1
-            char_cpt = 0
-            for char in self.subject:
-                if char in not_allowed_symbol:
-                    self.subject = self.subject[:char_cpt]
-                    break
-                char_cpt = char_cpt + 1
+                    char_cpt = char_cpt + 1
 
 
 def loop_find_subject(array, compile_pattern):
