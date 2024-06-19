@@ -25,11 +25,12 @@ import warnings
 import subprocess
 import transformers
 from .FindDate import FindDate
+from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
 from .FindSubject import FindSubject
 from .FindContact import FindContact
 from .OCForForms import process_form
-
+from pdf2image import convert_from_path
 
 def search_entity_and_doctype(trained_model, img):
     warnings.filterwarnings('ignore')
@@ -61,9 +62,6 @@ def search_entity_and_doctype(trained_model, img):
     prediction = processor.token2json(prediction)
     return prediction
 
-from pdf2image import convert_from_path
-from PIL import Image
-from pyzbar.pyzbar import decode
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
@@ -112,7 +110,6 @@ def check_doctype(doctypes, doctype):
     if isinstance(doctype, int) or doctype.isnumeric():
         for doct in doctypes['structure']:
             if 'type_id' in doct and int(doctype) == int(doct['type_id']):
-                print(doctype, doct['type_id'])
                 return True
     return False
 
@@ -157,14 +154,19 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if destination and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         args['data']['destination'] = destination
 
-    # Check if the status is valid
+    # Check if the doctype is valid
     doctypes_list = web_service.retrieve_doctypes()
-    if not check_doctype(doctypes_list, config.cfg[_process]['doctype']):
+    if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+        tmp_doctype = config_mail.cfg[_process]['doctype']
+    else:
+        tmp_doctype = config.cfg[_process]['doctype']
+
+    if not check_doctype(doctypes_list, tmp_doctype):
         log.error('Document type not found, exit...')
         exit(os.EX_CONFIG)
 
     # If destination still not good, try with default destination
-    if type(destination) is not int or not destination:
+    if not isinstance(destination, int) or not destination:
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             destination = args['data']['destination']
         else:
