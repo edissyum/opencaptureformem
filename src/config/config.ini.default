@@ -39,8 +39,6 @@ removeBlankPage     = True
 blobsratio          = 1E-6
 
 [IA]
-; True or False
-enabled             = False
 doctype_entity      = ${GLOBAL:projectPath}/data/ia/doctype_entity/
 
 [OCForMEM]
@@ -113,6 +111,8 @@ e_link_status           = COU
 retrieve_metadata       = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
 compress_type           = None
+; Use AI to find doctype and entity_id (True or False)
+doctype_entity_ai       = False
 
 [OCForMEM_reconciliation_found]
 is_attachment       = True
