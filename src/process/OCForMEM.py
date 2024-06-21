@@ -161,7 +161,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         tmp_doctype = config.cfg[_process]['doctype']
 
-    if not check_doctype(doctypes_list, tmp_doctype):
+    if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
         log.error('Document type not found, exit...')
         exit(os.EX_CONFIG)
 
