@@ -297,3 +297,9 @@ fi
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir -p /tmp/opencapture/
 chown -R "$user":"$group" /tmp/opencapture
+
+####################
+# Generate secret key for Flask and write it to custom secret_key file
+touch $customPath/config/secret_key
+secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+echo "$secret" > $customPath/config/secret_key
