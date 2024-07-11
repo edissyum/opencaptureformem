@@ -59,6 +59,8 @@ then
     echo $$ > $PID
     mv "$fixedFilePath" "$tmpFilePath"
 
+    chmod 644 "$tmpFilePath/$fixedFilename"
+
     # To use the folder as destination replace --read-destination-from-filename by --destination "$destination"
     python3 "$OCPath"/launch_worker.py -c "$config_file" -f "$tmpFilePath"/"$fixedFilename" --read-destination-from-filename --process "$process" --keep-pdf-debug false --script $script
 

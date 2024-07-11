@@ -16,3 +16,6 @@ rabbitmq-server
 libgl1-mesa-glx
 libtesseract-dev
 libleptonica-dev
+mod_wsgi
+apache2-dev
+libapache2-mod-wsgi-py3
