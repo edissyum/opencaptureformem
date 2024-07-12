@@ -298,6 +298,7 @@ fi
 mkdir -p /tmp/opencapture/
 chown -R "$user":"$group" /tmp/opencapture
 
+####################
 # Generate a secret key for the API
 secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
 config_file="$defaultPath/src/config/config.ini"

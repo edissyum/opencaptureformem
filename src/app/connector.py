@@ -19,19 +19,20 @@
 import tempfile
 import os
 import subprocess
+import base64
 
 def process_files(files, custom_id, process_name):
-    temp_dir = "/opt/edissyum/opencaptureformem/data/tmp_api"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        decoded_files = []
+        for file in files:
+            decoded_files.append(base64.b64decode(file))
 
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
+        for file in decoded_files:
+            temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
+            temp_file.write(file)
+            temp_file_path = temp_file.name
+            temp_file.close()
 
-    for file in files:
-        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
-        temp_file.write(file)
-        temp_file_path = temp_file.name
-        temp_file.close()
+            os.chmod(temp_file_path, 0o644)
 
-        os.chmod(temp_file_path, 0o644)
-
-        subprocess.run(["/bin/bash", "/opt/edissyum/opencaptureformem/scripts/launch_IN.sh", temp_file_path])
+            subprocess.run(["/bin/bash", "/opt/edissyum/opencaptureformem/scripts/launch_IN.sh", temp_file_path])

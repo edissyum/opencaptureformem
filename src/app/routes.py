@@ -62,12 +62,8 @@ def upload_files():
     if not files or not custom_id or not process_name:
         return jsonify({"message": "Missing data"}), 400
 
-    decoded_files = []
-    for file in files:
-        decoded_files.append(base64.b64decode(file))
-
     try:
-        process_files(decoded_files, custom_id, process_name)
+        process_files(files, custom_id, process_name)
     except Exception as e:
         return jsonify({"message": f"Error processing files: {str(e)}"}), 500
 
