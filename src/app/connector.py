@@ -28,7 +28,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     custom_path = get_custom_path(custom_id)
 
     if not custom_path:
-        return jsonify({"message": "Invalid custom id"}), 404
+        return jsonify({"message": "Invalid custom id"}), 400
 
     config_path = os.path.join(custom_path, 'src/config/config.ini')
     temp_dir = os.path.join(custom_path, 'data/tmp_api')

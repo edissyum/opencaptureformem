@@ -57,7 +57,7 @@ def check_token(f):
 
         custom_path = get_custom_path(custom_id)
         if not custom_path:
-            return jsonify({"message": "Invalid custom id"}), 404
+            return jsonify({"message": "Invalid custom id"}), 400
 
         config_path = os.path.join(custom_path, 'src/config/config.ini')
         secret_key = get_secret_key_from_config(config_path)

@@ -35,7 +35,7 @@ def get_token():
 
     custom_path = get_custom_path(custom_id)
     if not custom_path:
-        return jsonify({"message": "Invalid custom id"}), 404
+        return jsonify({"message": "Invalid custom id"}), 400
 
     config_path = os.path.join(custom_path, 'src/config/config.ini')
     config_secret_key = get_secret_key_from_config(config_path)
@@ -44,7 +44,7 @@ def get_token():
         return jsonify({"message": "Could not read secret key from config"}), 500
 
     if secret_key != config_secret_key:
-        return jsonify({"message": "Invalid secret key"}), 403
+        return jsonify({"message": "Invalid secret key"}), 401
 
     token = generate_token(secret_key)
     return jsonify({"token": token})
