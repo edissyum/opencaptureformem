@@ -17,19 +17,37 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 from flask import request, jsonify
+import os
 import base64
 from src.app import app
 from src.app.connector import process_files
 from src.app.controllers.auth import generate_token, check_token
+from src.app.controllers.custom import get_custom_path, get_secret_key_from_config
 
 
 @app.route('/get-token', methods=['POST'])
 def get_token():
-    secret_key = request.json.get('secret_key')
-    if secret_key != app.config['SECRET_KEY']:
-        return jsonify({"message": "Invalid secret key"}), 401
+    data = request.get_json()
+    secret_key = data.get('secret_key')
+    custom_id = data.get('custom_id')
 
-    token = generate_token(app.config['SECRET_KEY'])
+    if not secret_key or not custom_id:
+        return jsonify({"message": "Missing data"}), 400
+
+    custom_path = get_custom_path(custom_id)
+    if not custom_path:
+        return jsonify({"message": "Invalid custom id"}), 404
+
+    config_path = os.path.join(custom_path, 'src/config/config.ini')
+    config_secret_key = get_secret_key_from_config(config_path)
+
+    if not config_secret_key:
+        return jsonify({"message": "Could not read secret key from config"}), 500
+
+    if secret_key != config_secret_key:
+        return jsonify({"message": "Invalid secret key"}), 403
+
+    token = generate_token(secret_key)
     return jsonify({"token": token})
 
 

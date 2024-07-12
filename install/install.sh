@@ -298,12 +298,15 @@ fi
 mkdir -p /tmp/opencapture/
 chown -R "$user":"$group" /tmp/opencapture
 
-####################
-# Generate secret key for Flask and write it to custom secret_key file
-touch $defaultPath/src/config/secret_key
+# Generate a secret key for the API
 secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
-echo "$secret" > $defaultPath/src/config/secret_key
-chmod 755 $defaultPath/src/config/secret_key
+config_file="$defaultPath/src/config/config.ini"
+if grep -q 'secret_key' "$config_file"; then
+    sed -i "s/^secret_key.*/secret_key = $secret/" "$config_file"
+else
+    echo "secret_key = $secret" >> "$config_file"
+fi
+chmod 755 "$config_file"
 
 ####################
 # Create the Apache service for the API

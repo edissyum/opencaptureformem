@@ -15,12 +15,9 @@
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-# @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 defaultPath=/opt/edissyum/opencaptureformem/
-
-secret_key_file="$defaultPath/src/config/secret_key"
 
 echo "Warning : Every users sessions and tokens will be invalidated if you edit the secret_key !"
 echo "If you want to continue, please write the following sentence : 'I confirm the secret_key regeneration'."
@@ -33,9 +30,16 @@ if [ "$confirmation" != "I confirm the secret_key regeneration" ]; then
 fi
 
 secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
-echo "$secret" > "$secret_key_file"
+config_file="$defaultPath/src/config/config.ini"
+if grep -q 'secret_key' "$config_file"; then
+    sed -i "s/^secret_key.*/secret_key = $secret/" "$config_file"
+else
+    echo "secret_key = $secret" >> "$config_file"
+fi
 
-chown "$user":"$group" "$secret_key_file"
-chmod 600 "$secret_key_file"
+chown "$user":"$group" "$config_file"
+chmod 600 "$config_file"
+
+echo "The secret_key has been regenerated in the configuration file"
 
 echo "The secret_key file has been regenerated"

@@ -38,6 +38,9 @@ removeBlankPage     = True
 # Recognition threshold
 blobsratio          = 1E-6
 
+[API]
+secret_key          =
+
 [IA]
 doctype_entity      = ${GLOBAL:projectPath}/data/ia/doctype_entity/
 

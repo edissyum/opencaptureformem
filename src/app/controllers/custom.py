@@ -16,15 +16,20 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
-import os
-from flask import Flask
 
-app = Flask(__name__)
+from flask import current_app as app
+import configparser
 
-base_dir = os.path.abspath(os.path.dirname(__file__))
-custom_config_path = os.path.join(base_dir, '../config/custom.json')
 
-with open(custom_config_path, 'r') as file:
-    app.config['CUSTOMS'] = eval(file.read())
+def get_custom_path(custom_id):
+    for custom in app.config['CUSTOMS']:
+        if custom['id'] == custom_id:
+            return custom['path']
+    return None
 
-from src.app import routes
+
+def get_secret_key_from_config(config_path):
+    config = configparser.ConfigParser()
+    with open(config_path, 'r', encoding='utf-8') as config_file:
+        config.read_file(config_file)
+    return config.get('API', 'secret_key', fallback=None)
