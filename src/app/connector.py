@@ -20,6 +20,10 @@ import tempfile
 import os
 import subprocess
 import base64
+from src.main import launch
+from flask import jsonify
+from src.app.controllers.custom import get_custom_path
+
 
 def process_files(files, custom_id, process_name):
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -35,4 +39,18 @@ def process_files(files, custom_id, process_name):
 
             os.chmod(temp_file_path, 0o644)
 
-            subprocess.run(["/bin/bash", "/opt/edissyum/opencaptureformem/scripts/launch_IN.sh", temp_file_path])
+            custom_path = get_custom_path(custom_id)
+            if not custom_path:
+                return jsonify({"message": "Invalid custom id"}), 404
+
+            config_path = os.path.join(custom_path, 'src/config/config.ini')
+
+            args = {
+                'file': temp_file_path,
+                'config': config_path,
+                'process': process_name,
+                'script': 'IN',
+                'read_destination_from_filename': True
+            }
+
+            launch(args)
