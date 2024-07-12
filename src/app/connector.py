@@ -18,39 +18,42 @@
 
 import tempfile
 import os
-import subprocess
 import base64
-from src.main import launch
 from flask import jsonify
+from src.main import launch
 from src.app.controllers.custom import get_custom_path
 
 
 def process_files(files, custom_id, process_name):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        decoded_files = []
-        for file in files:
-            decoded_files.append(base64.b64decode(file))
+    custom_path = get_custom_path(custom_id)
 
-        for file in decoded_files:
-            temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
-            temp_file.write(file)
-            temp_file_path = temp_file.name
-            temp_file.close()
+    if not custom_path:
+        return jsonify({"message": "Invalid custom id"}), 404
 
-            os.chmod(temp_file_path, 0o644)
+    config_path = os.path.join(custom_path, 'src/config/config.ini')
+    temp_dir = os.path.join(custom_path, 'data/tmp_api')
 
-            custom_path = get_custom_path(custom_id)
-            if not custom_path:
-                return jsonify({"message": "Invalid custom id"}), 404
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir, exist_ok=True)
 
-            config_path = os.path.join(custom_path, 'src/config/config.ini')
+    decoded_files = []
+    for file in files:
+        decoded_files.append(base64.b64decode(file))
 
-            args = {
-                'file': temp_file_path,
-                'config': config_path,
-                'process': process_name,
-                'script': 'IN',
-                'read_destination_from_filename': True
-            }
+    for file in decoded_files:
+        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
+        temp_file.write(file)
+        temp_file_path = temp_file.name
+        temp_file.close()
 
-            launch(args)
+        os.chmod(temp_file_path, 0o644)
+
+        args = {
+            'file': temp_file_path,
+            'config': config_path,
+            'process': process_name,
+            'script': 'IN',
+            'read_destination_from_filename': True
+        }
+
+        launch(args)
