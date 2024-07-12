@@ -57,12 +57,15 @@ def upload_files():
     files = data.get('files')
     custom_id = data.get('custom_id')
     process_name = data.get('process_name')
+    read_destination_from_filename = data.get('read_destination_from_filename', True)
+    keep_pdf_debug = data.get('keep_pdf_debug', 'false')
+    destination = data.get('destination', None)
 
     if not files or not custom_id or not process_name:
         return jsonify({"message": "Missing data"}), 400
 
     try:
-        process_files(files, custom_id, process_name)
+        process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination)
     except Exception as e:
         return jsonify({"message": f"Error processing files: {str(e)}"}), 500
 

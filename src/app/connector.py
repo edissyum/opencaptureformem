@@ -24,7 +24,7 @@ from src.main import launch
 from src.app.controllers.custom import get_custom_path
 
 
-def process_files(files, custom_id, process_name):
+def process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination):
     custom_path = get_custom_path(custom_id)
 
     if not custom_path:
@@ -38,7 +38,7 @@ def process_files(files, custom_id, process_name):
 
     decoded_files = []
     for file in files:
-        decoded_files.append(base64.b64decode(file)) 
+        decoded_files.append(base64.b64decode(file))
 
     for file in decoded_files:
         temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
@@ -53,7 +53,9 @@ def process_files(files, custom_id, process_name):
             'config': config_path,
             'process': process_name,
             'script': 'IN',
-            'read_destination_from_filename': True
+            'read_destination_from_filename': read_destination_from_filename,
+            'keep_pdf_debug': keep_pdf_debug,
+            'destination': destination
         }
 
         launch(args)
