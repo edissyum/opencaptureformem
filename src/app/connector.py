@@ -38,7 +38,7 @@ def process_files(files, custom_id, process_name):
 
     decoded_files = []
     for file in files:
-        decoded_files.append(base64.b64decode(file))
+        decoded_files.append(base64.b64decode(file)) 
 
     for file in decoded_files:
         temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
