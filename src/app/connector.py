@@ -21,17 +21,16 @@ import os
 import base64
 from flask import jsonify
 from src.main import launch
-from src.app.controllers.custom import get_custom_path
+from src.app.controllers.custom import get_custom_config_file_path, get_tmp_api_directory_from_config
 
 
 def process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination):
-    custom_path = get_custom_path(custom_id)
+    config_file_path = get_custom_config_file_path(custom_id)
 
-    if not custom_path:
+    if not config_file_path:
         return jsonify({"message": "Invalid custom id"}), 400
 
-    config_path = os.path.join(custom_path, 'src/config/config.ini')
-    temp_dir = os.path.join(custom_path, 'data/tmp_api')
+    temp_dir = get_tmp_api_directory_from_config(config_file_path)
 
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir, exist_ok=True)
@@ -50,7 +49,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
 
         args = {
             'file': temp_file_path,
-            'config': config_path,
+            'config': config_file_path,
             'process': process_name,
             'script': 'IN',
             'read_destination_from_filename': read_destination_from_filename,

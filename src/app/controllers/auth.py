@@ -21,7 +21,7 @@ import jwt
 import datetime
 from functools import wraps
 from flask import request, jsonify, current_app as app
-from src.app.controllers.custom import get_custom_path, get_secret_key_from_config
+from src.app.controllers.custom import get_custom_config_file_path, get_secret_key_from_config
 
 
 def generate_token(secret_key):
@@ -55,12 +55,11 @@ def check_token(f):
         if token.startswith("Bearer "):
             token = token[7:]
 
-        custom_path = get_custom_path(custom_id)
-        if not custom_path:
+        config_file_path = get_custom_config_file_path(custom_id)
+        if not config_file_path:
             return jsonify({"message": "Invalid custom id"}), 400
 
-        config_path = os.path.join(custom_path, 'src/config/config.ini')
-        secret_key = get_secret_key_from_config(config_path)
+        secret_key = get_secret_key_from_config(config_file_path)
 
         if not secret_key:
             return jsonify({"message": "Could not read secret key from config"}), 500

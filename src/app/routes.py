@@ -21,7 +21,7 @@ import os
 from src.app import app
 from src.app.connector import process_files
 from src.app.controllers.auth import generate_token, check_token
-from src.app.controllers.custom import get_custom_path, get_secret_key_from_config
+from src.app.controllers.custom import get_custom_config_file_path, get_secret_key_from_config
 
 
 @app.route('/get-token', methods=['POST'])
@@ -33,12 +33,11 @@ def get_token():
     if not secret_key or not custom_id:
         return jsonify({"message": "Missing data"}), 400
 
-    custom_path = get_custom_path(custom_id)
-    if not custom_path:
+    config_file_path = get_custom_config_file_path(custom_id)
+    if not config_file_path:
         return jsonify({"message": "Invalid custom id"}), 400
 
-    config_path = os.path.join(custom_path, 'src/config/config.ini')
-    config_secret_key = get_secret_key_from_config(config_path)
+    config_secret_key = get_secret_key_from_config(config_file_path)
 
     if not config_secret_key:
         return jsonify({"message": "Could not read secret key from config"}), 500

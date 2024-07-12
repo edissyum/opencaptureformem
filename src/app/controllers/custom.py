@@ -22,15 +22,23 @@ import configparser
 from flask import current_app as app
 
 
-def get_custom_path(custom_id):
+def get_custom_config_file_path(custom_id):
     for custom in app.config['CUSTOMS']:
         if custom['id'] == custom_id:
-            return custom['path']
+            if os.path.isfile(custom['config_file_path']):
+                return custom['config_file_path']
     return None
 
 
-def get_secret_key_from_config(config_path):
+def get_secret_key_from_config(config_file_path):
     config = configparser.ConfigParser()
-    with open(config_path, 'r', encoding='utf-8') as config_file:
+    with open(config_file_path, 'r', encoding='utf-8') as config_file:
         config.read_file(config_file)
     return config.get('API', 'secret_key', fallback=None)
+
+
+def get_tmp_api_directory_from_config(config_file_path):
+    config = configparser.ConfigParser()
+    with open(config_file_path, 'r', encoding='utf-8') as config_file:
+        config.read_file(config_file)
+    return config.get('API', 'tmp_api', fallback=None)
