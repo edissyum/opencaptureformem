@@ -17,8 +17,9 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 
-from flask import current_app as app
+import os
 import configparser
+from flask import current_app as app
 
 
 def get_custom_path(custom_id):
