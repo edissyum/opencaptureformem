@@ -20,6 +20,7 @@
 import os
 import configparser
 from flask import current_app as app
+import src.classes.Config as configClass
 
 
 def get_custom_config_file_path(custom_id):
@@ -31,14 +32,12 @@ def get_custom_config_file_path(custom_id):
 
 
 def get_secret_key_from_config(config_file_path):
-    config = configparser.ConfigParser()
-    with open(config_file_path, 'r', encoding='utf-8') as config_file:
-        config.read_file(config_file)
-    return config.get('API', 'secret_key', fallback=None)
+    config = configClass.Config()
+    config.load_file(config_file_path)
+    return config.cfg['API']['secret_key']
 
 
 def get_tmp_api_directory_from_config(config_file_path):
-    config = configparser.ConfigParser()
-    with open(config_file_path, 'r', encoding='utf-8') as config_file:
-        config.read_file(config_file)
-    return config.get('API', 'tmp_api', fallback=None)
+    config = configClass.Config()
+    config.load_file(config_file_path)
+    return config.cfg['API']['tmp_api']

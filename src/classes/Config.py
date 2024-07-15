@@ -26,7 +26,8 @@ class Config:
         # ExtendedInterpolation is needed to use var into the config.ini file
         try:
             parser = ConfigParser(interpolation=ExtendedInterpolation())
-            parser.read(path)
+            with open(path, 'r', encoding='utf-8') as file:
+                parser.read_file(file)
             for section in parser.sections():
                 self.cfg[section] = {}
                 for info in parser[section]:
