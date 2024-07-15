@@ -264,5 +264,55 @@ Open-Capture for MEM Courrier is using AI to detect some informations automatica
 
 We can't provide an AI model because it's specific to each company. But we can help you to create yours, contact us.
 
+## API
+Open-Capture for MEM Courrier integrate an API that allows you to directly send documents to MEM Courrier.
+
+### Configuration of the API
+In order to the API to work, you need to set a robust secret_key in the config.ini file (automatically generated in the install process). This key will be used to authenticate the requests.
+```ini
+[API]
+tmp_api            = ${GLOBAL:projectPath}/data/tmp_api/
+secret_key         = YOUR_ROBUST_SECRET_KEY
+```
+You can easily generate / regenerate a secret key, by running the following script :
+
+```bash
+./scripts/regenerate_secret_key.sh
+```
+
+You also need to specify the custom id and the config_file_path in the custom.json file.
+```json
+[
+  {
+    "id": "opencaptureformem",
+    "config_file_path": "/opt/edissyum/opencaptureformem/src/config/config.ini"
+  }
+]
+```
+
+### Usage of the API
+
+#### Get a token
+
+You first need to get a token by calling the API with your secret_key and custom_id:
+
+```bash
+curl -X POST http://YOUR_SERVER_URL/opencaptureformem/get-token -H "Content-Type: application/json" -d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}'
+```
+
+Then you'll get a token that you'll have to use in the next request.
+
+#### Upload files
+
+A request to the API to upload files will look like this :
+
+```bash
+curl -X POST http://YOUR_SERVER_URL/opencaptureformem/upload -H "Authorization: Bearer GENERATED_TOKEN" -H "Content-Type: application/json" -d '{
+  "files": ["BASE_64_FILE"],
+  "custom_id": "YOUR_CUSTOM_ID",
+  "process_name": "YOUR_PROCESS_NAME"
+}'
+```
+
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
