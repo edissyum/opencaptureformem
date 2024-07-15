@@ -17,6 +17,7 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 import os
+import json
 from flask import Flask
 
 app = Flask(__name__)
@@ -24,7 +25,10 @@ app = Flask(__name__)
 base_dir = os.path.abspath(os.path.dirname(__file__))
 custom_config_path = os.path.join(base_dir, '../config/custom.json')
 
+if not os.path.exists(custom_config_path):
+    print('Error: custom.json not found')
+
 with open(custom_config_path, 'r') as file:
-    app.config['CUSTOMS'] = eval(file.read())
+    app.config['CUSTOMS'] = json.load(file)
 
 from src.app import routes
