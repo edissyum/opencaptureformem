@@ -25,7 +25,7 @@ import src.classes.Config as configClass
 
 def get_custom_config_file_path(custom_id):
     for custom in app.config['CUSTOMS']:
-        if custom['id'] == custom_id:
+        if custom['custom_id'] == custom_id:
             if os.path.isfile(custom['config_file_path']):
                 return custom['config_file_path']
     return None

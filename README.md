@@ -280,7 +280,7 @@ You can easily generate / regenerate a secret key, by running the following scri
 ./scripts/regenerate_secret_key.sh
 ```
 
-You also need to specify the custom id and the config_file_path in the custom.json file.
+You also need to specify the `custom_id` and the `config_file_path` in the `custom.json` file.
 ```json
 [
   {
@@ -294,10 +294,14 @@ You also need to specify the custom id and the config_file_path in the custom.js
 
 #### Get a token
 
-You first need to get a token by calling the API with your secret_key and custom_id:
+You first need to get a token by calling the API with your `secret_key` and `custom_id` : 
 
 ```bash
-curl -X POST http://YOUR_SERVER_URL/opencaptureformem/get-token -H "Content-Type: application/json" -d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}'
+curl \
+-H "Content-Type: application/json" \
+-X POST \
+-d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}' \
+http://YOUR_SERVER_URL/opencaptureformem/get-token
 ```
 
 Then you'll get a token that you'll have to use in the next request.
@@ -307,11 +311,17 @@ Then you'll get a token that you'll have to use in the next request.
 A request to the API to upload files will look like this :
 
 ```bash
-curl -X POST http://YOUR_SERVER_URL/opencaptureformem/upload -H "Authorization: Bearer GENERATED_TOKEN" -H "Content-Type: application/json" -d '{
-  "files": ["BASE_64_FILE"],
+
+curl \
+-X POST \
+-H "Authorization: Bearer GENERATED_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "files": ["BASE_64_FILE_CONTENT"],
   "custom_id": "YOUR_CUSTOM_ID",
   "process_name": "YOUR_PROCESS_NAME"
-}'
+}' \
+http://YOUR_SERVER_URL/opencaptureformem/upload
 ```
 
 # LICENSE
