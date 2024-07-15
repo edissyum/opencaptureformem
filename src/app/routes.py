@@ -63,9 +63,6 @@ def upload_files():
     if not files or not custom_id or not process_name:
         return jsonify({"message": "Missing data"}), 400
 
-    try:
-        process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination)
-    except Exception as e:
-        return jsonify({"message": f"Error processing files: {str(e)}"}), 500
+    response, status_code = process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination)
 
-    return jsonify({"message": "Files processed successfully"}), 200
+    return jsonify(response), status_code

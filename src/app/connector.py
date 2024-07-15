@@ -39,7 +39,8 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     for file in files:
         decoded_files.append(base64.b64decode(file))
 
-    for file in decoded_files:
+    errors = []
+    for index, file in enumerate(decoded_files):
         temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
         temp_file.write(file)
         temp_file_path = temp_file.name
@@ -57,4 +58,12 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
             'destination': destination
         }
 
-        launch(args)
+        try:
+            launch(args)
+        except Exception as e:
+            errors.append({"file_index": index, "error": str(e)})
+
+    if errors:
+        return {"message": "Some files encountered errors", "errors": errors}, 500
+    else:
+        return {"message": "All files processed successfully"}, 200
