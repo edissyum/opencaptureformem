@@ -284,7 +284,7 @@ You also need to specify the `custom_id` and the `config_file_path` in the `cust
 ```json
 [
   {
-    "id": "opencaptureformem",
+    "custom_id": "opencaptureformem",
     "config_file_path": "/opt/edissyum/opencaptureformem/src/config/config.ini"
   }
 ]
