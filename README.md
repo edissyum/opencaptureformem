@@ -196,7 +196,11 @@ One of the possibility to solve is the following :
 
     sudo nano /etc/ssl/openssl.cnf
 
-Find the <code>minProtocol</code> options and set it to TLSv1.0
+Add the following block at the end of the file
+
+    [tls_system_default]
+    MinProtocol = TLSv1.0
+    CipherString = DEFAULT@SECLEVEL=0
 
 ## Clean MailCollect batches
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
