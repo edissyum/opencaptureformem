@@ -36,14 +36,10 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     if not os.path.exists(config_temp_dir):
         os.makedirs(config_temp_dir, exist_ok=True)
 
-    decoded_files = []
-    for file in files:
-        decoded_files.append(base64.b64decode(file))
-
     errors = []
-    for index, file in enumerate(decoded_files):
-        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=config_temp_dir, suffix=".pdf")
-        temp_file.write(file)
+    for index, file in enumerate(files):
+        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=config_temp_dir, prefix=file["file_name"], suffix=".pdf")
+        temp_file.write(base64.b64decode(file["file_content"]))
         temp_file_path = temp_file.name
         temp_file.close()
 
@@ -62,7 +58,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
         try:
             launch(args)
         except Exception as e:
-            errors.append({"file_index": index, "error": str(e)})
+            errors.append({"file_name": file["file_name"], "error": str(e)})
 
     if errors:
         return {"message": "Some files encountered errors", "errors": errors}, 500

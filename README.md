@@ -349,7 +349,7 @@ curl \
 -H "Authorization: Bearer GENERATED_TOKEN" \
 -H "Content-Type: application/json" \
 -d '{
-  "files": ["BASE_64_FILE_CONTENT"],
+  "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
   "custom_id": "YOUR_CUSTOM_ID",
   "process_name": "YOUR_PROCESS_NAME"
 }' \
@@ -364,7 +364,7 @@ import requests
 
 url = "http://YOUR_SERVER_URL/opencaptureformem/upload"
 data = {
-    "files": ["BASE_64_FILE_CONTENT"],
+    "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
     "custom_id": "YOUR_CUSTOM_ID",
     "process_name": "YOUR_PROCESS_NAME"
 }

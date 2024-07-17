@@ -69,6 +69,17 @@ def upload_files():
     if not files or not custom_id or not process_name:
         return jsonify({"message": "Missing data"}), 400
 
-    response, status_code = process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination)
+    if not isinstance(files, list):
+        return jsonify({"message": "Files must be a list"}), 400
+    for file in files:
+        if not isinstance(file, dict):
+            return jsonify({"message": "Each file must be a dictionary"}), 400
+        if 'file_name' not in file or 'file_content' not in file:
+            return jsonify({"message": "Each file must have a 'file_name' and 'file_content' key"}), 400
+        if not file['file_name'] or not file['file_content']:
+            return jsonify({"message": "Each file must have a valid 'file_name' and 'file_content' value"}),
+
+    response, status_code = process_files(files, custom_id, process_name, read_destination_from_filename,
+                                          keep_pdf_debug, destination)
 
     return jsonify(response), status_code
