@@ -98,6 +98,8 @@ def check_destination(destinations, destination):
         for dest in destinations['entities']:
             if int(destination) == int(dest['serialId']):
                 return destination
+            if (isinstance(dest['id'], int) or dest['id'].isnumeric()) and int(destination) == int(dest['id']):
+                return dest['serialId']
     else:
         for dest in destinations['entities']:
             if str(destination).lower() == str(dest['id']).lower():

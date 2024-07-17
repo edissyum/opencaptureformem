@@ -98,6 +98,7 @@ model_id                = 5
 destination             = 13
 reconciliation          =
 custom_mail             =
+custom_fields           = {}
 # True or False
 separator_qr            = False
 generate_chrono         = True
