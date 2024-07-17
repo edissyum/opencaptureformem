@@ -296,19 +296,51 @@ You also need to specify the `custom_id` and the `config_file_path` in the `cust
 
 You first need to get a token by calling the API with your `secret_key` and `custom_id` : 
 
+<table>
+<tr>
+<td> Curl </td> <td> Python </td>
+</tr>
+<tr>
+<td>
+
 ```bash
 curl \
--H "Content-Type: application/json" \
 -X POST \
+-H "Content-Type: application/json" \
 -d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}' \
 http://YOUR_SERVER_URL/opencaptureformem/get-token
 ```
+
+</td>
+<td>
+    
+```python
+import requests
+
+url = "http://YOUR_SERVER_URL/opencaptureformem/get-token"
+data = {"secret_key": "YOUR_SECRET_KEY", "custom_id": "YOUR_CUSTOM_ID"}
+headers = {"Content-Type": "application/json", "Authorization": "Bearer YOUR_BEARER_TOKEN"}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
+```
+</td>
+</tr>
+</table>
 
 Then you'll get a token that you'll have to use in the next request.
 
 #### Upload files
 
 A request to the API to upload files will look like this :
+
+<table>
+<tr>
+<td> Curl </td> <td> Python </td>
+</tr>
+<tr>
+<td>
 
 ```bash
 
@@ -323,6 +355,31 @@ curl \
 }' \
 http://YOUR_SERVER_URL/opencaptureformem/upload
 ```
+
+</td>
+<td>
+    
+```python
+import requests
+
+url = "http://YOUR_SERVER_URL/opencaptureformem/upload"
+data = {
+    "files": ["BASE_64_FILE_CONTENT"],
+    "custom_id": "YOUR_CUSTOM_ID",
+    "process_name": "YOUR_PROCESS_NAME"
+}
+headers = {
+    "Authorization": "Bearer GENERATED_TOKEN",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
+```
+</td>
+</tr>
+</table>
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
