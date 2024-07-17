@@ -32,13 +32,12 @@ def get_custom_config_file_path(custom_id):
     return None, f"custom_id {custom_id} not found in custom.json"
 
 
-def get_secret_key_from_config(config_file_path):
+def get_custom_config_value(config_file_path, key):
     config = configClass.Config()
     config.load_file(config_file_path)
-    return config.cfg['API']['secret_key']
-
-
-def get_tmp_api_directory_from_config(config_file_path):
-    config = configClass.Config()
-    config.load_file(config_file_path)
-    return config.cfg['API']['tmp_api']
+    if key in config.cfg['API']:
+        if config.cfg['API'][key] != "":
+            return config.cfg['API'][key], None
+        else:
+            return None, f"Key {key} is empty in config file {config_file_path}"
+    return None, f"Key {key} not found in config file {config_file_path}"

@@ -19,9 +19,8 @@
 import tempfile
 import os
 import base64
-from flask import jsonify
 from src.main import launch
-from src.app.controllers.custom import get_custom_config_file_path, get_tmp_api_directory_from_config
+from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value
 
 
 def process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination):
@@ -30,10 +29,12 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     if error:
         return {"message": error}, 400
 
-    temp_dir = get_tmp_api_directory_from_config(config_file_path)
+    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmp_api')
+    if error:
+        return {"message": error}, 400
 
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir, exist_ok=True)
+    if not os.path.exists(config_temp_dir):
+        os.makedirs(config_temp_dir, exist_ok=True)
 
     decoded_files = []
     for file in files:
@@ -41,7 +42,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
 
     errors = []
     for index, file in enumerate(decoded_files):
-        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, suffix=".pdf")
+        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=config_temp_dir, suffix=".pdf")
         temp_file.write(file)
         temp_file_path = temp_file.name
         temp_file.close()

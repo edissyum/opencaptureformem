@@ -20,7 +20,7 @@ from flask import request, jsonify
 from src.app import app
 from src.app.connector import process_files
 from src.app.controllers.auth import generate_token, check_token
-from src.app.controllers.custom import get_custom_config_file_path, get_secret_key_from_config
+from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value
 
 
 @app.route('/get_token', methods=['POST'])
@@ -36,10 +36,9 @@ def get_token():
     if error:
         return jsonify({"message": error}), 400
 
-    config_secret_key = get_secret_key_from_config(config_file_path)
-
-    if not config_secret_key:
-        return jsonify({"message": "Could not read secret key from config"}), 500
+    config_secret_key, error = get_custom_config_value(config_file_path, 'secret_key')
+    if error:
+        return jsonify({"message": error}), 400
 
     if secret_key != config_secret_key:
         return jsonify({"message": "Invalid secret key"}), 401

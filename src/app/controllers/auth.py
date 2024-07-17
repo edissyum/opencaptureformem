@@ -20,7 +20,7 @@ import jwt
 import datetime
 from functools import wraps
 from flask import request, jsonify
-from src.app.controllers.custom import get_custom_config_file_path, get_secret_key_from_config
+from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value
 
 
 def generate_token(secret_key):
@@ -58,12 +58,11 @@ def check_token(f):
         if error:
             return jsonify({"message": error}), 400
 
-        secret_key = get_secret_key_from_config(config_file_path)
+        config_secret_key, error = get_custom_config_value(config_file_path, 'secret_key')
+        if error:
+            return jsonify({"message": error}), 400
 
-        if not secret_key:
-            return jsonify({"message": "Could not read secret key from config"}), 500
-
-        decoded = verify_jwt(token, secret_key)
+        decoded = verify_jwt(token, config_secret_key)
         if not decoded:
             return jsonify({"message": "Invalid or expired token"}), 401
 
