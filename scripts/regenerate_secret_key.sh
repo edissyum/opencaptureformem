@@ -47,13 +47,19 @@ fi
 secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
 config_file=$(jq -r --arg cid "$custom_id" '.[] | select(.custom_id == $cid) | .config_file_path' $config_list_file)
 
-if grep -q 'secret_key' "$config_file"; then
-    sed -i "s/^secret_key.*/secret_key = $secret/" "$config_file"
-else
-    echo "secret_key = $secret" >> "$config_file"
+if ! grep -q '^\[API\]' "$config_file"; then
+    echo "Error: The [API] section is missing in your config.ini. Please add it."
+    exit 1
 fi
 
+if ! grep -q '^secret_key' "$config_file"; then
+    echo "Error: The secret_key key is missing in the [API] section. Please add it."
+    exit 1
+fi
+
+sed -i "/^\[API\]/,/^\[/{s/^secret_key.*/secret_key = $secret/}" "$config_file"
+
 chown "$user":"$group" "$config_file"
-chmod 600 "$config_file"
+chmod 755 "$config_file"
 
 echo "The secret_key has been regenerated in the configuration file"
