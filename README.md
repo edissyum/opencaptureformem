@@ -331,6 +331,44 @@ print(response.json() if response.status_code == 200 else f"Erreur: {response.st
 
 Then you'll get a token that you'll have to use in the next request.
 
+Here are some possible responses :
+
+<table>
+<tr>
+<td> Status </td> <td> Response </td>
+</tr>
+<tr>
+<td> 200 </td>
+<td>
+    
+```json
+{
+  "token":"XXXXXXXX-XXXXXXXXX-XXXXXXXXX-XXXXXXXXX"
+}
+```
+
+</td>
+</tr>
+<tr>
+<td> 400 </td>
+<td>
+    
+```json
+{
+  "message":"Invalid secret key"
+}
+```
+    
+</td>
+</tr>
+<tr>
+<td> 500 </td>
+<td>
+Internal Server Error    
+</td>
+</tr>
+</table>
+
 #### Upload files
 
 A request to the API to upload files will look like this :
@@ -377,6 +415,58 @@ response = requests.post(url, json=data, headers=headers)
 
 print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
 ```
+</td>
+</tr>
+</table>
+
+
+Here are some possible responses :
+
+<table>
+<tr>
+<td> Status </td> <td> Response </td>
+</tr>
+<tr>
+<td> 200 </td>
+<td>
+    
+```json
+{
+  "message":"All files processed successfully"
+}
+```
+
+</td>
+</tr>
+<tr>
+<td> 400 </td>
+<td>
+    
+```json
+{
+  "message":"custom_id XXXX not found in custom.json"
+}
+```
+    
+</td>
+</tr>
+<tr>
+<tr>
+<td> 400 </td>
+<td>
+    
+```json
+{
+  "message":"Each file must have a 'file_name' and 'file_content' key"
+}
+```
+    
+</td>
+</tr>
+<tr>
+<td> 500 </td>
+<td>
+Internal Server Error    
 </td>
 </tr>
 </table>
