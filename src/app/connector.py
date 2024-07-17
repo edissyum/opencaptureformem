@@ -29,7 +29,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     if error:
         return {"message": error}, 400
 
-    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmp_api')
+    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmppath', 'GLOBAL')
     if error:
         return {"message": error}, 400
 
