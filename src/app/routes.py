@@ -40,10 +40,18 @@ def get_token():
     if error:
         return jsonify({"message": error}), 400
 
+    token_expiration_time, error = get_custom_config_value(config_file_path, 'token_expiration_time')
+    if error:
+        return jsonify({"message": error}), 400
+    try:
+        token_expiration_time = int(token_expiration_time)
+    except ValueError:
+        return jsonify({"message": "Invalid token expiration time"}), 500
+
     if secret_key != config_secret_key:
         return jsonify({"message": "Invalid secret key"}), 401
 
-    token = generate_token(secret_key)
+    token = generate_token(secret_key, token_expiration_time)
     return jsonify({"token": token})
 
 

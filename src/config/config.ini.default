@@ -39,8 +39,10 @@ removeBlankPage     = True
 blobsratio          = 1E-6
 
 [API]
-tmp_api             = ${GLOBAL:projectPath}/data/tmp_api/
-secret_key          =
+# Token expiration time in hours
+token_expiration_time       = 1
+tmp_api                     = ${GLOBAL:projectPath}/data/tmp_api/
+secret_key                  =
 
 [IA]
 doctype_entity      = ${GLOBAL:projectPath}/data/ia/doctype_entity/

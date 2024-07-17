@@ -23,9 +23,9 @@ from flask import request, jsonify
 from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value
 
 
-def generate_token(secret_key):
+def generate_token(secret_key, token_expiration_time):
     payload = {
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=token_expiration_time),
         'iat': datetime.datetime.utcnow()
     }
     token = jwt.encode(payload, secret_key, algorithm='HS256')
