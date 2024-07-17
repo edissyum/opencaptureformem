@@ -26,8 +26,10 @@ def get_custom_config_file_path(custom_id):
     for custom in app.config['CUSTOMS']:
         if custom['custom_id'] == custom_id:
             if os.path.isfile(custom['config_file_path']):
-                return custom['config_file_path']
-    return None
+                return custom['config_file_path'], None
+            else:
+                return None, f"Configuration file not found for custom_id: {custom_id}"
+    return None, f"custom_id {custom_id} not found in custom.json"
 
 
 def get_secret_key_from_config(config_file_path):

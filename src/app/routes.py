@@ -32,9 +32,9 @@ def get_token():
     if not secret_key or not custom_id:
         return jsonify({"message": "Missing data"}), 400
 
-    config_file_path = get_custom_config_file_path(custom_id)
-    if not config_file_path:
-        return jsonify({"message": "Invalid custom id"}), 400
+    config_file_path, error = get_custom_config_file_path(custom_id)
+    if error:
+        return jsonify({"message": error}), 400
 
     config_secret_key = get_secret_key_from_config(config_file_path)
 
