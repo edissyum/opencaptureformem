@@ -32,14 +32,14 @@ def get_custom_config_file_path(custom_id):
     return None, f"custom_id {custom_id} not found in custom.json"
 
 
-def get_custom_config_value(config_file_path, key):
+def get_custom_config_value(config_file_path, key, master_key="API"):
     config = configClass.Config()
     config.load_file(config_file_path)
-    if 'API' not in config.cfg:
-        return None, f"API Block not found in config file {config_file_path}"
-    if key in config.cfg['API']:
-        if config.cfg['API'][key] != "":
-            return config.cfg['API'][key], None
+    if master_key not in config.cfg:
+        return None, f"['{master_key}'] Block not found in config file {config_file_path}"
+    if key in config.cfg[master_key]:
+        if config.cfg[master_key][key] != "":
+            return config.cfg[master_key][key], None
         else:
-            return None, f"Key {key} is empty in config file {config_file_path}"
-    return None, f"Key {key} not found in config file {config_file_path}"
+            return None, f"Key ['{master_key}']['{key}'] is empty in config file {config_file_path}"
+    return None, f"Key ['{master_key}']['{key}'] not found in config file {config_file_path}"
