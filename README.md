@@ -390,8 +390,8 @@ A request to the API to upload files will look like this :
 
 curl \
 -X POST \
--H "Authorization: Bearer GENERATED_TOKEN" \
 -H "Content-Type: application/json" \
+-H "Authorization: Bearer GENERATED_TOKEN" \
 -d '{
   "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
   "custom_id": "YOUR_CUSTOM_ID",
