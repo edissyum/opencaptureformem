@@ -23,7 +23,7 @@ from src.app.controllers.auth import generate_token, check_token
 from src.app.controllers.custom import get_custom_config_file_path, get_secret_key_from_config
 
 
-@app.route('/get-token', methods=['POST'])
+@app.route('/get_token', methods=['POST'])
 def get_token():
     data = request.get_json()
     secret_key = data.get('secret_key')

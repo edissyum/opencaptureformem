@@ -308,7 +308,7 @@ curl \
 -X POST \
 -H "Content-Type: application/json" \
 -d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}' \
-http://YOUR_SERVER_URL/opencaptureformem/get-token
+http://YOUR_SERVER_URL/opencaptureformem/get_token
 ```
 
 </td>
@@ -317,7 +317,7 @@ http://YOUR_SERVER_URL/opencaptureformem/get-token
 ```python
 import requests
 
-url = "http://YOUR_SERVER_URL/opencaptureformem/get-token"
+url = "http://YOUR_SERVER_URL/opencaptureformem/get_token"
 data = {"secret_key": "YOUR_SECRET_KEY", "custom_id": "YOUR_CUSTOM_ID"}
 headers = {"Content-Type": "application/json", "Authorization": "Bearer YOUR_BEARER_TOKEN"}
 
