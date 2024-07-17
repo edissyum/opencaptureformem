@@ -271,8 +271,10 @@ Open-Capture for MEM Courrier integrate an API that allows you to directly send 
 In order to the API to work, you need to set a robust secret_key in the config.ini file (automatically generated in the install process). This key will be used to authenticate the requests.
 ```ini
 [API]
-tmp_api            = ${GLOBAL:projectPath}/data/tmp_api/
-secret_key         = YOUR_ROBUST_SECRET_KEY
+# Token expiration time in hours
+token_expiration_time       = 1
+secret_key                  = YOUR_ROBUST_SECRET_KEY
+
 ```
 You can easily generate / regenerate a secret key, by running the following script :
 
