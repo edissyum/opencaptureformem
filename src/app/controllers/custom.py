@@ -35,6 +35,8 @@ def get_custom_config_file_path(custom_id):
 def get_custom_config_value(config_file_path, key):
     config = configClass.Config()
     config.load_file(config_file_path)
+    if 'API' not in config.cfg:
+        return None, f"API Block not found in config file {config_file_path}"
     if key in config.cfg['API']:
         if config.cfg['API'][key] != "":
             return config.cfg['API'][key], None
