@@ -18,7 +18,6 @@
 
 
 import os
-import configparser
 from flask import current_app as app
 import src.classes.Config as configClass
 

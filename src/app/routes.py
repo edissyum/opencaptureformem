@@ -17,7 +17,6 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 from flask import request, jsonify
-import os
 from src.app import app
 from src.app.connector import process_files
 from src.app.controllers.auth import generate_token, check_token

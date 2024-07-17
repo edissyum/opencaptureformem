@@ -16,11 +16,10 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
-import os
 import jwt
 import datetime
 from functools import wraps
-from flask import request, jsonify, current_app as app
+from flask import request, jsonify
 from src.app.controllers.custom import get_custom_config_file_path, get_secret_key_from_config
 
 
