@@ -17,6 +17,7 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 import os
+import sys
 import json
 from flask import Flask
 
@@ -26,7 +27,7 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 custom_config_path = os.path.join(base_dir, '../config/custom.json')
 
 if not os.path.exists(custom_config_path):
-    print('Error: custom.json not found')
+    sys.exit('Error: custom.json not found')
 
 with open(custom_config_path, 'r') as file:
     app.config['CUSTOMS'] = json.load(file)

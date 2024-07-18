@@ -317,43 +317,41 @@ sed -i "/^\[API\]/,/^\[/{s/^secret_key.*/secret_key = $secret/}" "$config_file"
 
 chmod 755 "$config_file"
 
+cp $defaultPath/src/config/custom.json.default $defaultPath/src/config/custom.json
+
 ####################
 # Create the Apache service for the API
 touch /etc/apache2/sites-available/opencaptureformem.conf
 
-wsgiDaemonProcessLine="WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath"
-sitePackageLocation=$(/opt/edissyum/python-venv/opencaptureformem/bin/python3 -c 'import site; print(site.getsitepackages()[0])')
-if [ $sitePackageLocation ]; then
-    wsgiDaemonProcessLine="WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath python-path=$sitePackageLocation python-home=$sitePackageLocation"
-fi
-
-su -c "cat > /etc/apache2/sites-available/opencaptureformem.conf << EOF
+cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
 <VirtualHost *:80>
     ServerName localhost
+
     DocumentRoot $defaultPath
-    $wsgiDaemonProcessLine
+    WSGIDaemonProcess opencaptureformem python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
-    <Directory $defaultPath>
+    <Directory "$defaultPath">
         AllowOverride All
         Options -Indexes +FollowSymLinks
         WSGIProcessGroup opencaptureformem
         WSGIApplicationGroup %{GLOBAL}
         WSGIPassAuthorization On
         Require all granted
-        <Files ~ \"(.ini|secret_key|.ods)\">
+        <Files ~ "(.ini|secret_key|.ods)">
             Require all denied
         </Files>
     </Directory>
 
-    ErrorLog ${APACHE_LOG_DIR}/opencaptureformem_error.log
-    CustomLog ${APACHE_LOG_DIR}/opencaptureformem_access.log combined
+    ErrorLog \${APACHE_LOG_DIR}/opencaptureformem_error.log
+    CustomLog \${APACHE_LOG_DIR}/opencaptureformem_access.log combined
 </VirtualHost>
-EOF"
+EOF
 
 a2ensite opencaptureformem.conf
 a2enmod rewrite
 systemctl restart apache2
+
 
 echo ""
 echo "#######################################################################################################################"

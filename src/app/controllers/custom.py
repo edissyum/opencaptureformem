@@ -17,8 +17,8 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 
-import os
 from flask import current_app as app
+import os
 import src.classes.Config as configClass
 
 
