@@ -322,13 +322,14 @@ cp $defaultPath/src/config/custom.json.default $defaultPath/src/config/custom.js
 ####################
 # Create the Apache service for the API
 touch /etc/apache2/sites-available/opencaptureformem.conf
+sitePackageLocation=$(/opt/edissyum/python-venv/opencaptureformem/bin/python3 -c 'import site; print(site.getsitepackages()[0])')
 
 cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
 <VirtualHost *:80>
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem
+    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     <Directory "$defaultPath">
@@ -338,20 +339,18 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
         WSGIApplicationGroup %{GLOBAL}
         WSGIPassAuthorization On
         Require all granted
-        <Files ~ "(.ini|secret_key|.ods)">
+        <Files ~ "(.ini)">
             Require all denied
         </Files>
     </Directory>
 
-    ErrorLog \${APACHE_LOG_DIR}/opencaptureformem_error.log
-    CustomLog \${APACHE_LOG_DIR}/opencaptureformem_access.log combined
 </VirtualHost>
 EOF
 
+a2dissite 000-default.conf
 a2ensite opencaptureformem.conf
 a2enmod rewrite
 systemctl restart apache2
-
 
 echo ""
 echo "#######################################################################################################################"
