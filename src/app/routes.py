@@ -44,7 +44,7 @@ def get_token():
     if error:
         return jsonify({"message": error}), 400
     try:
-        token_expiration_time = int(token_expiration_time)
+        token_expiration_time = float(token_expiration_time)
     except ValueError:
         return jsonify({"message": "Invalid token expiration time"}), 500
 
