@@ -44,11 +44,12 @@ def get_custom_config_value(config_file_path, key, master_key="API"):
             return None, f"Key ['{master_key}']['{key}'] is empty in config file {config_file_path}"
     return None, f"Key ['{master_key}']['{key}'] not found in config file {config_file_path}"
 
+
 def get_custom_config_processes(config_file_path):
     config = configClass.Config()
     config.load_file(config_file_path)
-    OCForMEM_values = {}
+    processes = {}
     for key in config.cfg:
         if key.startswith("OCForMEM_"):
-            OCForMEM_values[key[9:]] = config.cfg[key]
-    return OCForMEM_values, None
+            processes[key[9:]] = config.cfg[key]
+    return processes, None
