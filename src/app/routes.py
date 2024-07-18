@@ -16,8 +16,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
-from flask import request, jsonify
 from src.app import app
+from flask import request, jsonify
 from src.app.connector import process_files
 from src.app.controllers.auth import generate_token, check_token
 from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value
@@ -71,6 +71,7 @@ def upload_files():
 
     if not isinstance(files, list):
         return jsonify({"message": "Files must be a list"}), 400
+
     for file in files:
         if not isinstance(file, dict):
             return jsonify({"message": "Each file must be a dictionary"}), 400

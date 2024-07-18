@@ -2,6 +2,7 @@ bs4
 msal
 pypdf
 torch
+flask
 kuyruk
 pyzbar
 holidays
@@ -15,4 +16,3 @@ exchangelib
 transformers
 configparser
 opencv-python
-flask

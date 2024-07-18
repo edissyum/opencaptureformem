@@ -310,7 +310,7 @@ curl \
 -X POST \
 -H "Content-Type: application/json" \
 -d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}' \
-http://YOUR_SERVER_URL/opencaptureformem/get_token
+http://YOUR_SERVER_URL:YOUR_SERVER_PORT/opencaptureformem/get_token
 ```
 
 </td>
@@ -319,9 +319,9 @@ http://YOUR_SERVER_URL/opencaptureformem/get_token
 ```python
 import requests
 
-url = "http://YOUR_SERVER_URL/opencaptureformem/get_token"
+url = "http://YOUR_SERVER_URL:YOUR_SERVER_PORT/opencaptureformem/get_token"
 data = {"secret_key": "YOUR_SECRET_KEY", "custom_id": "YOUR_CUSTOM_ID"}
-headers = {"Content-Type": "application/json", "Authorization": "Bearer YOUR_BEARER_TOKEN"}
+headers = {"Content-Type": "application/json"}
 
 response = requests.post(url, json=data, headers=headers)
 
@@ -397,7 +397,7 @@ curl \
   "custom_id": "YOUR_CUSTOM_ID",
   "process_name": "YOUR_PROCESS_NAME"
 }' \
-http://YOUR_SERVER_URL/opencaptureformem/upload
+http://YOUR_SERVER_URL:YOUR_SERVER_PORT/opencaptureformem/upload
 ```
 
 </td>
@@ -406,7 +406,7 @@ http://YOUR_SERVER_URL/opencaptureformem/upload
 ```python
 import requests
 
-url = "http://YOUR_SERVER_URL/opencaptureformem/upload"
+url = "http://YOUR_SERVER_URL:YOUR_SERVER_PORT/opencaptureformem/upload"
 data = {
     "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
     "custom_id": "YOUR_CUSTOM_ID",

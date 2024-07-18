@@ -322,13 +322,13 @@ chmod 755 "$config_file"
 touch /etc/apache2/sites-available/opencaptureformem.conf
 
 wsgiDaemonProcessLine="WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath"
-sitePackageLocation=$(/home/$user/python-venv/opencapture/bin/python3 -c 'import site; print(site.getsitepackages()[0])')
+sitePackageLocation=$(/opt/edissyum/python-venv/opencaptureformem/bin/python3 -c 'import site; print(site.getsitepackages()[0])')
 if [ $sitePackageLocation ]; then
     wsgiDaemonProcessLine="WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath python-path=$sitePackageLocation python-home=$sitePackageLocation"
 fi
 
 su -c "cat > /etc/apache2/sites-available/opencaptureformem.conf << EOF
-<VirtualHost *:8080>
+<VirtualHost *:80>
     ServerName localhost
     DocumentRoot $defaultPath
     $wsgiDaemonProcessLine
@@ -353,7 +353,7 @@ EOF"
 
 a2ensite opencaptureformem.conf
 a2enmod rewrite
-systemctl restart
+systemctl restart apache2
 
 echo ""
 echo "#######################################################################################################################"
