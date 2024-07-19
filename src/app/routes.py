@@ -20,12 +20,12 @@ from src.app import app
 from flask import request, jsonify
 from src.app.connector import process_files
 from src.app.controllers.auth import generate_token, check_token
-from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value, get_custom_config_processes
+from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value, get_custom_config_process_list
 
 
-@app.route('/available_processes', methods=['POST'])
+@app.route('/get_process_list', methods=['POST'])
 @check_token
-def available_processes():
+def get_process_list():
     data = request.get_json()
     custom_id = data.get('custom_id')
 
@@ -33,12 +33,12 @@ def available_processes():
     if error:
         return jsonify({"message": error}), 400
 
-    process_names, error = get_custom_config_processes(config_file_path)
+    process_list, error = get_custom_config_process_list(config_file_path)
 
     if error:
         return jsonify({"message": error}), 400
 
-    return jsonify({"processes": list(process_names.keys())})
+    return jsonify({"processes": list(process_list.keys())})
 
 @app.route('/get_token', methods=['POST'])
 def get_token():

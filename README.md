@@ -485,5 +485,95 @@ Internal Server Error
 </tr>
 </table>
 
+#### Get process list
+
+A request to the API to get the list of available processes will look like this :
+
+<table>
+<tr>
+<td> Curl </td> <td> Python </td>
+</tr>
+<tr>
+<td>
+
+```bash
+
+curl \
+-X POST \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer GENERATED_TOKEN" \
+-d '{
+  "custom_id": "YOUR_CUSTOM_ID"
+}' \
+http://YOUR_SERVER_URL/opencaptureformem/get_process_list
+```
+
+</td>
+<td>
+
+```python
+import requests
+
+url = "http://YOUR_SERVER_URL/opencaptureformem/get_process_list"
+data = {
+    "custom_id": "YOUR_CUSTOM_ID"
+}
+headers = {
+    "Authorization": "Bearer GENERATED_TOKEN",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
+```
+</td>
+</tr>
+</table>
+
+Here are some possible responses :
+
+<table>
+<tr>
+<td> Status </td> <td> Response </td>
+</tr>
+<tr>
+<td> 200 </td>
+<td>
+
+```json
+{
+  "processes":["incoming","reconciliation_default","reconciliation_found"]
+}
+```
+
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 400 </td>
+<td>
+
+```json
+{
+  "message":"Invalid or expired token"
+}
+```
+
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 500 </td>
+<td>
+Internal Server Error    
+</td>
+</tr>
+</table>
+
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
