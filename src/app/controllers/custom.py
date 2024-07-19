@@ -17,7 +17,7 @@
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 
-from flask import current_app as app
+from flask import current_app as app, jsonify
 import os
 import src.classes.Config as configClass
 
@@ -46,10 +46,12 @@ def get_custom_config_value(config_file_path, key, master_key="API"):
 
 
 def get_custom_config_process_list(config_file_path):
-    config = configClass.Config()
-    config.load_file(config_file_path)
-    process_list = {}
-    for key in config.cfg:
-        if key.startswith("OCForMEM_"):
-            process_list[key[9:]] = config.cfg[key]
+    process_list_str, error = get_custom_config_value(config_file_path, "processavailable", "OCForMEM")
+    if error:
+        return jsonify({"message": error}), 400
+
+    process_list = []
+    for process in process_list_str.split(','):
+        process_list.append(process)
+
     return process_list, None

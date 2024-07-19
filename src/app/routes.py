@@ -34,11 +34,11 @@ def get_process_list():
         return jsonify({"message": error}), 400
 
     process_list, error = get_custom_config_process_list(config_file_path)
-
     if error:
         return jsonify({"message": error}), 400
 
-    return jsonify({"processes": list(process_list.keys())})
+    return jsonify({"processes": list(process_list)})
+
 
 @app.route('/get_token', methods=['POST'])
 def get_token():
