@@ -14,25 +14,11 @@
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Arthur Mondon <arthur@mondon.pro>
 
-from configparser import ConfigParser, ExtendedInterpolation, Error
+import sys
+import os
 
+sys.path.insert(0, os.path.dirname(__file__))
 
-class Config:
-    def __init__(self):
-        self.cfg = {}
-
-    def load_file(self, path):
-        # ExtendedInterpolation is needed to use var into the config.ini file
-        try:
-            parser = ConfigParser(interpolation=ExtendedInterpolation())
-            with open(path, 'r', encoding='utf-8') as file:
-                parser.read_file(file)
-            for section in parser.sections():
-                self.cfg[section] = {}
-                for info in parser[section]:
-                    self.cfg[section][info] = parser[section][info]
-            return True
-        except Error as e:
-            print('Error while parse .INI file : ' + str(e))
-            return False
+from src.app import app as application
