@@ -39,8 +39,8 @@ removeBlankPage     = True
 blobsratio          = 1E-6
 
 [API]
-# Token expiration time in hours (float)
-token_expiration_time       = 1.5
+# Token expiration time in hours (float) (e.g : 1 or 2.5)
+token_expiration_time       = 1
 secret_key                  =
 
 [IA]
