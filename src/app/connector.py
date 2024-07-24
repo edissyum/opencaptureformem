@@ -16,7 +16,6 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
-import tempfile
 import os
 import base64
 from src.main import launch
@@ -36,22 +35,22 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
         os.makedirs(config_temp_dir, exist_ok=True)
 
     errors = []
-    for index, file in enumerate(files):
-        temp_file = tempfile.NamedTemporaryFile(delete=False, dir=config_temp_dir, prefix=file["file_name"], suffix=".pdf")
-        temp_file.write(base64.b64decode(file["file_content"]))
-        temp_file_path = temp_file.name
+    for _, file in enumerate(files):
+        tmp_file_path = config_temp_dir + '/' + file['file_name']
+        with open(tmp_file_path, 'wb') as temp_file:
+            temp_file.write(base64.b64decode(file["file_content"]))
         temp_file.close()
 
-        os.chmod(temp_file_path, 0o644)
+        os.chmod(tmp_file_path, 0o644)
 
         args = {
-            'file': temp_file_path,
-            'config': config_file_path,
+            'script': 'API',
+            'file': tmp_file_path,
             'process': process_name,
-            'script': 'IN',
-            'read_destination_from_filename': read_destination_from_filename,
+            'config': config_file_path,
+            'destination': destination,
             'keep_pdf_debug': keep_pdf_debug,
-            'destination': destination
+            'RDFF': read_destination_from_filename
         }
 
         try:
