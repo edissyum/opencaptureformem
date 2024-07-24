@@ -343,7 +343,6 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
             Require all denied
         </Files>
     </Directory>
-
 </VirtualHost>
 EOF
 

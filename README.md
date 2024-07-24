@@ -283,6 +283,8 @@ secret_key                  = YOUR_ROBUST_SECRET_KEY
 You can easily generate / regenerate a secret key, by running the following script :
 
 ```bash
+cd /opt/edissyum/opencaptureformem/scripts/
+chmod u+x regenerate_secret_key.sh
 ./scripts/regenerate_secret_key.sh
 ```
 
