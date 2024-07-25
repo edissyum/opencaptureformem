@@ -17,7 +17,6 @@
 
 import re
 from thefuzz import fuzz
-from threading import Thread
 
 MAPPING = {
     'postal_code': 'addressPostcode',
@@ -30,9 +29,9 @@ MAPPING = {
     'firstname': 'firstname'
 }
 
-class FindContact(Thread):
+
+class FindContact:
     def __init__(self, text, log, config, web_service, locale):
-        Thread.__init__(self, name='contactThread')
         self.log = log
         self.text = text
         self.contact = ''
