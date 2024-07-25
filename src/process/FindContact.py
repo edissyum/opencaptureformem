@@ -16,10 +16,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
-from re import match
 from thefuzz import fuzz
 from threading import Thread
-
 
 MAPPING = {
     'postal_code': 'addressPostcode',
@@ -38,10 +36,13 @@ class FindContact(Thread):
         self.log = log
         self.text = text
         self.contact = ''
-        self.Locale = locale
-        self.Config = config
+        self.min_ratio = 80
+        self.locale = locale
+        self.config = config
         self.custom_mail = ''
         self.custom_phone = ''
+        if 'sender_recipient_min_ratio' in config.cfg['IA']:
+            self.min_ratio = int(config.cfg['IA']['sender_recipient_min_ratio'])
         self.web_service = web_service
 
     def run(self):
@@ -54,7 +55,7 @@ class FindContact(Thread):
 
         found_contact = False
 
-        for phone in re.finditer(r"" + self.Locale.phoneRegex + "", self.text):
+        for phone in re.finditer(r"" + self.locale.phoneRegex + "", self.text):
             self.log.info('Find PHONE : ' + phone.group())
 
             # Now sanitize email to delete potential OCR error
@@ -73,10 +74,10 @@ class FindContact(Thread):
                 continue
 
         if not found_contact:
-            for mail in re.finditer(r"" + self.Locale.emailRegex + "", self.text):
+            for mail in re.finditer(r"" + self.locale.emailRegex + "", self.text):
                 self.log.info('Find E-MAIL : ' + mail.group())
                 # Now sanitize email to delete potential OCR error
-                sanitized_mail = re.sub(r"[" + self.Config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
+                sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
                 self.log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
                 contact = self.web_service.retrieve_contact_by_mail(sanitized_mail)
@@ -93,6 +94,7 @@ class FindContact(Thread):
         match_contact = {}
         global_ratio = 0
         cpt = 0
+
         for key in ai_contact:
             if ai_contact[key]:
                 if key in contact:
@@ -104,7 +106,7 @@ class FindContact(Thread):
         print(match_contact)
         print(global_ratio)
         self.log.info(f'Global ratio of contact found by AI compared to MEM Courrier contact : {global_ratio}%')
-        return global_ratio >= 80
+        return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact):
         found_contact = {}
@@ -115,24 +117,29 @@ class FindContact(Thread):
         if 'email' in found_contact:
             contact = self.web_service.retrieve_contact_by_mail(found_contact['email'])
             if contact:
+                self.log.info('Contact found using email : ' + found_contact['email'])
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
-        #         self.log.info('Contact found using email : ' + found_contact['email'])
-        #         match_contact = self.compare_contact(contact['id'], found_contact)
-        #         if match_contact:
-        #             return contact
+                match_contact = self.compare_contact(contact, found_contact)
+                if match_contact:
+                    return contact
 
-        # if 'phone' in found_contact:
-        #     contact = self.web_service.retrieve_contact_by_phone(found_contact['phone'])
-        #     if contact:
-        #         self.log.info('Contact found using phone : ' + found_contact['phone'])
-        #         match_contact = self.compare_contact(contact['id'], found_contact)
-        #         if match_contact:
-        #             return contact
+        if 'phone' in found_contact:
+            contact = self.web_service.retrieve_contact_by_phone(found_contact['phone'])
+            if contact:
+                self.log.info('Contact found using phone : ' + found_contact['phone'])
+                contact = self.web_service.retrieve_contact_by_id(contact['id'])
+                match_contact = self.compare_contact(contact, found_contact)
+                if match_contact:
+                    return contact
 
-        self.log.info('No contact found using AI contact or global ratio is too low. Insert new temporary contact')
+        self.log.info(f'No contact found using AI contact or global ratio is under {self.min_ratio}%.'
+                      ' Insert new temporary contact')
+        found_contact['status'] = 'TMP'
         res, temporary_contact = self.web_service.create_contact(found_contact)
         if contact and res:
             contact['externalId'] = {
                 'ia_tmp_contact_id': temporary_contact['id']
             }
             self.web_service.update_contact_external_id(contact)
+            return contact
+        return temporary_contact

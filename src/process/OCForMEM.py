@@ -249,7 +249,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                             log.info('Destination found using IA : ' + doctype_entity_prediction['destination'].upper())
         contact = ''
         custom_mail = ''
-        if ('sender_recipient_ai' in config.cfg[_process] and config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
+        if ('sender_recipient_ai' in config.cfg[_process] and
+                config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
                 and 'sender_recipient' in config.cfg['IA']):
             sender_recipient_model = config.cfg['IA']['sender_recipient']
             contact_class = FindContact(ocr.text, log, config, web_service, locale)
@@ -258,13 +259,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 sender_recipient_prediction = run_inference(sender_recipient_model, image.img)
                 if sender_recipient_prediction:
                     if 'senders' in sender_recipient_prediction:
-                        print(sender_recipient_prediction['senders'])
                         contact = contact_class.find_contact_by_ai(sender_recipient_prediction['senders'])
-
-                    # if 'recipients' in sender_recipient_prediction:
-                    #     print(sender_recipient_prediction['recipients'])
-                    #     pass
-
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
@@ -272,7 +267,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             ocr.text_builder(image.img)
 
         # Find subject of document
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True:
+        if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
+                and args.get('priority_mail_subject') is True):
             subject_thread = ''
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
