@@ -45,6 +45,9 @@ secret_key                  =
 
 [IA]
 doctype_entity      = ${GLOBAL:projectPath}/data/ia/doctype_entity/
+sender_recipient    = ${GLOBAL:projectPath}/data/ia/sender_recipient/
+# Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
+sender_recipient_min_ratio = 80
 
 [OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
@@ -91,6 +94,8 @@ retrieve_metadata       = True
 compress_type           = None
 ; Use AI to find doctype and entity_id (True or False)
 doctype_entity_ai       = False
+; Use AI to find sender and recipient (True or False)
+sender_recipient_ai     = False
 
 [OCForMEM_reconciliation_default]
 status                  = ATTREC
@@ -119,6 +124,8 @@ retrieve_metadata       = True
 compress_type           = None
 ; Use AI to find doctype and entity_id (True or False)
 doctype_entity_ai       = False
+; Use AI to find sender and recipient (True or False)
+sender_recipient_ai     = False
 
 [OCForMEM_reconciliation_found]
 is_attachment       = True

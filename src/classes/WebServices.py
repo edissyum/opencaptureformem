@@ -66,6 +66,25 @@ class WebServices:
         else:
             self.log.info('GetContactByMailInfo : No email found')
 
+    def retrieve_contact_by_id(self, contact_id):
+        """
+        Search a contact into MEM Courrier database using mail
+
+        :param contact_id: id to search
+        :return: Contact from MEM Courrier
+        """
+        try:
+            res = requests.get(self.base_url + '/contacts/' + str(contact_id), auth=self.auth, timeout=self.timeout,
+                               verify=self.cert)
+
+            if res.status_code != 200:
+                self.log.error('(' + str(res.status_code) + ') GetContactByIdError : ' + str(res.text))
+                return False, str(res.text)
+            return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('GetContactByIdError : ' + str(e))
+            return False, str(e)
+
     def retrieve_contact_by_phone(self, phone):
         """
         Search a contact into MEM Courrier database using phone
@@ -537,10 +556,9 @@ class WebServices:
 
     def create_contact(self, contact):
         try:
-            res = requests.post(self.base_url + '/contacts', auth=self.auth, data=json.dumps(contact),
+            res = requests.post(self.base_url + '/contacts?allowDuplicateMail=true', auth=self.auth, data=json.dumps(contact),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
-
             if res.status_code != 200:
                 self.log.error('CreateContactError : ' + str(res.text))
                 return False, str(res.text)
@@ -561,4 +579,17 @@ class WebServices:
             return json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('RetrieveListInstanceError : ' + str(e))
+            return False, str(e)
+
+    def update_contact_external_id(self, contact):
+        try:
+            res = requests.put(self.base_url + '/contacts/' + str(contact['id']), auth=self.auth,
+                               data=json.dumps(contact),  timeout=self.timeout, verify=self.cert,
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'})
+            if res.status_code != 204:
+                self.log.error('UpdateContactError : ' + str(res.text))
+                return False, str(res.text)
+            return True, ''
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('UpdateContactError : ' + str(e))
             return False, str(e)

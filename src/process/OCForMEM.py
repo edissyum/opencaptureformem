@@ -24,6 +24,8 @@ import shutil
 import warnings
 import subprocess
 import transformers
+from attr.validators import is_callable
+
 from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
@@ -32,7 +34,8 @@ from .FindContact import FindContact
 from .OCForForms import process_form
 from pdf2image import convert_from_path
 
-def search_entity_and_doctype(trained_model, img):
+
+def run_inference(trained_model, img):
     warnings.filterwarnings('ignore')
     transformers.logging.set_verbosity_error()
 
@@ -56,7 +59,7 @@ def search_entity_and_doctype(trained_model, img):
         use_cache=True,
         num_beams=1,
         bad_words_ids=[[processor.tokenizer.unk_token_id]],
-        return_dict_in_generate=True,
+        return_dict_in_generate=True
     )
     prediction = processor.batch_decode(outputs.sequences)[0]
     prediction = processor.token2json(prediction)
@@ -213,10 +216,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         for line in check_ocr:
             tmp += line
 
-        if len(tmp.split('\n')) > 3:
-            is_ocr = True
-        else:
-            is_ocr = False
+        is_ocr = len(tmp.split('\n')) > 3
     elif os.path.splitext(file)[1].lower() == '.html':
         res = image.html_to_txt(file)
         if res is False:
@@ -231,23 +231,35 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         is_ocr = False
 
     if not args.get('isMail'):
-        if 'IA' in config.cfg[_process] and 'enabled' in config.cfg[_process]['IA'] and config.cfg[_process]['IA']['enabled'] == 'True':
-            if 'doctype_entity_ai' in config.cfg[_process] and 'doctype_entity' in config.cfg['IA']:
-                trained_model = config.cfg['IA']['doctype_entity']
-                if os.path.isdir(trained_model) and os.listdir(trained_model):
-                    log.info('Search destination and doctype with IA model')
-                    prediction = search_entity_and_doctype(trained_model, image.img)
-                    if prediction:
-                        if 'doctype' in prediction:
-                            if check_doctype(doctypes_list, prediction['doctype']):
-                                log.info('Document type found using IA : ' + prediction['doctype'])
-                                config.cfg[_process]['doctype'] = prediction['doctype']
-                        if 'destination' in prediction:
-                            ia_destination = check_destination(destinations_list, prediction['destination'])
-                            if ia_destination:
-                                destination = ia_destination
-                                log.info('Destination found using IA : ' + prediction['destination'].upper())
-
+        if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
+                and 'doctype_entity' in config.cfg['IA']):
+            doctype_entity_model = config.cfg['IA']['doctype_entity']
+            if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
+                log.info('Search destination and doctype with IA model')
+                doctype_entity_prediction = run_inference(doctype_entity_model, image.img)
+                if doctype_entity_prediction:
+                    if 'doctype' in doctype_entity_prediction:
+                        if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
+                            log.info('Document type found using IA : ' + doctype_entity_prediction['doctype'])
+                            config.cfg[_process]['doctype'] = doctype_entity_prediction['doctype']
+                    if 'destination' in doctype_entity_prediction:
+                        ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
+                        if ia_destination:
+                            destination = ia_destination
+                            log.info('Destination found using IA : ' + doctype_entity_prediction['destination'].upper())
+        contact = ''
+        custom_mail = ''
+        if ('sender_recipient_ai' in config.cfg[_process] and
+                config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
+                and 'sender_recipient' in config.cfg['IA']):
+            sender_recipient_model = config.cfg['IA']['sender_recipient']
+            contact_class = FindContact(ocr.text, log, config, web_service, locale)
+            if os.path.isdir(sender_recipient_model) and os.listdir(sender_recipient_model):
+                log.info('Search sender and recipient with IA model')
+                sender_recipient_prediction = run_inference(sender_recipient_model, image.img)
+                if sender_recipient_prediction:
+                    if 'senders' in sender_recipient_prediction:
+                        contact = contact_class.find_contact_by_ai(sender_recipient_prediction['senders'])
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
@@ -255,7 +267,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             ocr.text_builder(image.img)
 
         # Find subject of document
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True:
+        if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
+                and args.get('priority_mail_subject') is True):
             subject_thread = ''
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
@@ -276,18 +289,18 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             date_thread = FindDate(ocr.text, locale, log, config)
 
         # Find mail in document and check if the contact exist in MEM Courrier
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True:
-            contact_thread = ''
-        else:
-            contact_thread = FindContact(ocr.text, log, config, web_service, locale)
+        # if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True:
+        #     contact_thread = ''
+        # else:
+        #     contact_thread = FindContact(ocr.text, log, config, web_service, locale)
 
         # Launch all threads
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
             date_thread.start()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
             subject_thread.start()
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
-            contact_thread.start()
+        # if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
+        #     contact_thread.start()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread.start()
         elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
@@ -298,8 +311,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             date_thread.join()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
             subject_thread.join()
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
-            contact_thread.join()
+        # if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
+        #     contact_thread.join()
         if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
             chrono_thread.join()
         elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
@@ -325,12 +338,12 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             subject = ''
 
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
-            contact = contact_thread.contact
-            custom_mail = contact_thread.custom_mail
-        else:
-            contact = ''
-            custom_mail = ''
+        # if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
+        #     contact = contact_thread.contact
+        #     custom_mail = contact_thread.custom_mail
+        # else:
+        #     contact = ''
+        #     custom_mail = ''
     else:
         date = ''
         subject = ''
