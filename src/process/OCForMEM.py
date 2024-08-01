@@ -230,6 +230,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
+    contact = {}
     if not args.get('isMail'):
         if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA']):
@@ -247,7 +248,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using IA : ' + doctype_entity_prediction['destination'].upper())
-        contact = ''
         custom_mail = ''
         if ('sender_recipient_ai' in config.cfg[_process] and
                 config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
@@ -348,7 +348,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         date = ''
         subject = ''
         chrono_number = ''
-        contact = {}
         custom_mail = ''
 
     try:

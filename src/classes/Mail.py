@@ -307,10 +307,9 @@ class Mail:
             if (os.path.isfile(file) or file) and file_format == 'html':
                 with open(file, 'r', encoding='UTF-8') as f:
                     html_content = f.read()
-                    attachment_content_id_in_html = re.search(r'src="cid\:\s*' + pj['content_id'], html_content)
-
+                    attachment_content_id_in_html = re.search(r'src="cid:\s*' + re.escape(pj['content_id']), html_content)
                     if attachment_content_id_in_html:
-                        updated_html = re.sub(r'src="cid\:\s*' + pj['content_id'],
+                        updated_html = re.sub(r'src="cid:\s*' + re.escape(pj['content_id']),
                                               f"src='data:image/{pj['format'].replace('.', '')};"
                                               f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
                                               html_content)
@@ -336,7 +335,6 @@ class Mail:
                     'format': pj['format'][1:],
                     'file': path,
                 })
-
         return data, file
 
     def backup_email(self, msg, backup_path, force_utf8, log):
