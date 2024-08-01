@@ -231,6 +231,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         is_ocr = False
 
     contact = {}
+    custom_mail = ''
     if not args.get('isMail'):
         if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA']):
@@ -248,7 +249,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using IA : ' + doctype_entity_prediction['destination'].upper())
-        custom_mail = ''
         if ('sender_recipient_ai' in config.cfg[_process] and
                 config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
                 and 'sender_recipient' in config.cfg['IA']):
@@ -289,61 +289,51 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             date_thread = FindDate(ocr.text, locale, log, config)
 
         # Find mail in document and check if the contact exist in MEM Courrier
-        # if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True:
-        #     contact_thread = ''
-        # else:
-        #     contact_thread = FindContact(ocr.text, log, config, web_service, locale)
+        if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
+                and args.get('priority_mail_from') is True) or contact:
+            contact_thread = ''
+        else:
+            contact_thread = FindContact(ocr.text, log, config, web_service, locale)
 
         # Launch all threads
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
+        if date_thread:
             date_thread.start()
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
+        if subject_thread:
             subject_thread.start()
-        # if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
-        #     contact_thread.start()
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
-            chrono_thread.start()
-        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+        if contact_thread:
+            contact_thread.start()
+        if chrono_thread:
             chrono_thread.start()
 
         # Wait for end of threads
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
+        if date_thread:
             date_thread.join()
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
+        if subject_thread:
             subject_thread.join()
-        # if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
-        #     contact_thread.join()
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']) and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
-            chrono_thread.join()
-        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+        if contact_thread:
+            contact_thread.join()
+        if chrono_thread:
             chrono_thread.join()
 
         # Get the returned values
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
+        if date_thread:
             date = date_thread.date
         else:
             date = ''
 
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chronoregex' not in config_mail.cfg[_process]:
-            chrono_number = ''
-        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
-            chrono_number = chrono_thread.chrono
-        elif _process in config.cfg and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        if chrono_thread:
             chrono_number = chrono_thread.chrono
         else:
             chrono_number = ''
 
-        if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_subject') is True):
+        if subject_thread:
             subject = subject_thread.subject
         else:
             subject = ''
 
-        # if not (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_from') is True):
-        #     contact = contact_thread.contact
-        #     custom_mail = contact_thread.custom_mail
-        # else:
-        #     contact = ''
-        #     custom_mail = ''
+        if contact_thread:
+            contact = contact_thread.contact
+            custom_mail = contact_thread.custom_mail
     else:
         date = ''
         subject = ''
