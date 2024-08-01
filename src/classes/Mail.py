@@ -506,7 +506,8 @@ class Mail:
                     file_format = os.path.splitext(att.filename)[1]
                     if not att.filename and not file_format:
                         continue
-                    elif not file_format or file_format in ['.']:
+
+                    if not file_format or file_format in ['.']:
                         file_format = mimetypes.guess_extension(att.content_type, strict=False)
 
                     args.append({
@@ -597,7 +598,6 @@ def sanitize_filename(s):
     def safe_char(c):
         if c.isalnum():
             return c
-        else:
-            return "_"
+        return "_"
 
     return "".join(safe_char(c) for c in s).rstrip("_")
