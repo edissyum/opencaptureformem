@@ -136,7 +136,7 @@ class WebServices:
         return True
 
     def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail,
-                         file_format):
+                         file_format, custom_fields):
         """
         Insert document into MEM Courrier Database
 
@@ -149,6 +149,7 @@ class WebServices:
         :param _process: Part of config file, only with process configuration
         :param custom_mail: custom to add all the e-mail found
         :param file_format: extension of the document
+        :param custom_fields: custom fields to add to the document
         :return: res_id from MEM Courrier
         """
         if not contact:
@@ -195,6 +196,10 @@ class WebServices:
 
         if _process.get('reconciliation') is None and custom_mail != '' and _process.get('custom_mail') not in [None, '']:
             data['customFields'][_process['custom_mail']] = custom_mail
+
+        if custom_fields:
+            for key in custom_fields:
+                data['customFields'][key] = custom_fields[key]
 
         try:
             res = requests.post(self.base_url + '/resources', auth=self.auth, data=json.dumps(data),

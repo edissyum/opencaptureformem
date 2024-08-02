@@ -22,7 +22,8 @@ from src.main import launch
 from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value
 
 
-def process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination):
+def process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination,
+                  custom_fields):
     config_file_path, error = get_custom_config_file_path(custom_id)
     if error:
         return {"message": error}, 400
@@ -49,6 +50,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
             'process': process_name,
             'config': config_file_path,
             'destination': destination,
+            'custom_fields': custom_fields,
             'keep_pdf_debug': keep_pdf_debug,
             'RDFF': read_destination_from_filename
         }
