@@ -1,7 +1,12 @@
 #!/bin/bash
 
-if [ "$EUID" -ne 0 ]
-    then echo "install.sh needed to be launch by user with root privileges"
+if [ "$EUID" -ne 0 ]; then
+    echo "install.sh needed to be launch by user with root privileges"
+    exit 1
+fi
+
+if [ "$(uname -m)" != 'x86_64' ]; then
+    echo "This script is only compatible with x86_64 architecture"
     exit 1
 fi
 

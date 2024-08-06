@@ -16,11 +16,11 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
-from src.app import app
+from . import app
 from flask import request, jsonify
-from src.app.connector import process_files
-from src.app.controllers.auth import generate_token, check_token
-from src.app.controllers.custom import get_custom_config_file_path, get_custom_config_value, get_custom_config_process_list
+from .connector import process_files
+from .controllers.auth import generate_token, check_token
+from .controllers.custom import get_custom_config_file_path, get_custom_config_value, get_custom_config_process_list
 
 
 @app.route('/get_process_list', methods=['POST'])
@@ -79,9 +79,10 @@ def upload_files():
     files = data.get('files')
     custom_id = data.get('custom_id')
     process_name = data.get('process_name')
-    read_destination_from_filename = data.get('read_destination_from_filename', True)
-    keep_pdf_debug = data.get('keep_pdf_debug', 'false')
     destination = data.get('destination', None)
+    custom_fields = data.get('custom_fields', {})
+    keep_pdf_debug = data.get('keep_pdf_debug', 'false')
+    read_destination_from_filename = data.get('read_destination_from_filename', True)
 
     if not files or not custom_id or not process_name:
         return jsonify({"message": "Missing data"}), 400
@@ -98,6 +99,6 @@ def upload_files():
             return jsonify({"message": "Each file must have a valid 'file_name' and 'file_content' value"}),
 
     response, status_code = process_files(files, custom_id, process_name, read_destination_from_filename,
-                                          keep_pdf_debug, destination)
+                                          keep_pdf_debug, destination, custom_fields)
 
     return jsonify(response), status_code

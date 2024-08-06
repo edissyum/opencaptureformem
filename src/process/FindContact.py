@@ -17,6 +17,7 @@
 
 import re
 from thefuzz import fuzz
+from threading import Thread
 
 MAPPING = {
     'postal_code': 'addressPostcode',
@@ -29,9 +30,9 @@ MAPPING = {
     'firstname': 'firstname'
 }
 
-
-class FindContact:
+class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
+        Thread.__init__(self, name='contactThread')
         self.log = log
         self.text = text
         self.contact = ''
@@ -104,7 +105,8 @@ class FindContact:
         global_ratio = global_ratio / cpt
         print(match_contact)
         print(global_ratio)
-        self.log.info(f'Global ratio of contact found by AI compared to MEM Courrier contact : {global_ratio}%')
+        if global_ratio >= self.min_ratio:
+            self.log.info('Global ratio above ' + str(self.min_ratio) + '%, keep the original contact')
         return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact):
@@ -121,8 +123,12 @@ class FindContact:
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
                     return contact
+                self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
 
         if 'phone' in found_contact:
+            tmp_contact = False
+            if contact:
+                tmp_contact = contact
             contact = self.web_service.retrieve_contact_by_phone(found_contact['phone'])
             if contact:
                 self.log.info('Contact found using phone : ' + found_contact['phone'])
@@ -130,15 +136,22 @@ class FindContact:
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
                     return contact
+                self.log.info(f'Global ratio under {self.min_ratio}%, insert temporary contact')
+            else:
+                if tmp_contact:
+                    contact = tmp_contact
 
-        self.log.info(f'No contact found using AI contact or global ratio is under {self.min_ratio}%.'
-                      ' Insert new temporary contact')
         found_contact['status'] = 'TMP'
+        if not contact:
+            self.log.info('No contact found, create a temporary contact')
+
         res, temporary_contact = self.web_service.create_contact(found_contact)
-        if contact and res:
-            contact['externalId'] = {
-                'ia_tmp_contact_id': temporary_contact['id']
-            }
-            self.web_service.update_contact_external_id(contact)
-            return contact
+        if res:
+            self.log.info('Temporary contact created with success : ' + str(temporary_contact['id']))
+            if contact:
+                contact['externalId'] = {
+                    'ia_tmp_contact_id': temporary_contact['id']
+                }
+                self.web_service.update_contact_external_id(contact)
+                return contact
         return temporary_contact
