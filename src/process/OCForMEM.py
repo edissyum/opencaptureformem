@@ -24,8 +24,6 @@ import shutil
 import warnings
 import subprocess
 import transformers
-from attr.validators import is_callable
-
 from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
