@@ -14,25 +14,22 @@
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Arthur Mondon <arthur@mondon.pro>
 
-from configparser import ConfigParser, ExtendedInterpolation, Error
+import os
+import sys
+import json
+from flask import Flask
 
+app = Flask(__name__)
 
-class Config:
-    def __init__(self):
-        self.cfg = {}
+base_dir = os.path.abspath(os.path.dirname(__file__))
+custom_config_path = os.path.join(base_dir, '../config/custom.json')
 
-    def load_file(self, path):
-        # ExtendedInterpolation is needed to use var into the config.ini file
-        try:
-            parser = ConfigParser(interpolation=ExtendedInterpolation())
-            with open(path, 'r', encoding='utf-8') as file:
-                parser.read_file(file)
-            for section in parser.sections():
-                self.cfg[section] = {}
-                for info in parser[section]:
-                    self.cfg[section][info] = parser[section][info]
-            return True
-        except Error as e:
-            print('Error while parse .INI file : ' + str(e))
-            return False
+if not os.path.exists(custom_config_path):
+    sys.exit('Error: custom.json not found')
+
+with open(custom_config_path, 'r') as file:
+    app.config['CUSTOMS'] = json.load(file)
+
+from src.app import routes

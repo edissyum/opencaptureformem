@@ -196,7 +196,11 @@ One of the possibility to solve is the following :
 
     sudo nano /etc/ssl/openssl.cnf
 
-Find the <code>minProtocol</code> options and set it to TLSv1.0
+Add the following block at the end of the file
+
+    [tls_system_default]
+    MinProtocol = TLSv1.0
+    CipherString = DEFAULT@SECLEVEL=0
 
 ## Clean MailCollect batches
 When a batch is launch it will create a folder with a backup of the e-mail and the log file associated
@@ -263,6 +267,319 @@ By default it is recommended to replace **8M** by **20M** or more if needed
 Open-Capture for MEM Courrier is using AI to detect some informations automatically. By now, you can retrieve MEM Courrier destination and type_id.
 
 We can't provide an AI model because it's specific to each company. But we can help you to create yours, contact us.
+
+## API
+Open-Capture for MEM Courrier integrate an API that allows you to directly send documents to MEM Courrier.
+
+### Configuration of the API
+In order to the API to work, you need to set a robust secret_key in the config.ini file (automatically generated in the install process). This key will be used to authenticate the requests.
+```ini
+[API]
+# Token expiration time in hours
+token_expiration_time       = 1
+secret_key                  = YOUR_ROBUST_SECRET_KEY
+
+```
+You can easily generate / regenerate a secret key, by running the following script :
+
+```bash
+cd /opt/edissyum/opencaptureformem/scripts/
+chmod u+x regenerate_secret_key.sh
+./scripts/regenerate_secret_key.sh
+```
+
+You also need to specify the `custom_id` and the `config_file_path` in the `custom.json` file.
+```json
+[
+  {
+    "custom_id": "opencaptureformem",
+    "config_file_path": "/opt/edissyum/opencaptureformem/src/config/config.ini"
+  }
+]
+```
+
+### Usage of the API
+
+#### Get a token
+
+You first need to get a token by calling the API with your `secret_key` and `custom_id` : 
+
+<table>
+<tr>
+<td> Curl </td> <td> Python </td>
+</tr>
+<tr>
+<td>
+
+```bash
+curl \
+-X POST \
+-H "Content-Type: application/json" \
+-d '{"secret_key": "YOUR_SECRET_KEY", "custom_id":"YOUR_CUSTOM_ID"}' \
+http://YOUR_SERVER_URL/opencaptureformem/get_token
+```
+
+</td>
+<td>
+    
+```python
+import requests
+
+url = "http://YOUR_SERVER_URL/opencaptureformem/get_token"
+data = {"secret_key": "YOUR_SECRET_KEY", "custom_id": "YOUR_CUSTOM_ID"}
+headers = {"Content-Type": "application/json"}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
+```
+</td>
+</tr>
+</table>
+
+Then you'll get a token that you'll have to use in the next request.
+
+Here are some possible responses :
+
+<table>
+<tr>
+<td> Status </td> <td> Response </td>
+</tr>
+<tr>
+<td> 200 </td>
+<td>
+    
+```json
+{
+  "token":"XXXXXXXX-XXXXXXXXX-XXXXXXXXX-XXXXXXXXX"
+}
+```
+
+</td>
+</tr>
+<tr></tr>
+<tr>
+<td> 400 </td>
+<td>
+    
+```json
+{
+  "message":"Invalid secret key"
+}
+```
+    
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 500 </td>
+<td>
+Internal Server Error    
+</td>
+</tr>
+</table>
+
+#### Upload files
+
+A request to the API to upload files will look like this :
+
+<table>
+<tr>
+<td> Curl </td> <td> Python </td>
+</tr>
+<tr>
+<td>
+
+```bash
+
+curl \
+-X POST \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer GENERATED_TOKEN" \
+-d '{
+  "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
+  "custom_id": "YOUR_CUSTOM_ID",
+  "process_name": "YOUR_PROCESS_NAME"
+}' \
+http://YOUR_SERVER_URL/opencaptureformem/upload
+```
+
+</td>
+<td>
+    
+```python
+import requests
+
+url = "http://YOUR_SERVER_URL/opencaptureformem/upload"
+data = {
+    "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
+    "custom_id": "YOUR_CUSTOM_ID",
+    "process_name": "YOUR_PROCESS_NAME"
+}
+headers = {
+    "Authorization": "Bearer GENERATED_TOKEN",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
+```
+</td>
+</tr>
+</table>
+
+
+Here are some possible responses :
+
+<table>
+<tr>
+<td> Status </td> <td> Response </td>
+</tr>
+<tr>
+<td> 200 </td>
+<td>
+    
+```json
+{
+  "message":"All files processed successfully"
+}
+```
+
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 400 </td>
+<td>
+    
+```json
+{
+  "message":"custom_id XXXX not found in custom.json"
+}
+```
+    
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 400 </td>
+<td>
+    
+```json
+{
+  "message":"Each file must have a 'file_name' and 'file_content' key"
+}
+```
+    
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 500 </td>
+<td>
+Internal Server Error    
+</td>
+</tr>
+</table>
+
+#### Get process list
+
+A request to the API to get the list of available processes will look like this :
+
+<table>
+<tr>
+<td> Curl </td> <td> Python </td>
+</tr>
+<tr>
+<td>
+
+```bash
+
+curl \
+-X POST \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer GENERATED_TOKEN" \
+-d '{
+  "custom_id": "YOUR_CUSTOM_ID"
+}' \
+http://YOUR_SERVER_URL/opencaptureformem/get_process_list
+```
+
+</td>
+<td>
+
+```python
+import requests
+
+url = "http://YOUR_SERVER_URL/opencaptureformem/get_process_list"
+data = {
+    "custom_id": "YOUR_CUSTOM_ID"
+}
+headers = {
+    "Authorization": "Bearer GENERATED_TOKEN",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=data, headers=headers)
+
+print(response.json() if response.status_code == 200 else f"Erreur: {response.status_code} - {response.text}")
+```
+</td>
+</tr>
+</table>
+
+Here are some possible responses :
+
+<table>
+<tr>
+<td> Status </td> <td> Response </td>
+</tr>
+<tr>
+<td> 200 </td>
+<td>
+
+```json
+{
+  "processes":["incoming","reconciliation_default","reconciliation_found"]
+}
+```
+
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 400 </td>
+<td>
+
+```json
+{
+  "message":"Invalid or expired token"
+}
+```
+
+</td>
+</tr>
+
+<tr></tr>
+
+<tr>
+<td> 500 </td>
+<td>
+Internal Server Error    
+</td>
+</tr>
+</table>
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.

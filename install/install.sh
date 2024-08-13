@@ -1,7 +1,12 @@
 #!/bin/bash
 
-if [ "$EUID" -ne 0 ]
-    then echo "install.sh needed to be launch by user with root privileges"
+if [ "$EUID" -ne 0 ]; then
+    echo "install.sh needed to be launch by user with root privileges"
+    exit 1
+fi
+
+if [ "$(uname -m)" != 'x86_64' ]; then
+    echo "This script is only compatible with x86_64 architecture"
     exit 1
 fi
 
@@ -297,3 +302,59 @@ fi
 # Create a custom temp directory to cron the delete of the ImageMagick temp content
 mkdir -p /tmp/opencapture/
 chown -R "$user":"$group" /tmp/opencapture
+
+####################
+# Generate a secret key for the API
+secret=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+config_file="$defaultPath/src/config/config.ini"
+
+if ! grep -q '^\[API\]' "$config_file"; then
+    echo "Error: The [API] section is missing in your config.ini. Please add it."
+    exit 1
+fi
+
+if ! grep -q '^secret_key' "$config_file"; then
+    echo "Error: The secret_key key is missing in the [API] section. Please add it."
+    exit 1
+fi
+
+sed -i "/^\[API\]/,/^\[/{s/^secret_key.*/secret_key = $secret/}" "$config_file"
+
+chmod 755 "$config_file"
+
+cp $defaultPath/src/config/custom.json.default $defaultPath/src/config/custom.json
+
+####################
+# Create the Apache service for the API
+touch /etc/apache2/sites-available/opencaptureformem.conf
+sitePackageLocation=$(/opt/edissyum/python-venv/opencaptureformem/bin/python3 -c 'import site; print(site.getsitepackages()[0])')
+
+cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
+<VirtualHost *:80>
+    ServerName localhost
+
+    DocumentRoot $defaultPath
+    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
+
+    <Directory "$defaultPath">
+        AllowOverride All
+        Options -Indexes +FollowSymLinks
+        WSGIProcessGroup opencaptureformem
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIPassAuthorization On
+        Require all granted
+        <Files ~ "(.ini)">
+            Require all denied
+        </Files>
+    </Directory>
+</VirtualHost>
+EOF
+
+a2dissite 000-default.conf
+a2ensite opencaptureformem.conf
+a2enmod rewrite
+systemctl restart apache2
+
+echo ""
+echo "#######################################################################################################################"

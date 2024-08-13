@@ -3,6 +3,7 @@ qpdf
 crudini
 python3
 libxml2
+apache2
 pngquant
 zbar-tools
 pkg-config
@@ -16,3 +17,4 @@ rabbitmq-server
 libgl1-mesa-glx
 libtesseract-dev
 libleptonica-dev
+libapache2-mod-wsgi-py3
