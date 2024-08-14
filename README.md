@@ -1,35 +1,14 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2022/12/open_capture_for_mem_courrier.png)
 
 # Open-Capture for MEM Courrier ![](https://img.shields.io/github/v/release/edissyum/opencaptureformem?color=97BF3D&label=Latest%20version) [![Open-Capture For Mem deployment](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml/badge.svg)](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml)
-Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
-
-The functionnalities of Open-Capture for MEM Courrier are :
-
-- Process PDF or image file as input
-- Process files by batch (in a given folder) or single
-- Output searchable PDF, one or multi pages
-- Split PDF using QRCode and rename splitted PDF file using QRCode content
-- OCR and text recognition :
-   - Find a date and use it as metadata
-   - Find a mail or a phone to reconciliate with an existing contact in MEM Courrier
-   - Find a subject and use it as metadata
-- Insert documents in MEM Courrier with pre-qualified metadata :
-   - Destination with QRCode
-   - Date, contact, object with text recognition
-- Output PDF or PDF/A file
-- Works with **fr_FR** and **en_EN** locales
-- Fully logged, infos and errors
-- For now it deals only with **PDF** or **JPG** files
-- Check integrity of a file to avoid processing incomplete files
-- Handle different process type (List of default process in config.ini : <code>processAvailable</code>)
-- QR Code recognition from a file to reconcile it with the original document
+Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**. 
 
 # Installation
 ## Linux Distributions
 
 Open-Capture for MEM Courrier is only tested on **Debian** distribution.
 
-For the latest version (4.3.X) you need to install **Debian 12** (Bookworm).
+For the latest version (4.X.X) you need to install **Debian 12** (Bookworm).
 
 
 ## Install Open-Capture for MEM Courrier
