@@ -513,6 +513,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
+        if 'custom_fields' not in args:
+            args['custom_fields'] = None
+
         res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
                                            config.cfg[_process], custom_mail, file_format, args['custom_fields'])
 
