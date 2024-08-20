@@ -191,10 +191,14 @@ class WebServices:
             'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
         }
 
+        if 'diffusion_list' not in _process or not _process['diffusion_list']:
+            data['emptyDiffusionList'] = True
+
         if _process.get('custom_fields') is not None:
             data['customFields'] = json.loads(_process.get('custom_fields'))
 
-        if _process.get('reconciliation') is None and custom_mail != '' and _process.get('custom_mail') not in [None, '']:
+        if (_process.get('reconciliation') is None and custom_mail != ''
+                and _process.get('custom_mail') not in [None, '']):
             data['customFields'][_process['custom_mail']] = custom_mail
 
         if custom_fields:
@@ -205,7 +209,6 @@ class WebServices:
             res = requests.post(self.base_url + '/resources', auth=self.auth, data=json.dumps(data),
                                 headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                 timeout=self.timeout, verify=self.cert)
-
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
