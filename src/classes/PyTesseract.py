@@ -67,7 +67,7 @@ class PyTesseract:
             end_page = min(chunk_idx + 10, page_count)
             chunk_images = convert_from_path(pdf, first_page=start_page, last_page=end_page, dpi=300)
             for image in chunk_images:
-                pdf_content = pytesseract.image_to_pdf_or_hocr(image, extension='pdf')
+                pdf_content = pytesseract.image_to_pdf_or_hocr(image, extension='pdf', config="--dpi 300")
                 merger.append(pypdf.PdfReader(io.BytesIO(pdf_content)))
                 cpt = cpt + 1
         merger.write(output_file)
