@@ -27,6 +27,7 @@ MAPPING = {
     'phone': 'phone',
     'email': 'email',
     'lastname': 'lastname',
+    'company': 'company',
     'firstname': 'firstname'
 }
 
