@@ -235,25 +235,25 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 and 'doctype_entity' in config.cfg['IA']):
             doctype_entity_model = config.cfg['IA']['doctype_entity']
             if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
-                log.info('Search destination and doctype with IA model')
+                log.info('Search destination and doctype with AI model')
                 doctype_entity_prediction = run_inference(doctype_entity_model, image.img)
                 if doctype_entity_prediction:
                     if 'doctype' in doctype_entity_prediction:
                         if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
-                            log.info('Document type found using IA : ' + doctype_entity_prediction['doctype'])
+                            log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
                             config.cfg[_process]['doctype'] = doctype_entity_prediction['doctype']
                     if 'destination' in doctype_entity_prediction:
                         ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
                         if ia_destination:
                             destination = ia_destination
-                            log.info('Destination found using IA : ' + doctype_entity_prediction['destination'].upper())
+                            log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
         if ('sender_recipient_ai' in config.cfg[_process] and
                 config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
                 and 'sender_recipient' in config.cfg['IA']):
             sender_recipient_model = config.cfg['IA']['sender_recipient']
             contact_class = FindContact(ocr.text, log, config, web_service, locale)
             if os.path.isdir(sender_recipient_model) and os.listdir(sender_recipient_model):
-                log.info('Search sender and recipient with IA model')
+                log.info('Search sender and recipient with AI model')
                 sender_recipient_prediction = run_inference(sender_recipient_model, image.img)
                 if sender_recipient_prediction:
                     if 'senders' in sender_recipient_prediction:
