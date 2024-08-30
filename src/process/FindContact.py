@@ -113,7 +113,7 @@ class FindContact(Thread):
         found_contact = {}
         for key in ai_contact:
             if ai_contact[key]:
-                found_contact[MAPPING[key]] = ai_contact[key]
+                found_contact[MAPPING[key]] = ai_contact[key][:254]
 
         contact = {}
         if 'email' in found_contact:
@@ -159,4 +159,7 @@ class FindContact(Thread):
                 }
                 self.web_service.update_contact_external_id(contact)
                 return contact
+        else:
+            self.log.error('Error while creating temporary contact')
+            return False
         return temporary_contact
