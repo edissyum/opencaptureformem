@@ -27,6 +27,7 @@ MAPPING = {
     'phone': 'phone',
     'email': 'email',
     'lastname': 'lastname',
+    'company': 'company',
     'firstname': 'firstname'
 }
 
@@ -103,8 +104,7 @@ class FindContact(Thread):
                         global_ratio += match_contact[key]
                         cpt += 1
         global_ratio = global_ratio / cpt
-        print(match_contact)
-        print(global_ratio)
+
         if global_ratio >= self.min_ratio:
             self.log.info('Global ratio above ' + str(self.min_ratio) + '%, keep the original contact')
         return global_ratio >= self.min_ratio
@@ -114,6 +114,7 @@ class FindContact(Thread):
         for key in ai_contact:
             if ai_contact[key]:
                 found_contact[MAPPING[key]] = ai_contact[key]
+
         contact = {}
         if 'email' in found_contact:
             contact = self.web_service.retrieve_contact_by_mail(found_contact['email'])
@@ -129,6 +130,10 @@ class FindContact(Thread):
             tmp_contact = False
             if contact:
                 tmp_contact = contact
+
+            if isinstance(found_contact['phone'], list):
+                found_contact['phone'] = found_contact['phone'][0]
+
             contact = self.web_service.retrieve_contact_by_phone(found_contact['phone'])
             if contact:
                 self.log.info('Contact found using phone : ' + found_contact['phone'])
