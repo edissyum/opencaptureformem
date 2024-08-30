@@ -5,6 +5,7 @@ torch
 flask
 kuyruk
 pyzbar
+thefuzz
 holidays
 requests
 pdf2image
