@@ -57,9 +57,11 @@ class FindDate(Thread):
                     self.log.info("Date is older than " + str(self.config.cfg['OCForMEM']['timedelta']) +
                                   " days or in the future: " + self.date)
                     self.date = ''
+                    return False
             elif timedelta.days < 0:
                 self.log.info("Date is in the future: " + self.date)
                 self.date = ''
+                return False
 
             if self.date:
                 self.log.info("Date found : " + self.date)
