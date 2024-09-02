@@ -34,28 +34,29 @@ class FindSubject(Thread):
 
         """
         subject_array = []
-        for _subject in re.finditer(r"" + self.Locale.regexSubject + "", self.text):
+        for _subject in re.finditer(r"" + self.Locale.regexSubject, self.text, flags=re.IGNORECASE):
             if len(_subject.group()) > 3:
                 # Using the [:-2] to delete the ".*" of the regex
-                # Useful to keep only the subject and delete the left part (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
+                # Useful to keep only the subject and delete the left part
+                # (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
                 subject_array.append(_subject.group())
 
         # If there is more than one subject found, prefer the "Object" one instead of "Ref"
         if len(subject_array) > 1:
             subject = loop_find_subject(subject_array, self.Locale.subjectOnly)
             if subject:
-                self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
+                self.subject = re.sub(r"^" + self.Locale.subjectOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
             else:
                 subject = loop_find_subject(subject_array, self.Locale.refOnly)
                 if subject:
-                    self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2] + "", '', subject).strip()
+                    self.subject = re.sub(r"^" + self.Locale.refOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
         elif len(subject_array) == 1:
-            self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2] + "", '', subject_array[0]).strip()
+            self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2], '', subject_array[0], flags=re.IGNORECASE).strip()
         else:
             self.subject = ''
 
         if self.subject:
-            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject).strip()
+            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
             self.search_subject_second_line()
             self.Log.info("Find the following subject : " + self.subject)
 
@@ -82,13 +83,13 @@ class FindSubject(Thread):
                         if first_char.lower() == first_char:  # Check if first letter of line is not an upper one
                             self.subject += ' ' + next_line
                             break
-                cpt = cpt + 1
                 char_cpt = 0
                 for char in self.subject:
                     if char in not_allowed_symbol:
                         self.subject = self.subject[:char_cpt]
                         break
                     char_cpt = char_cpt + 1
+            cpt = cpt + 1
 
 
 def loop_find_subject(array, compile_pattern):
@@ -99,7 +100,7 @@ def loop_find_subject(array, compile_pattern):
     :param compile_pattern: Choose between subject of ref to choose between all the subject in array
     :return: Return the best subject, or None
     """
-    pattern = re.compile(compile_pattern)
+    pattern = re.compile(compile_pattern, flags=re.IGNORECASE)
     for value in array:
         if pattern.search(value):
             return value
