@@ -50,7 +50,7 @@ def check_folders(folder_crawl, folder_dest=False):
         return False
     else:
         if folder_dest is not False:
-            if not Mail.check_if_folder_exist(folder_dest):
+            if not Mail.check_if_folder_exist(folder_dest, True):
                 print('The destination folder "' + str(folder_dest) + '" doesnt exist')
                 return False
         return True
@@ -113,6 +113,7 @@ Mail = mailClass.Mail(
     config_mail.cfg[process]['auth_method'],
     config_mail.cfg['OAUTH'],
     config_mail.cfg['EXCHANGE'],
+    config_mail.cfg['GRAPHQL'],
     config_mail.cfg[process]['host'],
     config_mail.cfg[process]['port'],
     config_mail.cfg[process]['login'],
@@ -183,6 +184,8 @@ if check:
         for msg in emails:
             if Mail.auth_method == 'exchange':
                 msg_id = str(msg.conversation_id.id)
+            elif Mail.auth_method == 'graphql':
+                msg_id = str(msg['id'])
             else:
                 msg_id = str(msg.uid)
 
@@ -200,6 +203,8 @@ if check:
             _from = ret['mail']['from']
             if Mail.auth_method == 'exchange':
                 document_date = msg.datetime_created
+            elif Mail.auth_method == 'graphql':
+                document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
             else:
                 document_date = msg.date
 
@@ -211,7 +216,7 @@ if check:
                     'isMail': True,
                     'isForm': is_form,
                     'msg_uid': str(msg_id),
-                    'msg': {'date': document_date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg.subject, 'uid': msg_id},
+                    'msg': {'date': document_date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg['subject'], 'uid': msg_id},
                     'process': process,
                     'data': ret['mail'],
                     'config': args['config'],
