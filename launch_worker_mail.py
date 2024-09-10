@@ -125,7 +125,6 @@ Mail = mailClass.Mail(
 cfg = config_mail.cfg[process]
 
 secured_connection = cfg['securedconnection']
-folder_trash = cfg['foldertrash']
 action = cfg['actionafterprocess']
 folder_to_crawl = cfg['foldertocrawl']
 folder_destination = cfg['folderdestination']
@@ -141,12 +140,7 @@ extensionsAllowed = []
 for extension in config_mail.cfg[process]['extensionsallowed'].split(','):
     extensionsAllowed.append(extension.strip().lower())
 
-if action == 'delete':
-    if folder_trash != '':
-        check = check_folders(folder_to_crawl, folder_trash)
-    else:
-        check = check_folders(folder_to_crawl)
-elif action == 'move':
+if action == 'move':
     check = check_folders(folder_to_crawl, folder_destination)
 else:
     check = check_folders(folder_to_crawl)
@@ -267,10 +261,6 @@ if check:
             if action == 'move':
                 Log.info('Move mail into archive folder : ' + folder_destination)
                 Mail.move_to_destination_folder(msg, folder_destination, Log)
-
-            elif action == 'delete':
-                Log.info('Move mail to trash')
-                Mail.delete_mail(msg, folder_trash, Log)
             i = i + 1
     else:
         sys.exit('Folder do not contain any e-mail. Exit...')

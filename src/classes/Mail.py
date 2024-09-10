@@ -135,6 +135,7 @@ class Mail:
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + access_token.json()['access_token']
             }
+
             users_list = graphql_request(self.graphql['users_url'], 'GET', None, self.graphql_headers)
             if users_list.status_code != 200:
                 error = 'Error while trying to get users from GraphQL API : ' + str(users_list.text)
@@ -196,6 +197,21 @@ class Mail:
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders'
             folders = graphql_request(url, 'GET', None, self.graphql_headers)
             for fol in folders.json()['value']:
+                if fol['childFolderCount'] and fol['childFolderCount'] > 0:
+                    subfolders_url = url + '/' + fol['id'] + '/childFolders'
+                    subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
+                    if subfolders_list.status_code != 200:
+                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(subfolders_list.text)
+                        print(error)
+                        sys.exit()
+
+                    for subfolder in subfolders_list.json()['value']:
+                        if folder == fol['displayName'] + '/' + subfolder['displayName']:
+                            if dest_folder:
+                                self.graphql['dest_folder_id'] = subfolder['id']
+                            else:
+                                self.graphql['folder_id'] = subfolder['id']
+                            return True
                 if folder == fol['displayName']:
                     if dest_folder:
                         self.graphql['dest_folder_id'] = fol['id']
@@ -543,33 +559,6 @@ class Mail:
                 return True
             except utils.UnexpectedCommandStatusError as e:
                 log.error('Error while moving mail to ' + destination + ' folder : ' + str(e))
-                pass
-
-    def delete_mail(self, msg, trash_folder, log):
-        """
-        Move e-mail to trash IMAP folder (if action is set to delete) if specified. Else, delete it (can't be retrieved)
-
-        :param log: Log class instance
-        :param msg: Mail Data
-        :param trash_folder: IMAP trash folder
-        """
-        if self.auth_method.lower() == 'exchange':
-            folder_found = False
-            for _f in self.conn.root.walk():
-                if trash_folder == _f.name:
-                    msg.move(_f)
-                    folder_found = True
-            if not folder_found:
-                msg.move_to_trash()
-        else:
-            try:
-                if not self.check_if_folder_exist(trash_folder):
-                    log.info('Trash folder (' + trash_folder + ') doesnt exist, delete mail (couldn\'t be retrieve)')
-                    self.conn.delete(msg.uid)
-                else:
-                    self.move_to_destination_folder(msg, trash_folder, log)
-            except utils.UnexpectedCommandStatusError as e:
-                log.error('Error while deleting mail : ' + str(e))
                 pass
 
     @staticmethod

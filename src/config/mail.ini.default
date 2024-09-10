@@ -69,9 +69,7 @@ eReconciliation         = False
 
 folderToCrawl           = _MEM
 folderDestination       = _MEM_ARCHIVES
-; If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
-folderTrash             = Trash
-; move, delete or none
+; move or none
 actionAfterProcess      = move
 
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
