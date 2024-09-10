@@ -443,7 +443,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if contact:
             args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
-            if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+            if not (args.get('isMail') is not None and args.get('isMail') and args.get('priority_mail_from')):
                 log.info('No contact found on mail body, try with "from" of the mail :  ' + args['from'])
             contact = web_service.retrieve_contact_by_mail(args['from'])
             if contact:

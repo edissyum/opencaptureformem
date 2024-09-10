@@ -286,7 +286,7 @@ class Mail:
             document_date = msg.datetime_created
         elif self.auth_method.lower() == 'graphql':
             msg_id = msg['id']
-            from_val = msg['from']
+            from_val = msg['from']['emailAddress']['address']
             cc_values = msg['ccRecipients']
             to_values = msg['toRecipients']
             reply_to_values = msg['replyTo']
