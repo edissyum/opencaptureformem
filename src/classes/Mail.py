@@ -143,7 +143,7 @@ class Mail:
                 sys.exit()
 
             for user in users_list.json()['value']:
-                if user['mail'] == self.login:
+                if user['mail'].lower() == self.login.lower():
                     self.graphql_user = user
                     return
 
