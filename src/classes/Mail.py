@@ -361,7 +361,10 @@ class Mail:
 
         from_is_reply_to = str2bool(cfg['from_is_reply_to'])
         if from_is_reply_to and len(reply_to_values) > 0:
-            data['mail']['from'] = reply_to_values[0].email
+            if self.auth_method.lower() == 'graphql':
+                data['mail']['from'] = reply_to_values[0]['emailAddress']['address']
+            else:
+                data['mail']['from'] = reply_to_values[0].email
         else:
             data['mail']['from'] = from_val
 
@@ -551,7 +554,7 @@ class Mail:
                 'destinationId': self.graphql['dest_folder_id']
             }
             res = graphql_request(url, 'POST', json.dumps(body), self.graphql_headers)
-            if res.status_code != 200:
+            if res.status_code != 200 and res.status_code != 201:
                 log.error('Error while moving mail to ' + destination + ' folder : ' + str(res.text))
         else:
             try:
