@@ -564,9 +564,9 @@ class WebServices:
 
     def create_contact(self, contact):
         try:
-            res = requests.post(self.base_url + '/contacts?allowDuplicateMail=true', auth=self.auth, data=json.dumps(contact),
-                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
-                                timeout=self.timeout, verify=self.cert)
+            res = requests.post(self.base_url + '/contacts?allowDuplicateMail=true', auth=self.auth,
+                                data=json.dumps(contact), timeout=self.timeout, verify=self.cert,
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'})
             if res.status_code != 200:
                 self.log.error('CreateContactError : ' + str(res.text))
                 return False, str(res.text)

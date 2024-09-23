@@ -64,13 +64,13 @@ priorityToMailFrom      = False
 importOnlyAttachments   = False
 extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
-; True or False
-eReconciliation         = False
-
 folderToCrawl           = _MEM
 folderDestination       = _MEM_ARCHIVES
 ; move or none
 actionAfterProcess      = move
+
+; True or False
+eReconciliation         = False
 
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
