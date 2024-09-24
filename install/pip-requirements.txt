@@ -1,7 +1,6 @@
 bs4
 msal
 pypdf
-torch
 flask
 kuyruk
 pyzbar
@@ -17,3 +16,5 @@ exchangelib
 transformers
 configparser
 opencv-python
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
