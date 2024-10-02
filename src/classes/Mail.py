@@ -136,21 +136,13 @@ class Mail:
                 'Authorization': 'Bearer ' + access_token.json()['access_token']
             }
 
-            users_list = graphql_request(self.graphql['users_url'], 'GET', None, self.graphql_headers)
-            if users_list.status_code != 200:
-                error = 'Error while trying to get users from GraphQL API : ' + str(users_list.text)
+            user = graphql_request(self.graphql['users_url'] + '/' + self.login, 'GET', None, self.graphql_headers)
+            if user.status_code != 200:
+                error = 'Error while trying to get user from GraphQL API : ' + str(user.text)
                 print(error)
                 sys.exit()
 
-            for user in users_list.json()['value']:
-                if 'mail' in user and user['mail'] and user['mail'].lower() == self.login.lower():
-                    self.graphql_user = user
-                    return
-
-            if self.graphql_user is None:
-                error = 'User ' + self.login + ' not found in the list of users from GraphQL API'
-                print(error)
-                sys.exit()
+            self.graphql_user = user.json()
         else:
             try:
                 if secured_connection == 'SSL':
@@ -201,7 +193,8 @@ class Mail:
                     subfolders_url = url + '/' + fol['id'] + '/childFolders'
                     subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
                     if subfolders_list.status_code != 200:
-                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(subfolders_list.text)
+                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(
+                            subfolders_list.text)
                         print(error)
                         sys.exit()
 
@@ -403,16 +396,18 @@ class Mail:
             if (os.path.isfile(file) or file) and file_format == 'html':
                 with open(file, 'r', encoding='UTF-8') as f:
                     html_content = f.read()
-                    attachment_content_id_in_html = re.search(r'src="cid:\s*' + re.escape(pj['content_id']), html_content)
-                    if attachment_content_id_in_html:
-                        updated_html = re.sub(r'src="cid:\s*' + re.escape(pj['content_id']),
-                                              f"src='data:image/{pj['format'].replace('.', '')};"
-                                              f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
-                                              html_content)
+                    if 'content_id' in pj and pj['content_id']:
+                        attachment_content_id_in_html = re.search(r'src="cid:\s*' + re.escape(pj['content_id']),
+                                                                  html_content)
+                        if attachment_content_id_in_html:
+                            updated_html = re.sub(r'src="cid:\s*' + re.escape(pj['content_id']),
+                                                  f"src='data:image/{pj['format'].replace('.', '')};"
+                                                  f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
+                                                  html_content)
 
-                        with open(file, 'w', encoding='UTF-8') as new_file:
-                            new_file.write(updated_html)
-                            new_file.close()
+                            with open(file, 'w', encoding='UTF-8') as new_file:
+                                new_file.write(updated_html)
+                                new_file.close()
 
             if not attachment_content_id_in_html:
                 path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
@@ -548,7 +543,8 @@ class Mail:
                 if destination == _f.name:
                     msg.move(_f)
         elif self.auth_method.lower() == 'graphql':
-            url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders/' + self.graphql['folder_id']
+            url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders/' + self.graphql[
+                'folder_id']
             url = url + '/messages/' + msg['id'] + '/move'
             body = {
                 'destinationId': self.graphql['dest_folder_id']
