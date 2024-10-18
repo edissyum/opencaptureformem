@@ -285,12 +285,12 @@ class Mail:
             reply_to_values = msg['replyTo']
             document_date = msg['receivedDateTime']
         else:
-            msg_id = msg.uid
-            document_date = msg.date
-            cc_values = msg.cc_values
-            to_values = msg.to_values
-            from_val = msg.from_values.full
-            reply_to_values = msg.reply_to_values
+            msg_id = msg['uid']
+            document_date = msg['date']
+            cc_values = msg['cc_values']
+            to_values = msg['to_values']
+            from_val = msg['from_values'].full
+            reply_to_values = msg['reply_to_values']
 
         to_str, cc_str, reply_to = ('', '', '')
         try:
@@ -326,7 +326,7 @@ class Mail:
         except (TypeError, AttributeError):
             pass
 
-        if self.auth_method not in ('exchange', 'graphql') and len(msg.html) == 0:
+        if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
             file_format = 'txt'
             file = backup_path + '/mail_' + msg_id + '/mail_origin/body.txt'
         else:
@@ -446,22 +446,22 @@ class Mail:
             msg_id = str(msg['id'])
             html_body = msg['body']['content']
         else:
-            msg_id = str(msg.uid)
-            html_body = msg.html
+            msg_id = str(msg['uid'])
+            html_body = msg['html']
 
         primary_mail_path = backup_path + '/mail_' + msg_id + '/mail_origin/'
         os.makedirs(primary_mail_path)
 
         # Start with headers
-        if 'headers' in msg and msg.headers is not None:
+        if 'headers' in msg and msg['headers'] is not None:
             with open(primary_mail_path + 'header.txt', 'w', encoding='UTF-8') as fp:
-                for header in msg.headers:
+                for header in msg['headers']:
                     if self.auth_method.lower() == 'exchange':
                         header_name = header.name
                         header_value = header.value
                     else:
                         header_name = header
-                        header_value = msg.headers[header][0]
+                        header_value = msg['headers'][header][0]
 
                     try:
                         fp.write(header_name + ' : ' + header_value + '\n')
@@ -471,10 +471,10 @@ class Mail:
                 fp.close()
 
         # Then body
-        if (self.auth_method not in ('exchange', 'graphql')) and len(msg.html) == 0:
+        if (self.auth_method not in ('exchange', 'graphql')) and len(msg['html']) == 0:
             with open(primary_mail_path + 'body.txt', 'w', encoding='UTF-8') as fp:
-                if len(msg.text) != 0:
-                    fp.write(msg.text)
+                if len(msg['text']) != 0:
+                    fp.write(msg['text'])
                 else:
                     fp.write(' ')
         else:
@@ -492,7 +492,7 @@ class Mail:
         if self.auth_method not in ('exchange', 'graphql'):
             # For safety, backup original stream retrieve from IMAP directly
             with open(primary_mail_path + 'orig.txt', 'w', encoding='UTF-8') as fp:
-                for payload in msg.obj.get_payload():
+                for payload in msg['obj'].get_payload():
                     try:
                         fp.write(str(payload))
                     except KeyError:
