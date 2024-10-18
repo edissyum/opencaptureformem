@@ -59,7 +59,7 @@ class PyTesseract:
             page_count = len(pdf_reader.pages)
 
         output_file = tmp_path + '/result.pdf'
-        merger = pypdf.PdfMerger()
+        merger = pypdf.PdfWriter()
 
         cpt = 1
         for chunk_idx in range(0, page_count, 10):

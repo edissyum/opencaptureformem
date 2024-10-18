@@ -37,6 +37,42 @@ def str2bool(value):
     return value.lower() in "true"
 
 
+def convert_to_dict(message):
+    new_msg = {
+        'uid': message.uid,
+        'obj': message.obj,
+        'subject': message.subject,
+        'from': message.from_,
+        'to': message.to,
+        'cc': message.cc,
+        'bcc': message.bcc,
+        'reply_to': message.reply_to,
+        'date': message.date,
+        'headers': message.headers,
+        'text': message.text,
+        'html': message.html,
+        'attachments': [],
+        'from_values': message.from_values,
+        'to_values': message.to_values,
+        'cc_values': message.cc_values,
+        'bcc_values': message.bcc_values,
+        'reply_to_values': message.reply_to_values
+    }
+
+    for att in message.attachments:
+        new_msg['attachments'].append({
+            'filename': att.filename,
+            'payload': att.payload,
+            'content_id': att.content_id,
+            'content_type': att.content_type,
+            'size': att.size,
+            'content_disposition': att.content_disposition,
+            'part': att.part
+        })
+
+    return new_msg
+
+
 def check_folders(folder_crawl, folder_dest=False):
     """
     Check if IMAP folder exist
@@ -181,7 +217,8 @@ if check:
             elif Mail.auth_method == 'graphql':
                 msg_id = str(msg['id'])
             else:
-                msg_id = str(msg.uid)
+                msg = convert_to_dict(msg)
+                msg_id = str(msg['uid'])
 
             if msg_id in already_processed_uid:
                 Log.info('E-mail with unique id ' + msg_id + ' already processed, skipping...')
@@ -200,7 +237,7 @@ if check:
             elif Mail.auth_method == 'graphql':
                 document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
             else:
-                document_date = msg.date
+                document_date = msg['date']
 
             if not import_only_attachments:
                 launch({

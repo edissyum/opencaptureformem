@@ -54,19 +54,14 @@ if __name__ == "__main__":
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + access_token.json()['access_token']
     }
-    users_list = graphql_request(graphql_args['users_url'], 'GET', None, graphql_headers)
-    if users_list.status_code != 200:
-        ERROR = 'Error while trying to get users list from GraphQL API : ' + str(users_list.text)
+
+    user = graphql_request(graphql_args['users_url'] + '/' + graphql_args['login'], 'GET', None, graphql_headers)
+    if user.status_code != 200:
+        ERROR = 'Error while trying to get user from GraphQL API : ' + str(user.text)
         print(ERROR)
         sys.exit()
 
-    for user in users_list.json()['value']:
-        if user['mail'] == graphql_args['login']:
-            graphql_user = user
-
-    if graphql_user is None:
-        ERROR = 'User ' + graphql_args['login'] + ' not found in the list of users from GraphQL API'
-        print(ERROR)
+    graphql_user = user.json()
 
     # Now we can list the folders of the user
     folders_url = graphql_args['users_url'] + '/' + graphql_user['id'] + '/mailFolders'

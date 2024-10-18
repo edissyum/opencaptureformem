@@ -136,21 +136,13 @@ class Mail:
                 'Authorization': 'Bearer ' + access_token.json()['access_token']
             }
 
-            users_list = graphql_request(self.graphql['users_url'], 'GET', None, self.graphql_headers)
-            if users_list.status_code != 200:
-                error = 'Error while trying to get users from GraphQL API : ' + str(users_list.text)
+            user = graphql_request(self.graphql['users_url'] + '/' + self.login, 'GET', None, self.graphql_headers)
+            if user.status_code != 200:
+                error = 'Error while trying to get user from GraphQL API : ' + str(user.text)
                 print(error)
                 sys.exit()
 
-            for user in users_list.json()['value']:
-                if user['mail'].lower() == self.login.lower():
-                    self.graphql_user = user
-                    return
-
-            if self.graphql_user is None:
-                error = 'User ' + self.login + ' not found in the list of users from GraphQL API'
-                print(error)
-                sys.exit()
+            self.graphql_user = user.json()
         else:
             try:
                 if secured_connection == 'SSL':
@@ -201,7 +193,8 @@ class Mail:
                     subfolders_url = url + '/' + fol['id'] + '/childFolders'
                     subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
                     if subfolders_list.status_code != 200:
-                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(subfolders_list.text)
+                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(
+                            subfolders_list.text)
                         print(error)
                         sys.exit()
 
@@ -292,12 +285,12 @@ class Mail:
             reply_to_values = msg['replyTo']
             document_date = msg['receivedDateTime']
         else:
-            msg_id = msg.uid
-            document_date = msg.date
-            cc_values = msg.cc_values
-            to_values = msg.to_values
-            from_val = msg.from_values.full
-            reply_to_values = msg.reply_to_values
+            msg_id = msg['uid']
+            document_date = msg['date']
+            cc_values = msg['cc_values']
+            to_values = msg['to_values']
+            from_val = msg['from_values'].full
+            reply_to_values = msg['reply_to_values']
 
         to_str, cc_str, reply_to = ('', '', '')
         try:
@@ -333,7 +326,7 @@ class Mail:
         except (TypeError, AttributeError):
             pass
 
-        if self.auth_method not in ('exchange', 'graphql') and len(msg.html) == 0:
+        if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
             file_format = 'txt'
             file = backup_path + '/mail_' + msg_id + '/mail_origin/body.txt'
         else:
@@ -403,16 +396,18 @@ class Mail:
             if (os.path.isfile(file) or file) and file_format == 'html':
                 with open(file, 'r', encoding='UTF-8') as f:
                     html_content = f.read()
-                    attachment_content_id_in_html = re.search(r'src="cid:\s*' + re.escape(pj['content_id']), html_content)
-                    if attachment_content_id_in_html:
-                        updated_html = re.sub(r'src="cid:\s*' + re.escape(pj['content_id']),
-                                              f"src='data:image/{pj['format'].replace('.', '')};"
-                                              f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
-                                              html_content)
+                    if 'content_id' in pj and pj['content_id']:
+                        attachment_content_id_in_html = re.search(r'src="cid:\s*' + re.escape(pj['content_id']),
+                                                                  html_content)
+                        if attachment_content_id_in_html:
+                            updated_html = re.sub(r'src="cid:\s*' + re.escape(pj['content_id']),
+                                                  f"src='data:image/{pj['format'].replace('.', '')};"
+                                                  f"base64, {base64.b64encode(pj['content']).decode('UTF-8')}'",
+                                                  html_content)
 
-                        with open(file, 'w', encoding='UTF-8') as new_file:
-                            new_file.write(updated_html)
-                            new_file.close()
+                            with open(file, 'w', encoding='UTF-8') as new_file:
+                                new_file.write(updated_html)
+                                new_file.close()
 
             if not attachment_content_id_in_html:
                 path = attachments_path + sanitize_filename(pj['filename']) + pj['format']
@@ -451,22 +446,22 @@ class Mail:
             msg_id = str(msg['id'])
             html_body = msg['body']['content']
         else:
-            msg_id = str(msg.uid)
-            html_body = msg.html
+            msg_id = str(msg['uid'])
+            html_body = msg['html']
 
         primary_mail_path = backup_path + '/mail_' + msg_id + '/mail_origin/'
         os.makedirs(primary_mail_path)
 
         # Start with headers
-        if 'headers' in msg and msg.headers is not None:
+        if 'headers' in msg and msg['headers'] is not None:
             with open(primary_mail_path + 'header.txt', 'w', encoding='UTF-8') as fp:
-                for header in msg.headers:
+                for header in msg['headers']:
                     if self.auth_method.lower() == 'exchange':
                         header_name = header.name
                         header_value = header.value
                     else:
                         header_name = header
-                        header_value = msg.headers[header][0]
+                        header_value = msg['headers'][header][0]
 
                     try:
                         fp.write(header_name + ' : ' + header_value + '\n')
@@ -476,10 +471,10 @@ class Mail:
                 fp.close()
 
         # Then body
-        if (self.auth_method not in ('exchange', 'graphql')) and len(msg.html) == 0:
+        if (self.auth_method not in ('exchange', 'graphql')) and len(msg['html']) == 0:
             with open(primary_mail_path + 'body.txt', 'w', encoding='UTF-8') as fp:
-                if len(msg.text) != 0:
-                    fp.write(msg.text)
+                if len(msg['text']) != 0:
+                    fp.write(msg['text'])
                 else:
                     fp.write(' ')
         else:
@@ -497,7 +492,7 @@ class Mail:
         if self.auth_method not in ('exchange', 'graphql'):
             # For safety, backup original stream retrieve from IMAP directly
             with open(primary_mail_path + 'orig.txt', 'w', encoding='UTF-8') as fp:
-                for payload in msg.obj.get_payload():
+                for payload in msg['obj'].get_payload():
                     try:
                         fp.write(str(payload))
                     except KeyError:
@@ -548,7 +543,8 @@ class Mail:
                 if destination == _f.name:
                     msg.move(_f)
         elif self.auth_method.lower() == 'graphql':
-            url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders/' + self.graphql['folder_id']
+            url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders/' + self.graphql[
+                'folder_id']
             url = url + '/messages/' + msg['id'] + '/move'
             body = {
                 'destinationId': self.graphql['dest_folder_id']
