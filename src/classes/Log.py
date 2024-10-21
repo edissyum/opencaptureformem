@@ -72,4 +72,3 @@ class CallerFilter(logging.Filter):
         record.file = self.file
         record.line_n = self.line_n
         return True
-

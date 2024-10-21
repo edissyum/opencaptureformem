@@ -114,6 +114,14 @@ class FindContact(Thread):
         for key in ai_contact:
             if ai_contact[key]:
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
+                if key in ('lastname', 'company', 'city'):
+                    found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
+                elif key == 'firstname':
+                    found_contact[MAPPING[key]] = found_contact[MAPPING[key]].capitalize()
+                elif key == 'email':
+                    found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
+                elif key == 'postal_code' and len(found_contact[MAPPING[key]]) != 5:
+                    found_contact[MAPPING[key]] = ''
 
         contact = {}
         if 'email' in found_contact:

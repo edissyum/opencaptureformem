@@ -44,7 +44,7 @@ then
 
   # Retrieve all the processes and launch them instead of copy/paste X lines
   while read -r process ; do
-    if [[ "$process" != '[GLOBAL]' && "$process" != '[OAUTH]' && "$process" != '[EXCHANGE]' ]];
+    if [[ "$process" != '[GLOBAL]' && "$process" != '[OAUTH]' && "$process" != '[EXCHANGE]' && "$process" != '[GRAPHQL]' ]];
     then
       process_name="${process//[][]/}"
       python3 "$OCPath"/launch_worker_mail.py -c "$config_file" -cm "$config_mail_file" --process "$process_name" --script $script

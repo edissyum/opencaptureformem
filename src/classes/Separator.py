@@ -239,7 +239,8 @@ class Separator:
             out, err = xml.communicate()
             if out.decode('utf-8') == "<barcodes xmlns='http://zbar.sourceforge.net/2008/barcode'>\n<source href='" + file + "'>\n</source>\n</barcodes>\n":
                 return
-            if err.decode('utf-8'):
+
+            if err.decode('utf-8') and not err.decode('utf-8').startswith('WARNING:'):
                 self.Log.error('ZBARIMG : ' + str(err))
             self.qrList = ET.fromstring(out)
         except subprocess.CalledProcessError as cpe:

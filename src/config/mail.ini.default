@@ -24,6 +24,18 @@ tenant_id   =
 client_id   =
 secret      =
 
+[GRAPHQL]
+; DO NOT TOUCH
+grant_type    = client_credentials
+scope         = https://graph.microsoft.com/.default
+users_url     = https://graph.microsoft.com/v1.0/users
+message_url   = https://graph.microsoft.com/v1.0/me/messages
+get_token_url = https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token
+; END DO NOT TOUCH
+client_id     =
+tenant_id     =
+client_secret =
+
 [EXCHANGE]
 endpoint    = https://outlook.office365.com/EWS/Exchange.asmx
 client_id   =
@@ -31,7 +43,7 @@ tenant_id   =
 secret      =
 
 [MAIL_1]
-; basic, oauth or exchange
+; basic, oauth, exchange or graphql
 auth_method             = basic
 host                    = outlook.office365.com
 port                    = 993
@@ -52,15 +64,13 @@ priorityToMailFrom      = False
 importOnlyAttachments   = False
 extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
-; True or False
-eReconciliation         = False
-
 folderToCrawl           = _MEM
 folderDestination       = _MEM_ARCHIVES
-; If folderTrash is empty, mail will be deleted and cannot be retrieve (even in default IMAP trash folder)
-folderTrash             = Trash
-; move, delete or none
+; move or none
 actionAfterProcess      = move
+
+; True or False
+eReconciliation         = False
 
 chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document

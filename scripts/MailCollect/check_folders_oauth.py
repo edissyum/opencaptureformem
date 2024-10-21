@@ -15,8 +15,8 @@
 
 # @dev : Oussama BRICH <oussama.brich@edissyum.com>
 
-from imap_tools import MailBox
 import msal
+from imap_tools import MailBox
 
 args = {
     "authority": "https://login.microsoftonline.com/",

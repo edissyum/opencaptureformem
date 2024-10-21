@@ -20,6 +20,7 @@ import re
 import sys
 import json
 import torch
+import pickle
 import shutil
 import warnings
 import subprocess
@@ -33,7 +34,63 @@ from .OCForForms import process_form
 from pdf2image import convert_from_path
 
 
-def run_inference(trained_model, img):
+class DonutForImageClassification(transformers.DonutSwinPreTrainedModel):
+    def __init__(self, config, num_labels_dest, num_labels_type):
+        super().__init__(config)
+        self.num_labels_dest = num_labels_dest
+        self.num_labels_type = num_labels_type
+        self.swin = transformers.DonutSwinModel(config)
+        self.dropout = torch.nn.Dropout(0.5)
+        self.classifier_dest = torch.nn.Linear(self.swin.num_features, num_labels_dest)
+        self.classifier_type = torch.nn.Linear(self.swin.num_features, num_labels_type)
+
+    def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
+        outputs = self.swin(pixel_values)
+        pooled_output = outputs[1]
+        pooled_output = self.dropout(pooled_output)
+        dest_logits = self.classifier_dest(pooled_output)
+        type_logits = self.classifier_type(pooled_output)
+        return dest_logits, type_logits
+
+
+def run_inference_destination(trained_model, img):
+    prediction = {}
+    warnings.filterwarnings('ignore')
+    transformers.logging.set_verbosity_error()
+
+    with open(f'{trained_model}/dest_mapping.pkl', 'rb') as f:
+        dest_mapping = pickle.load(f)
+        dest_mapping = {v: k for k, v in dest_mapping.items()}
+
+    with open(f'{trained_model}/type_mapping.pkl', 'rb') as f:
+        type_mapping = pickle.load(f)
+        type_mapping = {v: k for k, v in type_mapping.items()}
+
+    processor = transformers.DonutProcessor.from_pretrained(trained_model, local_files_only=True)
+    model = DonutForImageClassification.from_pretrained(trained_model, num_labels_dest=len(dest_mapping),
+                                                        num_labels_type=len(type_mapping))
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.load_state_dict(torch.load(f"{trained_model}/model_epoch.pth", map_location=torch.device(device)))
+    model.to(device)
+    model.eval()
+
+    with torch.no_grad():
+        pixel_values = processor(img, random_padding="test", return_tensors="pt").pixel_values.squeeze()
+        pixel_values = torch.tensor(pixel_values).unsqueeze(0)
+        dest_logits, type_logits = model(pixel_values=pixel_values)
+        _, dest_index = torch.max(dest_logits, dim=1)
+        _, type_index = torch.max(type_logits, dim=1)
+        dest_pred = dest_mapping[dest_index[0].item()]
+        type_pred = type_mapping[type_index[0].item()]
+        if dest_pred:
+            prediction['destination'] = dest_pred
+        if type_pred:
+            prediction['doctype'] = type_pred
+    return prediction
+
+
+def run_inference_sender(trained_model, img):
     warnings.filterwarnings('ignore')
     transformers.logging.set_verbosity_error()
 
@@ -236,7 +293,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             doctype_entity_model = config.cfg['IA']['doctype_entity']
             if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
                 log.info('Search destination and doctype with AI model')
-                doctype_entity_prediction = run_inference(doctype_entity_model, image.img)
+                doctype_entity_prediction = run_inference_destination(doctype_entity_model, image.img)
                 if doctype_entity_prediction:
                     if 'doctype' in doctype_entity_prediction:
                         if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
@@ -254,7 +311,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             contact_class = FindContact(ocr.text, log, config, web_service, locale)
             if os.path.isdir(sender_recipient_model) and os.listdir(sender_recipient_model):
                 log.info('Search sender and recipient with AI model')
-                sender_recipient_prediction = run_inference(sender_recipient_model, image.img)
+                sender_recipient_prediction = run_inference_sender(sender_recipient_model, image.img)
                 if sender_recipient_prediction:
                     if 'senders' in sender_recipient_prediction:
                         contact = contact_class.find_contact_by_ai(sender_recipient_prediction['senders'])
@@ -443,7 +500,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if contact:
             args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
-            if not (args.get('isMail') is not None and args.get('isMail') is True and args.get('priority_mail_from') is True):
+            if not (args.get('isMail') is not None and args.get('isMail') and args.get('priority_mail_from')):
                 log.info('No contact found on mail body, try with "from" of the mail :  ' + args['from'])
             contact = web_service.retrieve_contact_by_mail(args['from'])
             if contact:
