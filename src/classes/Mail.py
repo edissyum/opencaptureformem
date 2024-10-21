@@ -385,10 +385,10 @@ class Mail:
                 cfg['custom_mail_reply_to']: reply_to[:-1]
             })
 
-        attachment_content_id_in_html = None
         attachments = self.retrieve_attachment(msg)
         attachments_path = backup_path + '/mail_' + msg_id + '/attachments/'
         for pj in attachments:
+            attachment_content_id_in_html = None
             if pj['format'] is None:
                 log.error(f"Attachment {pj['filename']} doesn't have extension, skipping it")
                 continue
