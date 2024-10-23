@@ -554,7 +554,7 @@ class Mail:
                 log.error('Error while moving mail to ' + destination + ' folder : ' + str(res.text))
         else:
             try:
-                self.conn.move(msg.uid, destination)
+                self.conn.move(str(msg['uid']), destination)
                 return True
             except utils.UnexpectedCommandStatusError as e:
                 log.error('Error while moving mail to ' + destination + ' folder : ' + str(e))
