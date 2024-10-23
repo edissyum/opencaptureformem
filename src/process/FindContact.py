@@ -24,6 +24,7 @@ MAPPING = {
     'city': 'addressTown',
     'num_address': 'addressNumber',
     'address': 'addressStreet',
+    'additional_address': 'addressAdditional1',
     'phone': 'phone',
     'email': 'email',
     'lastname': 'lastname',
@@ -114,6 +115,9 @@ class FindContact(Thread):
         for key in ai_contact:
             if ai_contact[key]:
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
+                if isinstance(found_contact[MAPPING[key]], list):
+                    found_contact[MAPPING[key]] = found_contact[MAPPING[key]][0]
+
                 if key in ('lastname', 'company', 'city'):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
                 elif key == 'firstname':
@@ -165,6 +169,10 @@ class FindContact(Thread):
                 contact['externalId'] = {
                     'ia_tmp_contact_id': temporary_contact['id']
                 }
+
+                if 'civility' in contact and 'id' in contact['civility']:
+                    contact['civility'] = contact['civility']['id']
+
                 self.web_service.update_contact_external_id(contact)
                 return contact
         else:
