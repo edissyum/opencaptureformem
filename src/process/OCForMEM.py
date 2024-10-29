@@ -310,11 +310,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             sender_recipient_model = config.cfg['IA']['sender_recipient']
             contact_class = FindContact(ocr.text, log, config, web_service, locale)
             if os.path.isdir(sender_recipient_model) and os.listdir(sender_recipient_model):
-                log.info('Search sender and recipient with AI model')
-                sender_recipient_prediction = run_inference_sender(sender_recipient_model, image.img)
-                if sender_recipient_prediction:
-                    if 'senders' in sender_recipient_prediction:
-                        contact = contact_class.find_contact_by_ai(sender_recipient_prediction['senders'])
+                log.info('Search sender with AI model')
+                sender_prediction = run_inference_sender(sender_recipient_model, image.img)
+                if sender_prediction:
+                    contact = contact_class.find_contact_by_ai(sender_prediction)
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
         # Get the OCR of the file as a string content
