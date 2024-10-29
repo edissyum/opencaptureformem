@@ -304,10 +304,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
-        if ('sender_ai' in config.cfg[_process] and
-                config.cfg[_process]['sender_ai'].lower() == 'true'
-                and 'sender_recipient' in config.cfg['IA']):
-            sender_model = config.cfg['IA']['sender_recipient']
+        if ('sender_ai' in config.cfg[_process] and config.cfg[_process]['sender_ai'].lower() == 'true'
+                and 'sender' in config.cfg['IA']):
+            sender_model = config.cfg['IA']['sender']
             if os.path.isdir(sender_model) and os.listdir(sender_model):
                 log.info('Search sender with AI model')
                 sender_prediction = run_inference_sender(sender_model, image.img)
