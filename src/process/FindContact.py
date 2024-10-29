@@ -43,8 +43,8 @@ class FindContact(Thread):
         self.config = config
         self.custom_mail = ''
         self.custom_phone = ''
-        if 'sender_recipient_min_ratio' in config.cfg['IA']:
-            self.min_ratio = int(config.cfg['IA']['sender_recipient_min_ratio'])
+        if 'sender_min_ratio' in config.cfg['IA']:
+            self.min_ratio = int(config.cfg['IA']['sender_min_ratio'])
         self.web_service = web_service
 
     def run(self):

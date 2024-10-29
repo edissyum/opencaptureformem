@@ -304,15 +304,15 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
-        if ('sender_recipient_ai' in config.cfg[_process] and
-                config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
+        if ('sender_ai' in config.cfg[_process] and
+                config.cfg[_process]['sender_ai'].lower() == 'true'
                 and 'sender_recipient' in config.cfg['IA']):
-            sender_recipient_model = config.cfg['IA']['sender_recipient']
-            contact_class = FindContact(ocr.text, log, config, web_service, locale)
-            if os.path.isdir(sender_recipient_model) and os.listdir(sender_recipient_model):
+            sender_model = config.cfg['IA']['sender_recipient']
+            if os.path.isdir(sender_model) and os.listdir(sender_model):
                 log.info('Search sender with AI model')
-                sender_prediction = run_inference_sender(sender_recipient_model, image.img)
+                sender_prediction = run_inference_sender(sender_model, image.img)
                 if sender_prediction:
+                    contact_class = FindContact(ocr.text, log, config, web_service, locale)
                     contact = contact_class.find_contact_by_ai(sender_prediction)
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
