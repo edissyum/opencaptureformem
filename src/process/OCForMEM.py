@@ -285,6 +285,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
+        # Get the OCR of the file as a string content
+        if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+            ocr.text_builder(image.img)
+
     contact = {}
     custom_mail = ''
     if not args.get('isMail'):
@@ -304,6 +309,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
+
         if ('sender_ai' in config.cfg[_process] and config.cfg[_process]['sender_ai'].lower() == 'true'
                 and 'sender' in config.cfg['IA']):
             sender_model = config.cfg['IA']['sender']
@@ -315,10 +321,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     contact = contact_class.find_contact_by_ai(sender_prediction)
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
-        # Get the OCR of the file as a string content
-        if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
-            ocr.text_builder(image.img)
-
         # Find subject of document
         if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
                 and args.get('priority_mail_subject') is True):
