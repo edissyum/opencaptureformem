@@ -58,6 +58,7 @@ password                =
 isForm                  = False
 generate_chrono         = True
 forceUtf8               = True
+addMailHeadersInBody    = True
 priorityToMailSubject   = False
 priorityToMailDate      = False
 priorityToMailFrom      = False

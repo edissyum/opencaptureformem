@@ -19,7 +19,9 @@ import os
 import re
 import sys
 import msal
+import html
 import json
+import locale
 import shutil
 import base64
 import requests
@@ -252,17 +254,7 @@ class Mail:
                 emails.append(mail)
         return emails
 
-    def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
-        """
-        Construct a dict with all the data of a mail (body and attachments)
-
-        :param msg: Mailbox object containing all the data of mail
-        :param cfg: Config Object
-        :param backup_path: Path to backup of the e-mail
-        :param log: Log object
-        :return: dict of Args and file path
-        """
-
+    def get_mail_values(self, msg):
         if self.auth_method.lower() == 'exchange':
             msg_id = str(msg.conversation_id.id)
             from_val = msg.sender.name + ' <' + msg.sender.email_address + '>'
@@ -325,6 +317,21 @@ class Mail:
                     reply_to += rp_to.full + ';'
         except (TypeError, AttributeError):
             pass
+
+        return msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values
+
+    def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
+        """
+        Construct a dict with all the data of a mail (body and attachments)
+
+        :param msg: Mailbox object containing all the data of mail
+        :param cfg: Config Object
+        :param backup_path: Path to backup of the e-mail
+        :param log: Log object
+        :return: dict of Args and file path
+        """
+
+        msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values = self.get_mail_values(msg)
 
         if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
             file_format = 'txt'
@@ -428,11 +435,12 @@ class Mail:
                 })
         return data, file
 
-    def backup_email(self, msg, backup_path, force_utf8, log):
+    def backup_email(self, msg, backup_path, force_utf8, add_mail_headers_in_body, log):
         """
         Backup e-mail into path before send it to MEM Courrier
 
         :param force_utf8: Force HTML UTF-8 encoding
+        :param add_mail_headers_in_body: Add mail headers with senders, recipients, etc.
         :param msg: Mail data
         :param backup_path: Backup path
         :param log: Log class instance
@@ -482,10 +490,27 @@ class Mail:
                 if force_utf8:
                     utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
                     if (not re.search(utf_8_charset.lower(), html_body.lower()) or
-                            re.search(utf_8_charset.lower() + '\s*-->', html_body.lower()) or
-                            re.search('<!--\s*' + utf_8_charset.lower(), html_body.lower())):
+                            re.search(utf_8_charset.lower() + r'\s*-->', html_body.lower()) or
+                            re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
                         fp.write(utf_8_charset)
                         fp.write('\n')
+
+                if add_mail_headers_in_body:
+                    msg_id, document_date, from_val, to_str, cc_str, _, _ = self.get_mail_values(msg)
+
+                    try:
+                        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                    except locale.Error:
+                        pass
+
+                    fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
+                    if msg['to_values']:
+                        fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
+                    if msg['cc_values']:
+                        fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
+
+                    fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
+                    fp.write('<b>Date</b> : ' + document_date.strftime('%A %d %B %Y %H:%M:%S') + '<br><br>')
                 fp.write(html_body)
             fp.close()
 
