@@ -504,13 +504,13 @@ class Mail:
                         pass
 
                     fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
-                    if msg['to_values']:
+                    if to_str:
                         fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
-                    if msg['cc_values']:
+                    if cc_str:
                         fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
 
                     fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
-                    fp.write('<b>Date</b> : ' + document_date.strftime('%A %d %B %Y %H:%M:%S') + '<br><br>')
+                    fp.write('<b>Date</b> : ' + document_date + '<br><br>')
                 fp.write(html_body)
             fp.close()
 
@@ -530,13 +530,14 @@ class Mail:
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/messages/' + msg_id + '/attachments'
             attachments = graphql_request(url, 'GET', None, self.graphql_headers)
             for att in attachments.json()['value']:
-                msg['attachments'].append({
-                    'filename': att['name'],
-                    'content_id': att['contentId'],
-                    'content_type': att['contentType'],
-                    'format': att['name'].split('.')[-1],
-                    'payload': base64.b64decode(att['contentBytes'])
-                })
+                if 'contentBytes' in att:
+                    msg['attachments'].append({
+                        'filename': att['name'],
+                        'content_id': att['contentId'],
+                        'content_type': att['contentType'],
+                        'format': att['name'].split('.')[-1],
+                        'payload': base64.b64decode(att['contentBytes'])
+                    })
 
         attachments = self.retrieve_attachment(msg)
 
