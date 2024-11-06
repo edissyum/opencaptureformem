@@ -24,6 +24,7 @@ import json
 import locale
 import shutil
 import base64
+import chardet
 import requests
 import mimetypes
 from ssl import SSLError
@@ -611,9 +612,12 @@ class Mail:
                         for attr in att.mapi_attrs:
                             if attr.attr_type == 30 and attr.name == 14094:
                                 mime_type = attr.raw_data[0]
-                        file_format = os.path.splitext(att.name)[1]
+
+                        encoding = chardet.detect(att._name)['encoding']
+                        filename = str(att._name, encoding=encoding).strip('\x00')
+                        file_format = os.path.splitext(filename)[1]
                         args.append({
-                            'filename': os.path.splitext(att.name)[0].replace(' ', '_'),
+                            'filename': os.path.splitext(filename)[0].replace(' ', '_'),
                             'format': file_format,
                             'content': att.data,
                             'mime_type': mime_type
