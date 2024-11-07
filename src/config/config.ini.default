@@ -12,7 +12,7 @@ errorPath           = ${GLOBAL:projectPath}/data/error/
 logFile             = ${GLOBAL:projectPath}/data/log/OCForMEM.log
 formPath            = ${GLOBAL:projectPath}/src/config/form.json
 # Time in seconds before stopping the Webservices call
-timeout             = 30
+timeout             = 60
 # True or False
 disableLad          = False
 
