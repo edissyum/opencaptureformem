@@ -232,7 +232,7 @@ if check:
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8, add_mail_headers_in_body, Log)
             ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
-            _from = ret['mail']['from']
+            _from = ret['mail']['emailFrom']
             if Mail.auth_method == 'exchange':
                 document_date = msg.datetime_created
             elif Mail.auth_method == 'graphql':

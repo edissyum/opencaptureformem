@@ -259,6 +259,7 @@ class Mail:
         if self.auth_method.lower() == 'exchange':
             msg_id = str(msg.conversation_id.id)
             from_val = msg.sender.name + ' <' + msg.sender.email_address + '>'
+            email_from = msg.sender.email_address
             to_values = [msg.received_by] if not isinstance(msg.received_by, list) else msg.received_by
             try:
                 cc_values = [msg.cc_recipients] if not isinstance(msg.cc_recipients, list) else msg.cc_recipients
@@ -273,6 +274,7 @@ class Mail:
         elif self.auth_method.lower() == 'graphql':
             msg_id = msg['id']
             from_val = msg['from']['emailAddress']['address']
+            email_from = msg['from']['emailAddress']['address']
             cc_values = msg['ccRecipients']
             to_values = msg['toRecipients']
             reply_to_values = msg['replyTo']
@@ -283,6 +285,7 @@ class Mail:
             cc_values = msg['cc_values']
             to_values = msg['to_values']
             from_val = msg['from_values'].full
+            email_from = msg['from_values'].email
             reply_to_values = msg['reply_to_values']
 
         to_str, cc_str, reply_to = ('', '', '')
@@ -319,7 +322,7 @@ class Mail:
         except (TypeError, AttributeError):
             pass
 
-        return msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values
+        return msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values, email_from
 
     def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
         """
@@ -332,7 +335,7 @@ class Mail:
         :return: dict of Args and file path
         """
 
-        msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values = self.get_mail_values(msg)
+        msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values, email_from = self.get_mail_values(msg)
 
         if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
             file_format = 'txt'
@@ -355,6 +358,7 @@ class Mail:
                 'destination': cfg['destination'],
                 'documentDate': str(document_date),
                 'from': from_val,
+                'emailFrom': email_from,
                 'customFields': {},
             },
             'attachments': []
@@ -497,7 +501,7 @@ class Mail:
                         fp.write('\n')
 
                 if add_mail_headers_in_body:
-                    msg_id, document_date, from_val, to_str, cc_str, _, _ = self.get_mail_values(msg)
+                    msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
 
                     try:
                         locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
@@ -511,7 +515,7 @@ class Mail:
                         fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
 
                     fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
-                    fp.write('<b>Date</b> : ' + document_date + '<br><br>')
+                    fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
                 fp.write(html_body)
             fp.close()
 

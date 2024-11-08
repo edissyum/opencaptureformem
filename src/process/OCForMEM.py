@@ -500,11 +500,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if contact:
             args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
-            if not (args.get('isMail') is not None and args.get('isMail') and args.get('priority_mail_from')):
-                log.info('No contact found on mail body, try with "from" of the mail :  ' + args['from'])
-            contact = web_service.retrieve_contact_by_mail(args['from'])
-            if contact:
-                args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
+            if 'emailFrom' in args and args['emailFrom']:
+                if not (args.get('isMail') is not None and args.get('isMail') and args.get('priority_mail_from')):
+                    log.info('No contact found on mail body, try with "from" of the mail :  ' + args['emailFrom'])
+                    contact = web_service.retrieve_contact_by_mail(args['emailFrom'])
+                    if contact:
+                        log.info('Contact found using email : ' + args['emailFrom'])
+                        args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
         if args.get('isMail') == 'attachments':
             args['data']['file'] = args['file']
