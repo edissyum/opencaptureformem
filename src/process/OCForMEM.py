@@ -285,6 +285,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
+        # Get the OCR of the file as a string content
+        if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
+            ocr.text_builder(image.img)
+
     contact = {}
     custom_mail = ''
     if not args.get('isMail'):
@@ -304,23 +309,18 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
-        if ('sender_recipient_ai' in config.cfg[_process] and
-                config.cfg[_process]['sender_recipient_ai'].lower() == 'true'
-                and 'sender_recipient' in config.cfg['IA']):
-            sender_recipient_model = config.cfg['IA']['sender_recipient']
-            contact_class = FindContact(ocr.text, log, config, web_service, locale)
-            if os.path.isdir(sender_recipient_model) and os.listdir(sender_recipient_model):
-                log.info('Search sender and recipient with AI model')
-                sender_recipient_prediction = run_inference_sender(sender_recipient_model, image.img)
-                if sender_recipient_prediction:
-                    if 'senders' in sender_recipient_prediction:
-                        contact = contact_class.find_contact_by_ai(sender_recipient_prediction['senders'])
+
+        if ('sender_ai' in config.cfg[_process] and config.cfg[_process]['sender_ai'].lower() == 'true'
+                and 'sender' in config.cfg['IA']):
+            sender_model = config.cfg['IA']['sender']
+            if os.path.isdir(sender_model) and os.listdir(sender_model):
+                log.info('Search sender with AI model')
+                sender_prediction = run_inference_sender(sender_model, image.img)
+                if sender_prediction:
+                    contact_class = FindContact(ocr.text, log, config, web_service, locale)
+                    contact = contact_class.find_contact_by_ai(sender_prediction)
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
-        # Get the OCR of the file as a string content
-        if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
-            ocr.text_builder(image.img)
-
         # Find subject of document
         if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
                 and args.get('priority_mail_subject') is True):
@@ -500,11 +500,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if contact:
             args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
-            if not (args.get('isMail') is not None and args.get('isMail') and args.get('priority_mail_from')):
-                log.info('No contact found on mail body, try with "from" of the mail :  ' + args['from'])
-            contact = web_service.retrieve_contact_by_mail(args['from'])
-            if contact:
-                args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
+            if 'emailFrom' in args and args['emailFrom']:
+                if not (args.get('isMail') is not None and args.get('isMail') and args.get('priority_mail_from')):
+                    log.info('No contact found on mail body, try with "from" of the mail :  ' + args['emailFrom'])
+                    contact = web_service.retrieve_contact_by_mail(args['emailFrom'])
+                    if contact:
+                        log.info('Contact found using email : ' + args['emailFrom'])
+                        args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
 
         if args.get('isMail') == 'attachments':
             args['data']['file'] = args['file']

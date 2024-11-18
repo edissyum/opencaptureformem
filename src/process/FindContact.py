@@ -43,8 +43,8 @@ class FindContact(Thread):
         self.config = config
         self.custom_mail = ''
         self.custom_phone = ''
-        if 'sender_recipient_min_ratio' in config.cfg['IA']:
-            self.min_ratio = int(config.cfg['IA']['sender_recipient_min_ratio'])
+        if 'sender_min_ratio' in config.cfg['IA']:
+            self.min_ratio = int(config.cfg['IA']['sender_min_ratio'])
         self.web_service = web_service
 
     def run(self):
@@ -128,8 +128,20 @@ class FindContact(Thread):
                     found_contact[MAPPING[key]] = ''
 
         contact = {}
-        if 'email' in found_contact:
-            contact = self.web_service.retrieve_contact_by_mail(found_contact['email'])
+        if (('email' not in found_contact or not found_contact['email']) and
+                ('phone' not in found_contact or not found_contact['phone'])):
+            self.start()
+            self.join()
+            if self.contact:
+                found_contact['email'] = self.contact['email']
+                found_contact['phone'] = self.contact['phone']
+
+        if 'email' in found_contact and found_contact['email']:
+            if not self.contact:
+                contact = self.web_service.retrieve_contact_by_mail(found_contact['email'])
+            else:
+                contact = self.contact
+
             if contact:
                 self.log.info('Contact found using email : ' + found_contact['email'])
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
@@ -138,7 +150,12 @@ class FindContact(Thread):
                     return contact
                 self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
 
-        if 'phone' in found_contact:
+        if 'phone' in found_contact and found_contact['phone']:
+            if not self.contact:
+                contact = self.web_service.retrieve_contact_by_phone(found_contact['phone'])
+            else:
+                contact = self.contact
+
             tmp_contact = False
             if contact:
                 tmp_contact = contact
@@ -146,7 +163,6 @@ class FindContact(Thread):
             if isinstance(found_contact['phone'], list):
                 found_contact['phone'] = found_contact['phone'][0]
 
-            contact = self.web_service.retrieve_contact_by_phone(found_contact['phone'])
             if contact:
                 self.log.info('Contact found using phone : ' + found_contact['phone'])
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])

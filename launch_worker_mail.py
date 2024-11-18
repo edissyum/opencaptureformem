@@ -170,6 +170,7 @@ priority_mail_date = str2bool(config_mail.cfg[process]['prioritytomaildate'])
 priority_mail_from = str2bool(config_mail.cfg[process]['prioritytomailfrom'])
 is_form = str2bool(config_mail.cfg[process]['isform'])
 force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
+add_mail_headers_in_body = str2bool(config_mail.cfg[process]['addmailheadersinbody'])
 Mail.test_connection(secured_connection)
 
 extensionsAllowed = []
@@ -229,9 +230,9 @@ if check:
                 uid_file.close()
 
             # Backup all the e-mail into batch path
-            Mail.backup_email(msg, batch_path, force_utf8, Log)
+            Mail.backup_email(msg, batch_path, force_utf8, add_mail_headers_in_body, Log)
             ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
-            _from = ret['mail']['from']
+            _from = ret['mail']['emailFrom']
             if Mail.auth_method == 'exchange':
                 document_date = msg.datetime_created
             elif Mail.auth_method == 'graphql':

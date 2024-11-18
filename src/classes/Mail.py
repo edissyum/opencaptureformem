@@ -19,9 +19,12 @@ import os
 import re
 import sys
 import msal
+import html
 import json
+import locale
 import shutil
 import base64
+import chardet
 import requests
 import mimetypes
 from ssl import SSLError
@@ -252,20 +255,11 @@ class Mail:
                 emails.append(mail)
         return emails
 
-    def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
-        """
-        Construct a dict with all the data of a mail (body and attachments)
-
-        :param msg: Mailbox object containing all the data of mail
-        :param cfg: Config Object
-        :param backup_path: Path to backup of the e-mail
-        :param log: Log object
-        :return: dict of Args and file path
-        """
-
+    def get_mail_values(self, msg):
         if self.auth_method.lower() == 'exchange':
             msg_id = str(msg.conversation_id.id)
             from_val = msg.sender.name + ' <' + msg.sender.email_address + '>'
+            email_from = msg.sender.email_address
             to_values = [msg.received_by] if not isinstance(msg.received_by, list) else msg.received_by
             try:
                 cc_values = [msg.cc_recipients] if not isinstance(msg.cc_recipients, list) else msg.cc_recipients
@@ -280,6 +274,7 @@ class Mail:
         elif self.auth_method.lower() == 'graphql':
             msg_id = msg['id']
             from_val = msg['from']['emailAddress']['address']
+            email_from = msg['from']['emailAddress']['address']
             cc_values = msg['ccRecipients']
             to_values = msg['toRecipients']
             reply_to_values = msg['replyTo']
@@ -290,6 +285,7 @@ class Mail:
             cc_values = msg['cc_values']
             to_values = msg['to_values']
             from_val = msg['from_values'].full
+            email_from = msg['from_values'].email
             reply_to_values = msg['reply_to_values']
 
         to_str, cc_str, reply_to = ('', '', '')
@@ -326,6 +322,21 @@ class Mail:
         except (TypeError, AttributeError):
             pass
 
+        return msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values, email_from
+
+    def construct_dict_before_send_to_mem(self, msg, cfg, backup_path, log):
+        """
+        Construct a dict with all the data of a mail (body and attachments)
+
+        :param msg: Mailbox object containing all the data of mail
+        :param cfg: Config Object
+        :param backup_path: Path to backup of the e-mail
+        :param log: Log object
+        :return: dict of Args and file path
+        """
+
+        msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values, email_from = self.get_mail_values(msg)
+
         if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
             file_format = 'txt'
             file = backup_path + '/mail_' + msg_id + '/mail_origin/body.txt'
@@ -347,6 +358,7 @@ class Mail:
                 'destination': cfg['destination'],
                 'documentDate': str(document_date),
                 'from': from_val,
+                'emailFrom': email_from,
                 'customFields': {},
             },
             'attachments': []
@@ -428,11 +440,12 @@ class Mail:
                 })
         return data, file
 
-    def backup_email(self, msg, backup_path, force_utf8, log):
+    def backup_email(self, msg, backup_path, force_utf8, add_mail_headers_in_body, log):
         """
         Backup e-mail into path before send it to MEM Courrier
 
         :param force_utf8: Force HTML UTF-8 encoding
+        :param add_mail_headers_in_body: Add mail headers with senders, recipients, etc.
         :param msg: Mail data
         :param backup_path: Backup path
         :param log: Log class instance
@@ -482,10 +495,27 @@ class Mail:
                 if force_utf8:
                     utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
                     if (not re.search(utf_8_charset.lower(), html_body.lower()) or
-                            re.search(utf_8_charset.lower() + '\s*-->', html_body.lower()) or
-                            re.search('<!--\s*' + utf_8_charset.lower(), html_body.lower())):
+                            re.search(utf_8_charset.lower() + r'\s*-->', html_body.lower()) or
+                            re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
                         fp.write(utf_8_charset)
                         fp.write('\n')
+
+                if add_mail_headers_in_body:
+                    msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
+
+                    try:
+                        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                    except locale.Error:
+                        pass
+
+                    fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
+                    if to_str:
+                        fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
+                    if cc_str:
+                        fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
+
+                    fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
+                    fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
                 fp.write(html_body)
             fp.close()
 
@@ -505,13 +535,14 @@ class Mail:
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/messages/' + msg_id + '/attachments'
             attachments = graphql_request(url, 'GET', None, self.graphql_headers)
             for att in attachments.json()['value']:
-                msg['attachments'].append({
-                    'filename': att['name'],
-                    'content_id': att['contentId'],
-                    'content_type': att['contentType'],
-                    'format': att['name'].split('.')[-1],
-                    'payload': base64.b64decode(att['contentBytes'])
-                })
+                if 'contentBytes' in att:
+                    msg['attachments'].append({
+                        'filename': att['name'],
+                        'content_id': att['contentId'],
+                        'content_type': att['contentType'],
+                        'format': att['name'].split('.')[-1],
+                        'payload': base64.b64decode(att['contentBytes'])
+                    })
 
         attachments = self.retrieve_attachment(msg)
 
@@ -585,9 +616,12 @@ class Mail:
                         for attr in att.mapi_attrs:
                             if attr.attr_type == 30 and attr.name == 14094:
                                 mime_type = attr.raw_data[0]
-                        file_format = os.path.splitext(att.name)[1]
+
+                        encoding = chardet.detect(att._name)['encoding']
+                        filename = str(att._name, encoding=encoding).strip('\x00')
+                        file_format = os.path.splitext(filename)[1]
                         args.append({
-                            'filename': os.path.splitext(att.name)[0].replace(' ', '_'),
+                            'filename': os.path.splitext(filename)[0].replace(' ', '_'),
                             'format': file_format,
                             'content': att.data,
                             'mime_type': mime_type
