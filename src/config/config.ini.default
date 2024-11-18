@@ -10,7 +10,7 @@ projectPath         = /opt/edissyum/opencaptureformem/
 tmpPath             = ${GLOBAL:projectPath}/data/tmp/
 errorPath           = ${GLOBAL:projectPath}/data/error/
 logFile             = ${GLOBAL:projectPath}/data/log/OCForMEM.log
-formPath            = ${GLOBAL:projectPath}/src/config/form.json
+formPath            = ${GLOBAL:projectPath}/src/config/
 # Time in seconds before stopping the Webservices call
 timeout             = 60
 # True or False

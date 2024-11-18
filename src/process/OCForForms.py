@@ -78,7 +78,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
-            json_file = config.cfg['GLOBAL']['formpath'] + identifier[process]['json_file']
+            json_file = config.cfg['GLOBAL']['formpath'] + '/' + identifier[process]['json_file']
             if os.path.isfile(json_file):
                 with open(json_file, 'r', encoding='UTF-8') as data:
                     data = json.loads(data.read())['FIELDS']
