@@ -13,14 +13,14 @@ working_directory=/
 
 [mem_entrant]
 watch=/var/share/entrant/
-events=close,move
+events=nowrite_close
 include_extensions=pdf,PDF
 command=§§OC_PATH§§/scripts/launch_IN.sh $filename
 
 [mem_reconciliation]
 watch=/var/share/sortant/
 recursive=true
-events=close,move
+events=nowrite_close
 include_extensions=pdf,PDF
 command=§§OC_PATH§§/scripts/launch_reconciliation.sh $filename
 
