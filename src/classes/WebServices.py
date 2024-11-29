@@ -68,7 +68,7 @@ class WebServices:
 
     def retrieve_contact_by_id(self, contact_id):
         """
-        Search a contact into MEM Courrier database using mail
+        Search a contact into MEM Courrier database using id
 
         :param contact_id: id to search
         :return: Contact from MEM Courrier
