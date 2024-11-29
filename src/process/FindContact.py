@@ -186,7 +186,7 @@ class FindContact(Thread):
                     'ia_tmp_contact_id': temporary_contact['id']
                 }
 
-                if 'civility' in contact and 'id' in contact['civility']:
+                if 'civility' in contact and contact['civility'] and 'id' in contact['civility']:
                     contact['civility'] = contact['civility']['id']
 
                 self.web_service.update_contact_external_id(contact)
