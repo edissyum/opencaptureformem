@@ -128,6 +128,7 @@ class FindContact(Thread):
                     found_contact[MAPPING[key]] = ''
 
         contact = {}
+        contact_mail = {}
         if (('email' not in found_contact or not found_contact['email']) and
                 ('phone' not in found_contact or not found_contact['phone'])):
             self.start()
@@ -144,10 +145,10 @@ class FindContact(Thread):
 
             if contact:
                 self.log.info('Contact found using email : ' + found_contact['email'])
-                contact = self.web_service.retrieve_contact_by_id(contact['id'])
-                match_contact = self.compare_contact(contact, found_contact)
+                contact_mail = self.web_service.retrieve_contact_by_id(contact['id'])
+                match_contact = self.compare_contact(contact_mail, found_contact)
                 if match_contact:
-                    return contact
+                    return contact_mail
                 self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
 
         if 'phone' in found_contact and found_contact['phone']:
@@ -176,7 +177,11 @@ class FindContact(Thread):
 
         found_contact['status'] = 'TMP'
         if not contact:
-            self.log.info('No contact found, create a temporary contact')
+            if contact_mail:
+                self.log.info('No contact found using phone, use contact found using email')
+                contact = contact_mail
+            else:
+                self.log.info('No contact found, create a temporary contact')
 
         res, temporary_contact = self.web_service.create_contact(found_contact)
         if res:
