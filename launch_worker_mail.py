@@ -225,9 +225,11 @@ if check:
                 Log.info('E-mail with unique id ' + msg_id + ' already processed, skipping...')
                 continue
 
-            with open(path_without_time + f'/unique_id_already_processed_{process}', 'a', encoding='UTF-8') as uid_file:
-                uid_file.write(msg_id + ';')
-                uid_file.close()
+            if config_mail.cfg[process].get('store_unique_id_already_processed') is None or str2bool(config_mail.cfg[process]['store_unique_id_already_processed']):
+                with open(path_without_time + f'/unique_id_already_processed_{process}', 'a',
+                          encoding='UTF-8') as uid_file:
+                    uid_file.write(msg_id + ';')
+                    uid_file.close()
 
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8, add_mail_headers_in_body, Log)
