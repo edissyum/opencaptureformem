@@ -185,7 +185,44 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     column = last_map['column']
                                     if last_map['isCustom'] == 'True':
                                         if mapping[cpt]['isAddress'] == 'True':
-                                            args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets.strip()
+                                            if mapping[cpt]['containsCoordinates'] == 'True':
+                                                full_address_without_coordinates = re.sub(r'Latitude.*', '', text_without_brackets).strip()
+
+                                                args['data']['customFields'][column][0]['addressStreet'] = full_address_without_coordinates
+
+                                                street_number = ""
+                                                if re.search(r'\d+', full_address_without_coordinates.split(',')[0]):
+                                                    street_number = re.search(r'\d+', full_address_without_coordinates.split(',')[
+                                                        0]).group()
+
+                                                if street_number:
+                                                    args['data']['customFields'][column][0][
+                                                        'addressNumber'] = street_number
+                                                    args['data']['customFields'][column][0]['addressStreet'] = re.sub(
+                                                        r'\d+', '',
+                                                        args['data']['customFields'][column][0]['addressStreet'],
+                                                        1).strip()
+
+                                                address_town = ""
+                                                for town in re.finditer('France, (.*?), France', full_address_without_coordinates):
+                                                    address_town = town.group(1)
+                                                args['data']['customFields'][column][0]['addressTown'] = address_town
+
+                                                zip_code = ""
+                                                for zip_code in re.finditer('\d{2}[ ]?\d{3}', full_address_without_coordinates):
+                                                    zip_code = zip_code.group().replace(' ', '')
+                                                args['data']['customFields'][column][0]['addressPostcode'] = zip_code
+
+                                                latitude = ""
+                                                longitude = ""
+                                                for lat in re.finditer('Latitude : (.*?),', text_without_brackets):
+                                                    latitude = lat.group(1)
+                                                for long in re.finditer('Longitude : (.*?),', text_without_brackets):
+                                                    longitude = long.group(1)
+                                                args['data']['customFields'][column][0]['latitude'] = latitude
+                                                args['data']['customFields'][column][0]['longitude'] = longitude
+                                            else:
+                                                args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets.strip()
                                         elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
                                             locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
                                             _date_format = mapping[cpt]['dateFormat']
