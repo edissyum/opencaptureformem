@@ -196,9 +196,15 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     else:
                                         args['data'][column] = text_without_brackets.strip()
 
-                res_contact = web_service.create_contact(results[contact_table])
-                if res_contact[0]:
-                    args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
+                res_contact = web_service.retrieve_contact_by_mail(results[contact_table]['email'])
+                if res_contact:
+                    log.info('Contact found using email : ' + results[contact_table]['email'])
+                    args['data']['senders'] = [{'id': res_contact['id'], 'type': 'contact'}]
+                else:
+                    res_contact = web_service.create_contact(results[contact_table])
+                    if res_contact[0]:
+                        args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
+
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[process_name])
                 if res:
                     log.info('Insert form from EMAIL OK : ' + str(res))
