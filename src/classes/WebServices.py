@@ -604,7 +604,7 @@ class WebServices:
 
     def retrieve_data(self, body_json):
         try:
-            res = requests.get(self.base_url + '/data', auth=self.auth, data=json.dumps(body_json),
+            res = requests.get(self.base_url + '/database/select', auth=self.auth, data=json.dumps(body_json),
                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
                                timeout=self.timeout, verify=self.cert)
             if res.status_code != 200:
