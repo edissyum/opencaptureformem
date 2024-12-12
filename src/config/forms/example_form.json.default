@@ -65,6 +65,7 @@
                             "isDate": "False",
                             "dateFormat": "",
                             "isAddress": "False",
+                            "addressFormat": "",
                             "column": "12"
                         }
                     ]
@@ -78,13 +79,7 @@
                             "isDate": "False",
                             "dateFormat": "",
                             "isAddress": "True",
-                            "column": "2"
-                        },
-                        {
-                            "isCustom": "True",
-                            "isDate": "False",
-                            "dateFormat": "",
-                            "isAddress": "True",
+                            "addressFormat": "\\[latitude,longitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
                             "column": "2"
                         }
                     ]

@@ -23,6 +23,31 @@ import locale
 from datetime import datetime
 from bs4 import BeautifulSoup
 
+def extract_address_from_format(line, address_format, log):
+    line = re.sub(r'\s+', ' ', line).strip()
+    line = line.replace(" ,", ",")
+
+    field_regex_map = {
+        "addressNumber": r"\d+",
+        "addressStreet": r"[A-Za-zÀ-ÿ'\s\-]+",
+        "addressPostcode": r"\d{5}",
+        "addressTown": r"[A-Za-zÀ-ÿ'\s\-]+",
+        "addressCountry": r"[A-Za-zÀ-ÿ'\s\-]+",
+        "latitude": r"[-+]?\d*\.\d+",
+        "longitude": r"[-+]?\d*\.\d+"
+    }
+
+    pattern = address_format
+    for placeholder, regex in field_regex_map.items():
+        pattern = pattern.replace(placeholder, f"(?P<{placeholder}>{regex})")
+
+    match = re.search(pattern, line)
+    if match:
+        log.info("Address match found:" + str(match.groupdict()))
+        return match.groupdict()
+
+    log.warning("No address match found.")
+    return {}
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
     json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
@@ -143,96 +168,28 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                         column = field['column']
                         regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
                         if regex_return:
-                            if column != 'custom':
-                                args['data'][column] = re.sub(r'\s+', ' ', regex_return[0].strip())
+                            text_data = regex_return[0].strip()
+                            args['data'][column] = re.sub(r'\s+', ' ', text_data)
 
-                            # If we have a mapping specified, search for value between []
                             if 'mapping' in field:
                                 mapping = field['mapping']
-                                brackets = re.findall(r'\[(.*?)]', regex_return[0])
-                                text_without_brackets = re.sub(r'\[(.*?)]', '', regex_return[0]).strip()
-                                cpt = 0
-
-                                for value in brackets:
-                                    if cpt < len(mapping):
-                                        column = mapping[cpt]['column']
-                                        if mapping[cpt]['isCustom'] == 'True':
-                                            if mapping[cpt]['isAddress'] == 'True':
-                                                latitude = value.split(',')[0]
-                                                longitude = value.split(',')[1]
-                                                zip_code = ""
-                                                for zip_code in re.finditer('\d{2}[ ]?\d{3}', text_without_brackets):
-                                                    zip_code = zip_code.group().replace(' ', '')
-                                                args['data']['customFields'].update({
-                                                    column: [{
-                                                        'latitude': latitude,
-                                                        'longitude': longitude,
-                                                        "addressTown": "",
-                                                        "addressNumber": "",
-                                                        "addressStreet": "",
-                                                        "addressPostcode": zip_code,
-                                                    }]
-                                                })
-                                            else:
-                                                args['data']['customFields'].update({column: value.strip()})
+                                if mapping[cpt]['isCustom'] == 'True':
+                                    if mapping[cpt]['isAddress'] == 'True':
+                                        extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
+                                        if not extracted_address or extracted_address == {}:
+                                            args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
                                         else:
-                                            args['data'][column] = value.strip()
-                                    cpt = cpt + 1
+                                            args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
 
-                                # Put the rest of the text (not in brackets) into the last map (if the cpt into mapping correponds)
-                                if len(brackets) + 1 == len(mapping):
-                                    last_map = mapping[len(mapping) - 1]
-                                    column = last_map['column']
-                                    if last_map['isCustom'] == 'True':
-                                        if mapping[cpt]['isAddress'] == 'True':
-                                            if mapping[cpt]['containsCoordinates'] == 'True':
-                                                full_address_without_coordinates = re.sub(r'Latitude.*', '', text_without_brackets).strip()
-
-                                                args['data']['customFields'][column][0]['addressStreet'] = full_address_without_coordinates
-
-                                                street_number = ""
-                                                if re.search(r'\d+', full_address_without_coordinates.split(',')[0]):
-                                                    street_number = re.search(r'\d+', full_address_without_coordinates.split(',')[
-                                                        0]).group()
-
-                                                if street_number:
-                                                    args['data']['customFields'][column][0][
-                                                        'addressNumber'] = street_number
-                                                    args['data']['customFields'][column][0]['addressStreet'] = re.sub(
-                                                        r'\d+', '',
-                                                        args['data']['customFields'][column][0]['addressStreet'],
-                                                        1).strip()
-
-                                                address_town = ""
-                                                for town in re.finditer('France, (.*?), France', full_address_without_coordinates):
-                                                    address_town = town.group(1)
-                                                args['data']['customFields'][column][0]['addressTown'] = address_town
-
-                                                zip_code = ""
-                                                for zip_code in re.finditer('\d{2}[ ]?\d{3}', full_address_without_coordinates):
-                                                    zip_code = zip_code.group().replace(' ', '')
-                                                args['data']['customFields'][column][0]['addressPostcode'] = zip_code
-
-                                                latitude = ""
-                                                longitude = ""
-                                                for lat in re.finditer('Latitude : (.*?),', text_without_brackets):
-                                                    latitude = lat.group(1)
-                                                for long in re.finditer('Longitude : (.*?),', text_without_brackets):
-                                                    longitude = long.group(1)
-                                                args['data']['customFields'][column][0]['latitude'] = latitude
-                                                args['data']['customFields'][column][0]['longitude'] = longitude
-                                            else:
-                                                args['data']['customFields'][column][0]['addressStreet'] = text_without_brackets.strip()
-                                        elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
-                                            locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
-                                            _date_format = mapping[cpt]['dateFormat']
-                                            _date = datetime.strptime(text_without_brackets.strip(), _date_format)
-                                            args['data']['customFields'].update({column: str(_date)})
-                                        else:
-                                            args['data']['customFields'].update({column: text_without_brackets.strip()})
+                                    elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
+                                        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                                        _date_format = mapping[cpt]['dateFormat']
+                                        _date = datetime.strptime(text_data, _date_format)
+                                        args['data']['customFields'].update({mapping[cpt]['column']: str(_date)})
                                     else:
-                                        args['data'][column] = text_without_brackets.strip()
-
+                                        args['data']['customFields'].update({mapping[cpt]['column']: text_data})
+                                else:
+                                    args['data'][column] = text_data
                 res_contact = web_service.retrieve_contact_by_mail(results[contact_table]['email'])
                 if res_contact:
                     log.info('Contact found using email : ' + results[contact_table]['email'])
