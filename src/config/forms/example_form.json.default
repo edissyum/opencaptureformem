@@ -89,7 +89,7 @@
                             "isDate": "False",
                             "dateFormat": "",
                             "isAddress": "True",
-                            "addressFormat": "\\[latitude,longitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
+                            "addressFormat": "\\[addressLatitude,addressLongitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
                             "column": "2"
                         }
                     ]

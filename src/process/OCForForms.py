@@ -33,8 +33,8 @@ def extract_address_from_format(line, address_format, log):
         "addressPostcode": r"\d{5}",
         "addressTown": r"[A-Za-zÀ-ÿ'\s\-]+",
         "addressCountry": r"[A-Za-zÀ-ÿ'\s\-]+",
-        "latitude": r"[-+]?\d*\.\d+",
-        "longitude": r"[-+]?\d*\.\d+"
+        "addressLatitude": r"[-+]?\d*\.\d+",
+        "addressLongitude": r"[-+]?\d*\.\d+"
     }
 
     pattern = address_format
@@ -185,6 +185,10 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if mapping[cpt]['isAddress'] == 'True':
                                         extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
                                         if not extracted_address or extracted_address == {}:
+                                            if 'addressLatitude' in mapping[cpt]['column']:
+                                                extracted_address['latitude'] = extracted_address.pop('addressLatitude')
+                                            if 'addressLongitude' in mapping[cpt]['column']:
+                                                extracted_address['longitude'] = extracted_address.pop('addressLongitude')
                                             args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
                                         else:
                                             args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
