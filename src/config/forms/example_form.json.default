@@ -57,6 +57,16 @@
                     "column": "subject"
                 },
                 {
+                    "regex": "Catégorie\\s*:\\s*(.+)",
+                    "column": "doctype",
+                    "databaseAssociation": {
+                        "tableName": "doctypes",
+                        "column": "type_id",
+                        "filterColumn": "description",
+                        "operator": "like"
+                    }
+                },
+                {
                     "regex": "Précisions\\s*:\\s*(.+)",
                     "column": "custom",
                     "mapping": [
