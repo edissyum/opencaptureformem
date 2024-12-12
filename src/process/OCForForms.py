@@ -185,12 +185,12 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                     if mapping[cpt]['isAddress'] == 'True':
                                         extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
                                         if not extracted_address or extracted_address == {}:
-                                            if 'addressLatitude' in mapping[cpt]['column']:
-                                                extracted_address['latitude'] = extracted_address.pop('addressLatitude')
-                                            if 'addressLongitude' in mapping[cpt]['column']:
-                                                extracted_address['longitude'] = extracted_address.pop('addressLongitude')
                                             args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
                                         else:
+                                            if 'addressLatitude' in extracted_address:
+                                                extracted_address['latitude'] = extracted_address.pop('addressLatitude')
+                                            if 'addressLongitude' in extracted_address:
+                                                extracted_address['longitude'] = extracted_address.pop('addressLongitude')
                                             args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
 
                                     elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
