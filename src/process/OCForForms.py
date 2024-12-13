@@ -198,27 +198,29 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
                             if 'mapping' in field:
                                 mapping = field['mapping']
-                                if mapping[cpt]['isCustom'] == 'True':
-                                    if mapping[cpt]['isAddress'] == 'True':
-                                        extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
-                                        if not extracted_address or extracted_address == {}:
-                                            args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
-                                        else:
-                                            if 'addressLatitude' in extracted_address:
-                                                extracted_address['latitude'] = extracted_address.pop('addressLatitude')
-                                            if 'addressLongitude' in extracted_address:
-                                                extracted_address['longitude'] = extracted_address.pop('addressLongitude')
-                                            args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
+                                for cpt in range(len(mapping)):
+                                    if mapping[cpt]['isCustom'] == 'True':
+                                        if mapping[cpt]['isAddress'] == 'True':
+                                            extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
+                                            if not extracted_address or extracted_address == {}:
+                                                args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
+                                            else:
+                                                if 'addressLatitude' in extracted_address:
+                                                    extracted_address['latitude'] = extracted_address.pop('addressLatitude')
+                                                if 'addressLongitude' in extracted_address:
+                                                    extracted_address['longitude'] = extracted_address.pop('addressLongitude')
+                                                args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
 
-                                    elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
-                                        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
-                                        _date_format = mapping[cpt]['dateFormat']
-                                        _date = datetime.strptime(text_data, _date_format)
-                                        args['data']['customFields'].update({mapping[cpt]['column']: str(_date)})
+                                        elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
+                                            locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                                            _date_format = mapping[cpt]['dateFormat']
+                                            _date = datetime.strptime(text_data, _date_format)
+                                            args['data']['customFields'].update({mapping[cpt]['column']: str(_date)})
+                                        else:
+                                            args['data']['customFields'].update({mapping[cpt]['column']: text_data})
                                     else:
-                                        args['data']['customFields'].update({mapping[cpt]['column']: text_data})
-                                else:
-                                    args['data'][column] = text_data
+                                        args['data'][column] = text_data
+                                    cpt += 1
                 res_contact = web_service.retrieve_contact_by_mail(results[contact_table]['email'])
                 if res_contact:
                     log.info('Contact found using email : ' + results[contact_table]['email'])
