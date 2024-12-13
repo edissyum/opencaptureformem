@@ -67,6 +67,22 @@
                     }
                 },
                 {
+                    "regex": "Catégorie\\s*:\\s*(.+)",
+                    "column": "destination",
+                    "correspondance_table": {
+                      "Arbres": "EDDB",
+                      "Haies et arbustes": "EDAA",
+                      "Arrosage et fuite d’eau": "EDFA",
+                      "Désherbage/tonte": "EDAA"
+                    },
+                    "databaseAssociation": {
+                        "tableName": "entities",
+                        "column": "id",
+                        "filterColumn": "entity_id",
+                        "operator": "="
+                    }
+                },
+                {
                     "regex": "Précisions\\s*:\\s*(.+)",
                     "column": "custom",
                     "mapping": [

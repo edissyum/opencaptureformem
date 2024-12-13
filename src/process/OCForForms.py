@@ -170,12 +170,26 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                         if regex_return:
                             text_data = regex_return[0].strip()
                             if column != 'custom':
-                                if field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
+                                if field.get('correspondance_table') is not None and field['correspondance_table'] is not None and field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
+                                    for correspondance in field['correspondance_table']:
+                                        if text_data.lower() == correspondance.lower():
+                                            log.info('Found correspondance : ' + correspondance)
+                                            field['databaseAssociation']['filterValue'] = field['correspondance_table'][correspondance]
+                                            res = web_service.retrieve_data(field['databaseAssociation'])
+                                            if res and res[0] and res[0][field['databaseAssociation']['column']] is not None:
+                                                log.info('Found data ' + column + ' : ' + str(res[0][field['databaseAssociation']['column']]))
+                                                args['data'][column] = str(res[0][field['databaseAssociation']['column']])
+                                elif field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
                                     field['databaseAssociation']['filterValue'] = text_data
                                     res = web_service.retrieve_data(field['databaseAssociation'])
                                     if res and res[0] and res[0][field['databaseAssociation']['column']] is not None:
                                         log.info('Found data ' + column + ' : ' + str(res[0][field['databaseAssociation']['column']]))
                                         args['data'][column] = str(res[0][field['databaseAssociation']['column']])
+                                elif field.get('correspondance_table') is not None and field['correspondance_table'] is not None:
+                                    for correspondance in field['correspondance_table']:
+                                        if text_data.lower() == correspondance.lower():
+                                            log.info('Found correspondance : ' + correspondance)
+                                            args['data'][column] = field['correspondance_table'][correspondance]
                                 else:
                                     args['data'][column] = re.sub(r'\s+', ' ', text_data)
 
