@@ -168,7 +168,10 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                         column = field['column']
                         regex_return = re.findall(r'' + regex, line.replace('\n', ' '))
                         if regex_return:
-                            text_data = regex_return[0].strip()
+                            if isinstance(regex_return[0], tuple):
+                                text_data = ' | '.join(regex_return[0]).strip()
+                            else:
+                                text_data = regex_return[0].strip()
                             if column != 'custom':
                                 if field.get('correspondance_table') is not None and field['correspondance_table'] is not None and field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
                                     for correspondance in field['correspondance_table']:
