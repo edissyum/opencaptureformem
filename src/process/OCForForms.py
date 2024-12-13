@@ -220,7 +220,6 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                             args['data']['customFields'].update({mapping[cpt]['column']: text_data})
                                     else:
                                         args['data'][column] = text_data
-                                    cpt += 1
                 res_contact = web_service.retrieve_contact_by_mail(results[contact_table]['email'])
                 if res_contact:
                     log.info('Contact found using email : ' + results[contact_table]['email'])
