@@ -601,3 +601,16 @@ class WebServices:
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('UpdateContactError : ' + str(e))
             return False, str(e)
+
+    def retrieve_data(self, body_json):
+        try:
+            res = requests.get(self.base_url + '/database/select', auth=self.auth, data=json.dumps(body_json),
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+            if res.status_code != 200:
+                self.log.error('RetrieveDataError : ' + str(res.text))
+                return False, str(res.text)
+            return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('RetrieveDataError : ' + str(e))
+            return False, str(e)
