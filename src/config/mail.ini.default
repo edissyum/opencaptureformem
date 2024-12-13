@@ -65,6 +65,8 @@ priorityToMailFrom      = False
 importOnlyAttachments   = False
 extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
+store_unique_id_already_processed = True
+
 folderToCrawl           = _MEM
 folderDestination       = _MEM_ARCHIVES
 ; move or none

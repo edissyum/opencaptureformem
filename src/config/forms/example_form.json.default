@@ -57,6 +57,32 @@
                     "column": "subject"
                 },
                 {
+                    "regex": "Catégorie\\s*:\\s*(.+)",
+                    "column": "doctype",
+                    "databaseAssociation": {
+                        "tableName": "doctypes",
+                        "column": "type_id",
+                        "filterColumn": "description",
+                        "operator": "like"
+                    }
+                },
+                {
+                    "regex": "Catégorie\\s*:\\s*(.+)",
+                    "column": "destination",
+                    "correspondance_table": {
+                      "Arbres": "EDDB",
+                      "Haies et arbustes": "EDAA",
+                      "Arrosage et fuite d’eau": "EDFA",
+                      "Désherbage/tonte": "EDAA"
+                    },
+                    "databaseAssociation": {
+                        "tableName": "entities",
+                        "column": "id",
+                        "filterColumn": "entity_id",
+                        "operator": "="
+                    }
+                },
+                {
                     "regex": "Précisions\\s*:\\s*(.+)",
                     "column": "custom",
                     "mapping": [
@@ -65,6 +91,7 @@
                             "isDate": "False",
                             "dateFormat": "",
                             "isAddress": "False",
+                            "addressFormat": "",
                             "column": "12"
                         }
                     ]
@@ -78,13 +105,7 @@
                             "isDate": "False",
                             "dateFormat": "",
                             "isAddress": "True",
-                            "column": "2"
-                        },
-                        {
-                            "isCustom": "True",
-                            "isDate": "False",
-                            "dateFormat": "",
-                            "isAddress": "True",
+                            "addressFormat": "\\[addressLatitude,addressLongitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
                             "column": "2"
                         }
                     ]
