@@ -152,9 +152,13 @@ class WebServices:
         :param custom_fields: custom fields to add to the document
         :return: res_id from MEM Courrier
         """
+
+        external_contact_id = None
         if not contact:
             contact = {}
         else:
+            if 'externalId' in contact and contact['externalId'] and 'ia_tmp_contact_id' in contact['externalId']:
+                external_contact_id = contact['externalId']['ia_tmp_contact_id']
             contact = [{'id': contact['id'], 'type': 'contact'}]
 
         if not date:
@@ -190,6 +194,9 @@ class WebServices:
             'diffusionList': _process['diffusion_list'] if 'diffusion_list' in _process else [],
             'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
         }
+
+        if external_contact_id:
+            data['externalId'] = {'ia_tmp_contact_id': external_contact_id}
 
         if 'diffusion_list' not in _process or not _process['diffusion_list']:
             data['emptyDiffusionList'] = True
