@@ -35,6 +35,8 @@ tmpPath         = /tmp/
 divider         = _
 # Enable blank page removal
 removeBlankPage = True
+# Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
+minConvexity    = 0.5
 # Recognition threshold
 blobsratio      = 1E-6
 
