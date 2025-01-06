@@ -23,6 +23,7 @@ import locale
 from datetime import datetime
 from bs4 import BeautifulSoup
 
+
 def extract_address_from_format(line, address_format, log):
     line = re.sub(r'\s+', ' ', line).strip()
     line = line.replace(" ,", ",")
@@ -46,7 +47,7 @@ def extract_address_from_format(line, address_format, log):
         log.info("Address match found:" + str(match.groupdict()))
         return match.groupdict()
 
-    log.warning("No address match found.")
+    log.info("No address match found.")
     return {}
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
