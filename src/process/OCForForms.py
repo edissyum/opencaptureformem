@@ -29,8 +29,8 @@ def extract_address_from_format(line, address_format, log):
     line = line.replace(" ,", ",")
 
     field_regex_map = {
-        "addressNumber": r"\d+",
-        "addressStreet": r"[A-Za-zÀ-ÿ'\s\-]+",
+        "addressNumber": r"\d+[A-Za-zÀ-ÿ]?",
+        "addressStreet": r"[A-Za-zÀ-ÿ0-9'\s\-]+",
         "addressPostcode": r"\d{5}",
         "addressTown": r"[A-Za-zÀ-ÿ'\s\-]+",
         "addressCountry": r"[A-Za-zÀ-ÿ'\s\-]+",
