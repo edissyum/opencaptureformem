@@ -23,6 +23,7 @@ import locale
 from datetime import datetime
 from bs4 import BeautifulSoup
 
+
 def extract_address_from_format(line, address_format, log):
     line = re.sub(r'\s+', ' ', line).strip()
     line = line.replace(" ,", ",")
@@ -40,6 +41,7 @@ def extract_address_from_format(line, address_format, log):
     pattern = address_format
     for placeholder, regex in field_regex_map.items():
         pattern = pattern.replace(placeholder, f"(?P<{placeholder}>{regex})")
+
     match = re.search(pattern, line)
     if match:
         log.info("Address match found:" + str(match.groupdict()))
