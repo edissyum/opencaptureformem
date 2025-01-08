@@ -29,7 +29,7 @@ def extract_address_from_format(line, address_format, log):
     line = line.replace(" ,", ",")
 
     field_regex_map = {
-        "addressNumber": r"\d+[A-Za-zÀ-ÿ]?",
+        "addressNumber": r"\d+[A-Za-zÀ-ÿ\-]*|",
         "addressStreet": r"[A-Za-zÀ-ÿ0-9'\s\-]+",
         "addressPostcode": r"\d{5}",
         "addressTown": r"[A-Za-zÀ-ÿ'\s\-]+",
@@ -44,8 +44,13 @@ def extract_address_from_format(line, address_format, log):
 
     match = re.search(pattern, line)
     if match:
-        log.info("Address match found:" + str(match.groupdict()))
-        return match.groupdict()
+        result = match.groupdict()
+
+        if not result.get("addressNumber"):
+            result["addressNumber"] = ""
+
+        log.info("Address match found:" + str(result))
+        return result
 
     log.info("No address match found.")
     return {}
