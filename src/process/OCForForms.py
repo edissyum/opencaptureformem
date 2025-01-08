@@ -23,15 +23,10 @@ import locale
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-def clean_line(line):
-    line = re.sub(r"<[^>]*>", "", line)
-    line = re.sub(r'\s+', ' ', line).strip()
-    return line
-
 def extract_address_from_format(line, address_format, log):
     line = re.sub(r'\s+', ' ', line).strip()
     line = line.replace(" ,", ",")
-    line = clean_line(line)
+
     field_regex_map = {
 	"addressNumber": r"\d+[A-Za-zÀ-ÿ]?",
         "addressStreet": r"[A-Za-zÀ-ÿ0-9'\s\-]+",
