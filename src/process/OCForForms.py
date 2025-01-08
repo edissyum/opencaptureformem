@@ -24,9 +24,8 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 def clean_line(line):
-    """Nettoie la ligne en supprimant les balises HTML et espaces inutiles."""
-    line = re.sub(r"<[^>]*>", "", line)  # Supprime les balises HTML
-    line = re.sub(r'\s+', ' ', line).strip()  # Réduit les espaces multiples
+    line = re.sub(r"<[^>]*>", "", line)
+    line = re.sub(r'\s+', ' ', line).strip()
     return line
 
 def extract_address_from_format(line, address_format, log):
