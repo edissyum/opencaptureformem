@@ -148,7 +148,10 @@ compress_type   = None
 
 [REATTACH_DOCUMENT]
 active = True
+; ID of the manual reconciliation action
 action =
+; ID of the webservice user group (need to be linked to the basket)
 group  =
+; Id of reconciliation basket
 basket =
 status = EENV
