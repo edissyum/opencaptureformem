@@ -70,7 +70,7 @@ class Separator:
         params.filterByCircularity = True
         params.minCircularity = 0.1
         params.filterByConvexity = True
-        params.minConvexity = 0.87
+        params.minConvexity = float(config['SEPARATOR_QR']['minconvexity'])
         params.filterByInertia = True
         params.minInertiaRatio = 0.01
 

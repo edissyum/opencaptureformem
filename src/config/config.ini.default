@@ -35,6 +35,8 @@ tmpPath         = /tmp/
 divider         = _
 # Enable blank page removal
 removeBlankPage = True
+# Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
+minConvexity    = 0.5
 # Recognition threshold
 blobsratio      = 1E-6
 
@@ -146,7 +148,10 @@ compress_type   = None
 
 [REATTACH_DOCUMENT]
 active = True
+; ID of the manual reconciliation action
 action =
+; ID of the webservice user group (need to be linked to the basket)
 group  =
+; Id of reconciliation basket
 basket =
 status = EENV

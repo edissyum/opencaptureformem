@@ -27,6 +27,7 @@ import src.classes.Separator as separatorClass
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--config", required=True, help="path to config.ini")
 ap.add_argument("-f", "--file", required=False, help="path to file")
+ap.add_argument("-p", "--process", required=False, help="process name")
 args = vars(ap.parse_args())
 
 output_dir = os.path.dirname(args['file']) + '/'
@@ -35,7 +36,7 @@ config = configClass.Config()
 config.load_file(args['config'])
 log = logClass.Log(config.cfg['GLOBAL']['logfile'])
 tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
-separator = separatorClass.Separator(log, config, tmp_folder, 'OCForMEM_reconciliation_default')
+separator = separatorClass.Separator(log, config, tmp_folder, f'OCForMEM_{args['process']}')
 separator.enabled = True
 separator.run(args['file'])
 

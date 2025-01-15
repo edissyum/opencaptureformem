@@ -211,7 +211,7 @@ def launch(args):
         separator.enabled = str2bool(config.cfg[_process]['separator_qr'])
 
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
-        separator.enabled = str2bool(config.cfg['OCForMEM_reconciliation_default']['separator_qr'])
+        separator.enabled = str2bool(config_mail.cfg[_process]['separator_qr'])
 
     if args.get('file') is not None:
         path = args['file']
