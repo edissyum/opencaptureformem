@@ -322,7 +322,7 @@ cp "$defaultPath"/src/config/custom.json.default "$defaultPath"/src/config/custo
 ####################
 # Fill Addin Outlook manifest file with secret key
 cp "$defaultPath/src/app/addin_outlook/manifest.xml.default" "$defaultPath/src/app/addin_outlook/manifest.xml"
-sed -i "s#§§SECRET_KEY§§#$secret#g" "$defaultPath/src/app/addin_outlook/manifest.xml.default"
+sed -i "s#§§SECRET_KEY§§#$secret#g" "$defaultPath/src/app/addin_outlook/manifest.xml"
 
 ####################
 # Create the Apache service for the API

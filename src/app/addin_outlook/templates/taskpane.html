@@ -26,7 +26,7 @@
             <span class="ms-Button-label">Executer le processus</span>
         </button>
         <div id="error">
-            <p id="error-message">
+            <p id="error-message" class="{{'error' if error_message }}">
                 {% if error_message %}
                     {{ error_message }}
                 {% endif %}
