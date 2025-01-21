@@ -235,6 +235,10 @@ Your Apache2 configuration **MUST BE SSL** (https) to use the add-in. A default 
 
 Modify the **SSLCertificateFile** and **SSLCertificateKeyFile** paths to match your certificate and restart apache2
 
+    sudo a2dissite opencaptureformem.conf
+    sudo a2ensite opencaptureformem-ssl.conf
+    sudo systemctl restart apache2
+
 Then, you need to replace the **YOUR_SERVER_URL** in the **manifest.xml** file by your server URL
 
 Exemple :

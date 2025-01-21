@@ -364,7 +364,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
     SSLCertificateFile      /path/to/signed_cert_and_intermediate_certs_and_dhparams
     SSLCertificateKeyFile   /path/to/private_key
 
-    <Directory "/home/nch01@edissyum.lan/PycharmProjects/oc_for_mem">
+    <Directory "$defaultPath">
         AllowOverride All
         Options +Indexes
         WSGIProcessGroup opencaptureformem
