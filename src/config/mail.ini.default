@@ -63,6 +63,7 @@ priorityToMailSubject   = False
 priorityToMailDate      = False
 priorityToMailFrom      = False
 importOnlyAttachments   = False
+separator_qr            = False
 extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
 store_unique_id_already_processed = True

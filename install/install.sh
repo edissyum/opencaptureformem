@@ -15,7 +15,7 @@ normal=$(tput sgr0)
 defaultPath=/opt/edissyum/opencaptureformem/
 imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
-group=$(who am i | awk '{print $1}')
+group=www-data
 
 ####################
 # Handle parameters
@@ -165,11 +165,6 @@ chmod u+x scripts/MailCollect/*.sh
 # Modify default config
 cp $defaultPath/src/config/config.ini.default $defaultPath/src/config/config.ini
 cp $defaultPath/src/config/mail.ini.default $defaultPath/src/config/mail.ini
-
-####################
-# Fix rights
-chmod -R 775 $defaultPath
-chown -R "$user":"$group" $defaultPath
 
 ####################
 # Fix ImageMagick Policies
@@ -390,6 +385,11 @@ a2enmod rewrite
 systemctl restart apache2
 
 usermod -aG www-data "$user"
+
+####################
+# Fix rights
+chmod -R 775 $defaultPath
+chown -R "$user":"$group" $defaultPath
 
 echo ""
 echo "#######################################################################################################################"

@@ -556,10 +556,19 @@ Here are some possible responses :
 <tr>
 <td> 500 </td>
 <td>
-Internal Server Error    
+Internal Server Error
 </td>
 </tr>
 </table>
+
+# Addin Outlook
+## Send email to MEM Courrier within Outlook
+
+First of all, you need to have a valid GraphQL setup in your mail.ini file
+
+Also, you need a valid Office365 subscription to install custom add-ins
+
+https://aka.ms/olksideload
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
