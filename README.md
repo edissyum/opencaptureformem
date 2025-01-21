@@ -59,31 +59,31 @@ In most cases you had to modify the <code>/etc/ImageMagick-6/policy.xml</code> f
 The file <code>src/config/config.ini</code> is splitted in different categories
 
 - Global
-  - Choose the number of threads used to multi-threads (5 by defaults)
-  - Resolution and compressionQuality when PDF are converted to JPG
-  - List of char to be remove to sanitize detected email
-  - Set the default path of the project (default : **/opt/edissyum/opencaptureformem/**)
-  - tmpPath, no need to modify
-  - errorPath, no need to modify
-  - Path to the logFile, no need to modify
+    - Choose the number of threads used to multi-threads (5 by defaults)
+    - Resolution and compressionQuality when PDF are converted to JPG
+    - List of char to be remove to sanitize detected email
+    - Set the default path of the project (default : **/opt/edissyum/opencaptureformem/**)
+    - tmpPath, no need to modify
+    - errorPath, no need to modify
+    - Path to the logFile, no need to modify
 - Locale
-  - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
-  - Choose the locale of OCR (see the langcodes of Tesseract)
-  - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
+    - Choose the locale for text recognition (about date format and regex), by default it's **fr_FR** or **en_EN** but you can add more (see further in the README)
+    - Choose the locale of OCR (see the langcodes of Tesseract)
+    - Path for the locale JSON file for date (related to the first option of Locale), no need to modify
 - Regex
-  - Add extensions to detect URL during text detection
+    - Add extensions to detect URL during text detection
 - Separator_QR
-  - Enable or disable
-  - Choose to export PDF or PDF/A
-  - Path to export PDF or PDF/A, no need to modify
-  - Tmp path, no need to modify
-  - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
+    - Enable or disable
+    - Choose to export PDF or PDF/A
+    - Path to export PDF or PDF/A, no need to modify
+    - Tmp path, no need to modify
+    - Modify the default divider if needed (eg. DGS_XXX.pdf or DGS-XXX.pdf)
 - Open-Capture for MEM Courrier
-  - Link to **/rest** API of MEM Courrier with User and Password
-  - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
-  - Uppercase the subject automatically
+    - Link to **/rest** API of MEM Courrier with User and Password
+    - Do not process date when difference between date found and today date is older than timeDelta. -1 to disable it
+    - Uppercase the subject automatically
 - OCForMEM_**process_name**
-  - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
+    - Default metadata to insert documents (doctype, status, typist, priority, format, model_id and destination)
 
 To activate auto recontiliation for MEM Courrier outgoing document you must set this list of values in config.ini file (REATTACH_DOCUMENT part) :
 
@@ -271,10 +271,10 @@ chmod u+x regenerate_secret_key.sh
 You also need to specify the `custom_id` and the `config_file_path` in the `custom.json` file.
 ```json
 [
-  {
-    "custom_id": "opencaptureformem",
-    "config_file_path": "/opt/edissyum/opencaptureformem/src/config/config.ini"
-  }
+    {
+        "custom_id": "opencaptureformem",
+        "config_file_path": "/opt/edissyum/opencaptureformem/src/config/config.ini"
+    }
 ]
 ```
 
@@ -331,7 +331,7 @@ Here are some possible responses :
 
 ```json
 {
-  "token":"XXXXXXXX-XXXXXXXXX-XXXXXXXXX-XXXXXXXXX"
+    "token":"XXXXXXXX-XXXXXXXXX-XXXXXXXXX-XXXXXXXXX"
 }
 ```
 
@@ -344,7 +344,7 @@ Here are some possible responses :
 
 ```json
 {
-  "message":"Invalid secret key"
+    "message":"Invalid secret key"
 }
 ```
 
@@ -394,13 +394,13 @@ import requests
 
 url = "http://YOUR_SERVER_URL/opencaptureformem/upload"
 data = {
-  "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
-  "custom_id": "YOUR_CUSTOM_ID",
-  "process_name": "YOUR_PROCESS_NAME"
+    "files": [{"file_content": "BASE_64_FILE_CONTENT", "file_name": "FILE_NAME"}],
+    "custom_id": "YOUR_CUSTOM_ID",
+    "process_name": "YOUR_PROCESS_NAME"
 }
 headers = {
-  "Authorization": "Bearer GENERATED_TOKEN",
-  "Content-Type": "application/json"
+    "Authorization": "Bearer GENERATED_TOKEN",
+    "Content-Type": "application/json"
 }
 
 response = requests.post(url, json=data, headers=headers)
@@ -424,7 +424,7 @@ Here are some possible responses :
 
 ```json
 {
-  "message":"All files processed successfully"
+    "message":"All files processed successfully"
 }
 ```
 
@@ -439,7 +439,7 @@ Here are some possible responses :
 
 ```json
 {
-  "message":"custom_id XXXX not found in custom.json"
+    "message":"custom_id XXXX not found in custom.json"
 }
 ```
 
@@ -454,7 +454,7 @@ Here are some possible responses :
 
 ```json
 {
-  "message":"Each file must have a 'file_name' and 'file_content' key"
+    "message":"Each file must have a 'file_name' and 'file_content' key"
 }
 ```
 
@@ -502,11 +502,11 @@ import requests
 
 url = "http://YOUR_SERVER_URL/opencaptureformem/get_process_list"
 data = {
-  "custom_id": "YOUR_CUSTOM_ID"
+    "custom_id": "YOUR_CUSTOM_ID"
 }
 headers = {
-  "Authorization": "Bearer GENERATED_TOKEN",
-  "Content-Type": "application/json"
+    "Authorization": "Bearer GENERATED_TOKEN",
+    "Content-Type": "application/json"
 }
 
 response = requests.post(url, json=data, headers=headers)
@@ -529,7 +529,7 @@ Here are some possible responses :
 
 ```json
 {
-  "processes":["incoming","reconciliation_default","reconciliation_found"]
+    "processes":["incoming","reconciliation_default","reconciliation_found"]
 }
 ```
 
@@ -544,7 +544,7 @@ Here are some possible responses :
 
 ```json
 {
-  "message":"Invalid or expired token"
+    "message":"Invalid or expired token"
 }
 ```
 
@@ -568,7 +568,28 @@ First of all, you need to have a valid GraphQL setup in your mail.ini file
 
 Also, you need a valid Office365 subscription to install custom add-ins
 
-https://aka.ms/olksideload
+Your Apache2 configuration **MUST BE SSL** (https) to use the add-in. A default one is already created **/etc/apache2/sites-available/opencaptureformem-ssl.conf**
+Modify the **SSLCertificateFile** and **SSLCertificateKeyFile** paths to match your certificate and restart apache2
+
+Then, you need to replace the **YOUR_SERVER_URL** in the **manifest.xml** file by your server URL
+
+Exemple :
+
+    sed -i 's/§§SERVER_URL§§/exemple.edissyum.com/g' /opt/edissyum/opencaptureformem/src/app/addin_outlook/manifest.xml
+
+Then, click on the following link to install the MailCollect Addin https://aka.ms/olksideload and follow the instructions
+
+![Première étape](src/app/addin_outlook/static/assets/step1.jpg)
+
+Search for your manifest.xml file and select it to install it
+
+![Deuxième étape](src/app/addin_outlook/static/assets/step2.jpg)
+
+![Troisième étape](src/app/addin_outlook/static/assets/step3.jpg)
+
+Refresh your Outlook and you'll see the new add-in in the mail ribbon
+
+![Quatrième étape](src/app/addin_outlook/static/assets/step4.jpg)
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.

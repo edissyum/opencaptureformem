@@ -9,8 +9,8 @@
     <DefaultLocale>fr-FR</DefaultLocale>
     <DisplayName DefaultValue="Module MailCollect by Edissyum"/>
     <Description DefaultValue="Envoi de courriel dans le module MailCollect"/>
-    <IconUrl DefaultValue="https://localhost/opencaptureformem/assets/icon-64.png"/>
-    <HighResolutionIconUrl DefaultValue="https://localhost/opencaptureformem/assets/icon-128.png"/>
+    <IconUrl DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-64.png"/>
+    <HighResolutionIconUrl DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-128.png"/>
     <SupportUrl DefaultValue="https://edissyum.com"/>
     <AppDomains>
         <AppDomain>https://edissyum.com</AppDomain>
@@ -26,7 +26,7 @@
     <FormSettings>
         <Form xsi:type="ItemRead">
             <DesktopSettings>
-                <SourceLocation DefaultValue="https://localhost/opencaptureformem/getProcessList" />
+                <SourceLocation DefaultValue="https://§§SERVER_URL§§/opencaptureformem/getProcessList" />
                 <RequestedHeight>250</RequestedHeight>
             </DesktopSettings>
         </Form>
@@ -72,12 +72,12 @@
         </Hosts>
         <Resources>
             <bt:Images>
-                <bt:Image id="Icon.16x16" DefaultValue="https://localhost/opencaptureformem/assets/icon-16.png"/>
-                <bt:Image id="Icon.32x32" DefaultValue="https://localhost/opencaptureformem/assets/icon-32.png"/>
-                <bt:Image id="Icon.80x80" DefaultValue="https://localhost/opencaptureformem/assets/icon-80.png"/>
+                <bt:Image id="Icon.16x16" DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-16.png"/>
+                <bt:Image id="Icon.32x32" DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-32.png"/>
+                <bt:Image id="Icon.80x80" DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-80.png"/>
             </bt:Images>
             <bt:Urls>
-                <bt:Url id="Taskpane.Url" DefaultValue="https://localhost/opencaptureformem/getProcessList?secret_key=§§SECRET_KEY§§&amp;custom_id=opencaptureformem" />
+                <bt:Url id="Taskpane.Url" DefaultValue="https://§§SERVER_URL§§/opencaptureformem/getProcessList?secret_key=§§SECRET_KEY§§&amp;custom_id=opencaptureformem" />
             </bt:Urls>
             <bt:ShortStrings>
                 <bt:String id="GroupLabel" DefaultValue="Contoso Add-in"/>
