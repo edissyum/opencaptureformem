@@ -224,6 +224,36 @@ And in the json_file here is what you can do (ou can use the default one <code>s
 
 If you want specific data you could use <code>[]</code> into your line. For example you could check the <code>example_form.json</code> and <code>example_form.txt</code> to see the settings
 
+# Addin Outlook
+## Send email to MEM Courrier within Outlook
+
+First of all, you need to have a valid GraphQL setup in your mail.ini file
+
+Also, you need a valid Office365 subscription to install custom add-ins
+
+Your Apache2 configuration **MUST BE SSL** (https) to use the add-in. A default one is already created **/etc/apache2/sites-available/opencaptureformem-ssl.conf**
+
+Modify the **SSLCertificateFile** and **SSLCertificateKeyFile** paths to match your certificate and restart apache2
+
+Then, you need to replace the **YOUR_SERVER_URL** in the **manifest.xml** file by your server URL
+
+Exemple :
+
+    sed -i 's/§§SERVER_URL§§/exemple.edissyum.com/g' /opt/edissyum/opencaptureformem/src/app/addin_outlook/manifest.xml
+
+Then, click on the following link to install the MailCollect Addin https://aka.ms/olksideload and follow the instructions
+
+![Première étape](src/app/addin_outlook/static/assets/step1.jpg)
+
+Search for your manifest.xml file and select it to install it
+
+![Deuxième étape](src/app/addin_outlook/static/assets/step2.jpg)
+
+![Troisième étape](src/app/addin_outlook/static/assets/step3.jpg)
+
+Refresh your Outlook and you'll see the new add-in in the mail ribbon
+
+![Quatrième étape](src/app/addin_outlook/static/assets/step4.jpg)
 
 # Informations
 ## QRCode separation
@@ -560,36 +590,6 @@ Internal Server Error
 </td>
 </tr>
 </table>
-
-# Addin Outlook
-## Send email to MEM Courrier within Outlook
-
-First of all, you need to have a valid GraphQL setup in your mail.ini file
-
-Also, you need a valid Office365 subscription to install custom add-ins
-
-Your Apache2 configuration **MUST BE SSL** (https) to use the add-in. A default one is already created **/etc/apache2/sites-available/opencaptureformem-ssl.conf**
-Modify the **SSLCertificateFile** and **SSLCertificateKeyFile** paths to match your certificate and restart apache2
-
-Then, you need to replace the **YOUR_SERVER_URL** in the **manifest.xml** file by your server URL
-
-Exemple :
-
-    sed -i 's/§§SERVER_URL§§/exemple.edissyum.com/g' /opt/edissyum/opencaptureformem/src/app/addin_outlook/manifest.xml
-
-Then, click on the following link to install the MailCollect Addin https://aka.ms/olksideload and follow the instructions
-
-![Première étape](src/app/addin_outlook/static/assets/step1.jpg)
-
-Search for your manifest.xml file and select it to install it
-
-![Deuxième étape](src/app/addin_outlook/static/assets/step2.jpg)
-
-![Troisième étape](src/app/addin_outlook/static/assets/step3.jpg)
-
-Refresh your Outlook and you'll see the new add-in in the mail ribbon
-
-![Quatrième étape](src/app/addin_outlook/static/assets/step4.jpg)
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
