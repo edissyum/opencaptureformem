@@ -255,6 +255,11 @@ class Mail:
                 emails.append(mail)
         return emails
 
+    def retrieve_message_by_id(self, mail_id):
+        url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/messages/' + mail_id
+        message = graphql_request(url, 'GET', None, self.graphql_headers)
+        return message
+
     def get_mail_values(self, msg):
         if self.auth_method.lower() == 'exchange':
             msg_id = str(msg.conversation_id.id)
