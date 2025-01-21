@@ -89,7 +89,7 @@ def graphql_request(url, method, data, headers):
         return requests.post(url, data=data, headers=headers, timeout=30)
 
 
-def process_mail(mail_id, custom_id, process_name):
+def process_mail(mail_id, custom_id, process_name, note):
     config_path, error = get_custom_config_file_path(custom_id)
     if error:
         return {"error": error}, 400
@@ -195,6 +195,8 @@ def process_mail(mail_id, custom_id, process_name):
         ret, file = mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process_name], batch_path, Log)
         _from = ret['mail']['emailFrom']
         document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
+        print('document_date', document_date)
+        print(document_date.strftime('%d/%m/%Y %H:%M:%S'))
         launch({
             'cpt': '1',
             'file': file,
@@ -210,6 +212,7 @@ def process_mail(mail_id, custom_id, process_name):
             'config_mail': config_mail_path,
             'batch_path': batch_path,
             'nb_of_mail': '1',
+            'notes': [note],
             'attachments': ret['attachments'],
             'extensionsAllowed': extensionsAllowed,
             'log': batch_path + '/' + date_batch + '.log',

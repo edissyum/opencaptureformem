@@ -26,6 +26,7 @@ import shutil
 import base64
 import chardet
 import requests
+import datetime
 import mimetypes
 from ssl import SSLError
 from socket import gaierror
@@ -507,6 +508,9 @@ class Mail:
 
                 if add_mail_headers_in_body:
                     msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
+                    if self.auth_method.lower() == 'graphql':
+                        document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
+                        document_date = document_date.strftime('%d/%m/%Y %H:%M:%S')
 
                     try:
                         locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')

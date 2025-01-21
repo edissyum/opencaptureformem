@@ -119,10 +119,15 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
     if check_file(image, path, config, log):
         # Process the file and send it to MEM Courrier
         res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail)
+        if res[0]:
+            res_id = res[1]['resId']
+            if 'notes' in args and args['notes']:
+                for note in args['notes']:
+                    res = web_service.insert_note(res[1]['resId'], note)
+
         if args.get('isMail') is not None and args.get('isMail') is True:
             # Process the attachments of mail
             if res[0]:
-                res_id = res[1]['resId']
                 if len(args['attachments']) > 0:
                     log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                     for attachment in args['attachments']:

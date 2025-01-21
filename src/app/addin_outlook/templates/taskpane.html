@@ -22,6 +22,10 @@
                 <option value="{{ process }}">{{ process }}</option>
             {% endfor %}
         </select>
+        <div style="margin-bottom: 20px; width: 100%">
+            <div style="text-align: center">Annotation</div>
+            <textarea id="note" style="width: 100%" rows="2"></textarea>
+        </div>
         <button id="execProcess" class="{{'sending' if error_message }}" onclick="send()">
             <span class="ms-Button-label">Executer le processus</span>
         </button>
@@ -36,14 +40,16 @@
             function send() {
                 document.getElementById('error').style.display = 'none';
                 document.getElementById('error-message').innerText = '';
+                document.getElementById('execProcess').classList.add('sending');
+
                 const process_id = document.getElementById('processes').value;
+                const note_content = document.getElementById('note').value;
                 const data = {
                     process: process_id,
-                    mail_id: Office.context.mailbox.item['itemId'].replace(new RegExp('/', 'g'), '-'),
-                    custom_id: document.getElementById('custom_id').value
+                    note: note_content,
+                    custom_id: document.getElementById('custom_id').value,
+                    mail_id: Office.context.mailbox.item['itemId'].replace(new RegExp('/', 'g'), '-')
                 };
-
-                document.getElementById('execProcess').classList.add('sending');
 
                 fetch('/opencaptureformem/exec_process', {
                     method: 'POST',

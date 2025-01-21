@@ -582,6 +582,24 @@ class WebServices:
             self.log.error('CreateContactError : ' + str(e))
             return False, str(e)
 
+    def insert_note(self, res_id, note_content):
+        data = {
+            'resId': res_id,
+            'value': note_content
+        }
+        try:
+            res = requests.post(self.base_url + '/notes', auth=self.auth,
+                                data=json.dumps(data), timeout=self.timeout, verify=self.cert,
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+            if res.status_code != 200:
+                self.log.error('InsertNoteError : ' + str(res.text))
+                return False, str(res.text)
+            return True, json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('InsertNoteError : ' + str(e))
+            return False, str(e)
+
     def retrieve_listinstance(self, res_id):
         try:
             res = requests.get(self.base_url + '/resources/' + str(res_id) + '/listInstance', auth=self.auth,
