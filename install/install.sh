@@ -356,5 +356,8 @@ a2ensite opencaptureformem.conf
 a2enmod rewrite
 systemctl restart apache2
 
+usermod -aG www-data "$user"
+
 echo ""
 echo "#######################################################################################################################"
+
