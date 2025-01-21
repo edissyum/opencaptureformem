@@ -322,7 +322,12 @@ sed -i "/^\[API\]/,/^\[/{s/^secret_key.*/secret_key = $secret/}" "$config_file"
 
 chmod 755 "$config_file"
 
-cp $defaultPath/src/config/custom.json.default $defaultPath/src/config/custom.json
+cp "$defaultPath"/src/config/custom.json.default "$defaultPath"/src/config/custom.json
+
+####################
+# Fill Addin Outlook manifest file with secret key
+cp "$defaultPath/src/app/addin_outlook/manifest_python.xml.default" "$defaultPath/src/app/addin_outlook/manifest_python.xml"
+sed -i "s#§§SECRET_KEY§§#$secret#g" "$defaultPath/src/app/addin_outlook/manifest_python.xml.default"
 
 ####################
 # Create the Apache service for the API
