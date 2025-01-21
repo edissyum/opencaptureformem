@@ -332,6 +332,7 @@ sed -i "s#§§SECRET_KEY§§#$secret#g" "$defaultPath/src/app/addin_outlook/mani
 ####################
 # Create the Apache service for the API
 touch /etc/apache2/sites-available/opencaptureformem.conf
+touch /etc/apache2/sites-available/opencaptureformem-ssl.conf
 sitePackageLocation=$(/opt/edissyum/python-venv/opencaptureformem/bin/python3 -c 'import site; print(site.getsitepackages()[0])')
 
 cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
@@ -356,8 +357,35 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
 </VirtualHost>
 EOF
 
+cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
+<VirtualHost *:443>
+    ServerName localhost
+
+    DocumentRoot $defaultPath
+    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
+
+    SSLEngine on
+    SSLCertificateFile      /path/to/signed_cert_and_intermediate_certs_and_dhparams
+    SSLCertificateKeyFile   /path/to/private_key
+
+    <Directory "/home/nch01@edissyum.lan/PycharmProjects/oc_for_mem">
+        AllowOverride All
+        Options +Indexes
+        WSGIProcessGroup opencaptureformem
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIPassAuthorization On
+        Require all granted
+        <Files ~ "(.ini)">
+            Require all denied
+        </Files>
+    </Directory>
+</VirtualHost>
+EOF
+
 a2dissite 000-default.conf
 a2ensite opencaptureformem.conf
+a2enmod ssl
 a2enmod rewrite
 systemctl restart apache2
 
