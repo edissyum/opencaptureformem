@@ -21,7 +21,7 @@ import sys
 import json
 from flask import Flask
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='addin_outlook/templates')
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 custom_config_path = os.path.join(base_dir, '../config/custom.json')
@@ -29,7 +29,8 @@ custom_config_path = os.path.join(base_dir, '../config/custom.json')
 if not os.path.exists(custom_config_path):
     sys.exit('Error: custom.json not found')
 
-with open(custom_config_path, 'r') as file:
+with open(custom_config_path, 'r', encoding='UTF-8') as file:
     app.config['CUSTOMS'] = json.load(file)
 
 from src.app import routes
+from src.app.addin_outlook import addin_routes

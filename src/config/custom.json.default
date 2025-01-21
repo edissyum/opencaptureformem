@@ -2,5 +2,6 @@
   {
     "custom_id": "opencaptureformem",
     "config_file_path": "/opt/edissyum/opencaptureformem/src/config/config.ini"
+    "config_mail_file_path": "/opt/edissyum/opencaptureformem/src/config/mail.ini"
   }
 ]
