@@ -59,10 +59,10 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ -z $user ]; then
+if [ -z "$user" ]; then
     printf "The user variable is empty. Please fill it with your desired user : "
     read -r user
-    if [ -z $user ]; then
+    if [ -z "$user" ]; then
         echo 'User remain empty, exiting...'
         exit
     fi
@@ -70,7 +70,7 @@ fi
 
 ####################
 # User choice
-if [ -z $supervisorOrSystemd ]; then
+if [ -z "$supervisorOrSystemd" ]; then
     echo "Do you want to use supervisor (1) or systemd (2) ? (default : 2) "
     echo "If you plan to handle a lot of files and need a reduced time of process, use supervisor"
     echo "WARNING : A lot of Tesseract processes will run in parallel and it can be very resource intensive"
@@ -183,11 +183,11 @@ fi
 # Finally update the json file
 
 if [[ "$finalRabbitMQSecure" != "no" ]]; then
-    cp $defaultPath/src/config/rabbitMQ.json.default $defaultPath/src/config/rabbitMQ.json
+    cp "$defaultPath"/src/config/rabbitMQ.json.default "$defaultPath"/src/config/rabbitMQ.json
     rabbitMqFile=$defaultPath/src/config/rabbitMQ.json
     vhost="/"
 
-    if [[ "rabbitMqVhost" != "/" && "rabbitMqVhost" != "" ]]; then
+    if [[ "$rabbitMqVhost" != "/" && "$rabbitMqVhost" != "" ]]; then
         rabbitmqctl add_vhost "$rabbitMqVhost"
         vhost=$rabbitMqVhost
     fi
@@ -196,16 +196,16 @@ if [[ "$finalRabbitMQSecure" != "no" ]]; then
     rabbitmqctl add_user "$rabbitMqUser" "$rabbitMqPassword"
     rabbitmqctl set_permissions --vhost "$vhost" "$rabbitMqUser" ".*" ".*" ".*"
 
-    jq '.username = "'$rabbitMqUser'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
-    jq '.password = "'$rabbitMqPassword'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
-    jq '.vhost = "'$vhost'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    jq '.username = "'$rabbitMqUser'"' "$rabbitMqFile" > tmp.$$.json && mv tmp.$$.json "$rabbitMqFile"
+    jq '.password = "'$rabbitMqPassword'"' "$rabbitMqFile" > tmp.$$.json && mv tmp.$$.json "$rabbitMqFile"
+    jq '.vhost = "'$vhost'"' "$rabbitMqFile" > tmp.$$.json && mv tmp.$$.json "$rabbitMqFile"
 
-    if [[ "rabbitMqHost" != "" ]]; then
-        jq '.host = "'$rabbitMqHost'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    if [[ "$rabbitMqHost" != "" ]]; then
+        jq '.host = "'$rabbitMqHost'"' "$rabbitMqFile" > tmp.$$.json && mv tmp.$$.json "$rabbitMqFile"
     fi
 
-    if [[ "rabbitMqPort" != "" ]]; then
-        jq '.port = "'$rabbitMqPort'"' $rabbitMqFile > tmp.$$.json && mv tmp.$$.json $rabbitMqFile
+    if [[ "$rabbitMqPort" != "" ]]; then
+        jq '.port = "'$rabbitMqPort'"' "$rabbitMqFile" > tmp.$$.json && mv tmp.$$.json "$rabbitMqFile"
     fi
 fi
 
