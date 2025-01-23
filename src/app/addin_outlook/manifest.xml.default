@@ -8,7 +8,7 @@
     <ProviderName>Edissyum Consulting</ProviderName>
     <DefaultLocale>fr-FR</DefaultLocale>
     <DisplayName DefaultValue="Module MailCollect by Edissyum"/>
-    <Description DefaultValue="Envoi de courriel dans le module MailCollect"/>
+    <Description DefaultValue="Envoi de courriel dans MEM Courrier"/>
     <IconUrl DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-64.png"/>
     <HighResolutionIconUrl DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-128.png"/>
     <SupportUrl DefaultValue="https://edissyum.com"/>
@@ -80,11 +80,11 @@
                 <bt:Url id="Taskpane.Url" DefaultValue="https://§§SERVER_URL§§/opencaptureformem/getProcessList?secret_key=§§SECRET_KEY§§&amp;custom_id=opencaptureformem" />
             </bt:Urls>
             <bt:ShortStrings>
-                <bt:String id="GroupLabel" DefaultValue="Contoso Add-in"/>
-                <bt:String id="TaskpaneButton.Label" DefaultValue="Envoyer le courrier dans le module MailCollect"/>
+                <bt:String id="GroupLabel" DefaultValue="Edissyum Add-in"/>
+                <bt:String id="TaskpaneButton.Label" DefaultValue="Envoyer le courrier dans MEM Courrier"/>
             </bt:ShortStrings>
             <bt:LongStrings>
-                <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Selectionner une chaîne de capture et envoyer le mail dans le module MailCollect"/>
+                <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Selectionner une chaîne de capture et envoyer le mail dans MEM Courrier"/>
             </bt:LongStrings>
         </Resources>
     </VersionOverrides>
