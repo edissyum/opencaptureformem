@@ -219,7 +219,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            return res.text
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('InsertIntoMEMError : ' + str(e))
             return False, str(e)
@@ -251,7 +251,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            return res.text
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('InsertAttachmentsIntoMEMError : ' + str(e))
             return False, str(e)
@@ -282,7 +282,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            return res.text
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('InsertAttachmentsReconciliationIntoMEMError : ' + str(e))
             return False, str(e)
