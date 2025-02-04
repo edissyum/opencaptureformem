@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Envoi d'un mail dans MEM Courrier</title>
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='taskpane.css') }}">
+    <script src="{{ url_for('static', filename='taskpane.js') }}" crossorigin="anonymous" defer></script>
+</head>
+<body class="ms-font-m ms-welcome ms-Fabric">
+    <input type="hidden" id="custom_id" value="{{ custom_id }}">
+    <header class="ms-welcome__header ms-bgColor-neutralLighter">
+        <img style="width: 100%;" src="{{ url_for('static', filename='mem_courrier.png') }}" alt="MEM Courrier" title="MEM Courrier" />
+    </header>
+    <main id="app-body" class="ms-welcome__main">
+        <select id="processes" style="margin-bottom: 20px;">
+            <option value="0">Selectionnez votre processus MailCollect</option>
+            {% for process in process_list %}
+                <option value="{{ process }}">{{ process }}</option>
+            {% endfor %}
+        </select>
+        <div style="margin-bottom: 20px; width: 100%">
+            <div style="text-align: center">Annotation</div>
+            <textarea id="note" style="width: 100%" rows="2"></textarea>
+        </div>
+        <button id="execProcess" class="{{'sending' if error_message }}" onclick="send()">
+            <span class="ms-Button-label">Executer le processus</span>
+        </button>
+        <div id="error">
+            <p id="error-message" class="{{'error' if error_message }}">
+                {% if error_message %}
+                    {{ error_message }}
+                {% endif %}
+            </p>
+        </div>
+        <script>
+            function send() {
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('error-message').innerText = '';
+                document.getElementById('execProcess').classList.add('sending');
+
+                const process_id = document.getElementById('processes').value;
+                const note_content = document.getElementById('note').value;
+                const data = {
+                    process: process_id,
+                    note: note_content,
+                    custom_id: document.getElementById('custom_id').value,
+                    mail_id: Office.context.mailbox.item['itemId'].replace(new RegExp('/', 'g'), '-')
+                };
+
+                fetch('/opencaptureformem/exec_process', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {'Content-Type': 'application/json'}}
+                ).then(response => response.json()).then(data => {
+                    document.getElementById('error').style.display = 'block';
+                    if (data.error) {
+                        document.getElementById('error-message').classList.add('error');
+                        document.getElementById('error-message').classList.remove('success');
+                        document.getElementById('error-message').innerText = 'Une erreur est survenue lors de l\'exécution du processus : ' + data.error;
+                    } else {
+                        document.getElementById('error-message').classList.add('success');
+                        document.getElementById('error-message').classList.remove('error');
+                        document.getElementById('error-message').innerText = 'Mail envoyé avec succès';
+                    }
+                    document.getElementById('execProcess').classList.remove('sending');
+                });
+            }
+        </script>
+    </main>
+</body>
+</html>
