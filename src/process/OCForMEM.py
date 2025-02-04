@@ -579,7 +579,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                                            config.cfg[_process], custom_mail, file_format, args['custom_fields'])
 
     if res and res[0] is not False:
-        log.info("Insert OK : " + str(res))
+        log.info("Insert OK : " + str(res[1]))
         if chrono_res_id and chrono_number:
             new_res_id = json.loads(res)['resId']
             web_service.link_documents(new_res_id, chrono_res_id['resId'])
@@ -614,7 +614,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     os.remove(file)
             except FileNotFoundError as _e:
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(_e))
-        return True, res
+        return res
     try:
         shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
     except shutil.Error as _e:

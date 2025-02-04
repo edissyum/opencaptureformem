@@ -91,10 +91,10 @@ fi
 
 fileName=$(basename "$1")
 
-separatorEnabled=$(crudini --get $config_file "OCForMEM_reconciliation_default" "separator_qr" | sed 's/:.*//')
+separatorEnabled=$(crudini --get $config_file "OCForMEM_$process_pj" "separator_qr" | sed 's/:.*//')
 if [[ "$fileName" != *"SEPARATED"* ]] && { [ "$separatorEnabled" == 'True' ] || [ "$separatorEnabled" == 'true' ]; }; then
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") Separate document by QR Code (QRPrefix on MEM Courrier need to be enabled)" >> "$logFile"
-    python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file"
+    python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file" -p "$process_pj"
     exit
 fi
 

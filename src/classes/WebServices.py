@@ -68,7 +68,7 @@ class WebServices:
 
     def retrieve_contact_by_id(self, contact_id):
         """
-        Search a contact into MEM Courrier database using mail
+        Search a contact into MEM Courrier database using id
 
         :param contact_id: id to search
         :return: Contact from MEM Courrier
@@ -152,9 +152,13 @@ class WebServices:
         :param custom_fields: custom fields to add to the document
         :return: res_id from MEM Courrier
         """
+
+        external_contact_id = None
         if not contact:
             contact = {}
         else:
+            if 'externalId' in contact and contact['externalId'] and 'ia_tmp_contact_id' in contact['externalId']:
+                external_contact_id = contact['externalId']['ia_tmp_contact_id']
             contact = [{'id': contact['id'], 'type': 'contact'}]
 
         if not date:
@@ -191,6 +195,9 @@ class WebServices:
             'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
         }
 
+        if external_contact_id:
+            data['externalId'] = {'ia_tmp_contact_id': external_contact_id}
+
         if 'diffusion_list' not in _process or not _process['diffusion_list']:
             data['emptyDiffusionList'] = True
 
@@ -212,7 +219,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            return res.text
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('InsertIntoMEMError : ' + str(e))
             return False, str(e)
@@ -244,7 +251,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertAttachmentsIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            return res.text
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('InsertAttachmentsIntoMEMError : ' + str(e))
             return False, str(e)
@@ -275,7 +282,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') InsertAttachmentsReconciliationIntoMEMError : ' + str(res.text))
                 return False, str(res.text)
-            return res.text
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('InsertAttachmentsReconciliationIntoMEMError : ' + str(e))
             return False, str(e)
@@ -575,6 +582,24 @@ class WebServices:
             self.log.error('CreateContactError : ' + str(e))
             return False, str(e)
 
+    def insert_note(self, res_id, note_content):
+        data = {
+            'resId': res_id,
+            'value': note_content
+        }
+        try:
+            res = requests.post(self.base_url + '/notes', auth=self.auth,
+                                data=json.dumps(data), timeout=self.timeout, verify=self.cert,
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'})
+
+            if res.status_code != 200:
+                self.log.error('InsertNoteError : ' + str(res.text))
+                return False, str(res.text)
+            return True, json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('InsertNoteError : ' + str(e))
+            return False, str(e)
+
     def retrieve_listinstance(self, res_id):
         try:
             res = requests.get(self.base_url + '/resources/' + str(res_id) + '/listInstance', auth=self.auth,
@@ -600,4 +625,17 @@ class WebServices:
             return True, ''
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('UpdateContactError : ' + str(e))
+            return False, str(e)
+
+    def retrieve_data(self, body_json):
+        try:
+            res = requests.get(self.base_url + '/database/select', auth=self.auth, data=json.dumps(body_json),
+                               headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                               timeout=self.timeout, verify=self.cert)
+            if res.status_code != 200:
+                self.log.error('RetrieveDataError : ' + str(res.text))
+                return False, str(res.text)
+            return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('RetrieveDataError : ' + str(e))
             return False, str(e)

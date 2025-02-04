@@ -1,152 +1,157 @@
 [GLOBAL]
 # Use ${GLOBAL:projectPath} to specify once for all the path of the project
 # nbThtreads is use to specify how many files will be processed at the same time when OCR pdf
-nbThreads           = 4
-resolution          = 300
-compressionQuality  = 100
+nbThreads          = 4
+resolution         = 300
+compressionQuality = 100
 # Used to fix potential OCR error into mail detection
-sanitizeStr         = {}\[\]()!?§&é~èàç
-projectPath         = /opt/edissyum/opencaptureformem/
-tmpPath             = ${GLOBAL:projectPath}/data/tmp/
-errorPath           = ${GLOBAL:projectPath}/data/error/
-logFile             = ${GLOBAL:projectPath}/data/log/OCForMEM.log
-formPath            = ${GLOBAL:projectPath}/src/config/
+sanitizeStr        = {}\[\]()!?§&é~èàç
+projectPath        = /opt/edissyum/opencaptureformem/
+tmpPath            = ${GLOBAL:projectPath}/data/tmp/
+errorPath          = ${GLOBAL:projectPath}/data/error/
+logFile            = ${GLOBAL:projectPath}/data/log/OCForMEM.log
+formPath           = ${GLOBAL:projectPath}/src/config/forms/
 # Time in seconds before stopping the Webservices call
-timeout             = 60
+timeout            = 60
 # True or False
-disableLad          = False
+disableLad         = False
 
 [LOCALE]
 # fr_FR or en_EN by default
-locale              = fr_FR
+locale         = fr_FR
 # fra or eng by default
-localeOcr           = fra
-localeDatePath      = ${GLOBAL:projectPath}/src/locale/
+localeOcr      = fra
+localeDatePath = ${GLOBAL:projectPath}/src/locale/
 
 [SEPARATOR_QR]
 # C128 or QR_CODE
-separationType      = QR_CODE
+separationType  = QR_CODE
 # True or False
-exportPdfa          = False
-outputPdfPath       = ${GLOBAL:projectPath}/data/exported_pdf/
-outputPdfaPath      = ${GLOBAL:projectPath}/data/exported_pdfa/
-tmpPath             = /tmp/
+exportPdfa      = False
+outputPdfPath   = ${GLOBAL:projectPath}/data/exported_pdf/
+outputPdfaPath  = ${GLOBAL:projectPath}/data/exported_pdfa/
+tmpPath         = /tmp/
 # _ or - for exemple
-divider             = _
+divider         = _
 # Enable blank page removal
-removeBlankPage     = True
+removeBlankPage = True
+# Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
+minConvexity    = 0.5
 # Recognition threshold
-blobsratio          = 1E-6
+blobsratio      = 1E-6
 
 [API]
 # Token expiration time in hours (float) (e.g : 1 or 2.5)
-token_expiration_time       = 1
-secret_key                  =
+token_expiration_time = 1
+secret_key            =
 
 [IA]
 # Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
-sender = ${GLOBAL:projectPath}/data/ia/sender/
+sender           = ${GLOBAL:projectPath}/data/ia/sender/
 doctype_entity   = ${GLOBAL:projectPath}/data/ia/doctype_entity/
 
 [OCForMEM]
 # Dont forget to add the /rest at the end of the URL (Link to WS)
-host                = http://localhost/mem/rest/
-user                = ws_opencapture
-password            =
-processAvailable    = incoming,reconciliation_default,reconciliation_found
-defaultProcess      = incoming
+host               = http://localhost/mem/rest/
+user               = ws_opencapture
+password           =
+processAvailable   = incoming,reconciliation_default,reconciliation_found
+defaultProcess     = incoming
 # Delta between date found and today date, in days
 # -1 to disable
-timeDelta           = 62
+timeDelta          = 62
 # True or False
-upperCaseSubject    = False
+upperCaseSubject   = False
 # Path to the .crt file
-certPath            =
-reconciliationType  = QRCODE
+certPath           =
+reconciliationType = QRCODE
 
 # !!!! IMPORTANT !!!!
 # The process name have to be LOWERCASE
 
 [OCForMEM_incoming]
-status                  = INIT
-doctype                 = 1204
-typist                  = ws_opencapture
-priority                = poiuytre1357nbvc
-format                  = pdf
-model_id                = 1
+status            = INIT
+doctype           = 1204
+typist            = ws_opencapture
+priority          = poiuytre1357nbvc
+format            = pdf
+model_id          = 1
 # Please use entity id (integer) instead of entity_id (13 instead of COU for example)
-destination             = 1
-custom_mail             =
-custom_fields           = {}
+destination       = 1
+custom_mail       =
+custom_fields     = {}
 # True or False
-separator_qr            = False
-generate_chrono         = True
-subject                 =
+separator_qr      = False
+generate_chrono   = True
+subject           =
 ; If True and subject found by LAD, override the subject with the one specify in the configuration
-override_subject        = False
-chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
+override_subject  = False
+chronoRegex       = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-e_link_status           = COU
+e_link_status     = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
-retrieve_metadata       = True
+retrieve_metadata = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
-compress_type           = None
+compress_type     = None
 ; Use AI to find doctype and entity_id (True or False)
-doctype_entity_ai       = False
+doctype_entity_ai = False
 ; Use AI to find sender (True or False)
-sender_ai     = False
+sender_ai         = False
 
 [OCForMEM_reconciliation_default]
-status                  = ATTREC
-doctype                 = 1204
-typist                  = ws_opencapture
-priority                = poiuytre1357nbvc
-format                  = pdf
-model_id                = 5
+status            = ATTREC
+doctype           = 1204
+typist            = ws_opencapture
+priority          = poiuytre1357nbvc
+format            = pdf
+model_id          = 5
 # Please use entity id (integer) instead of entity_id (13 instead of COU for example)
-destination             = 13
-reconciliation          =
-custom_mail             =
-custom_fields           = {}
+destination       = 13
+reconciliation    =
+custom_mail       =
+custom_fields     = {}
 # True or False
-separator_qr            = False
-generate_chrono         = True
-subject                 =
+separator_qr      = False
+generate_chrono   = True
+subject           =
 ; If True and subject found by LAD, override the subject with the one specify in the configuration
-override_subject        = False
-chronoRegex             = 20(1|2|3)[0-9]{1}D/\d{5}
+override_subject  = False
+chronoRegex       = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
-e_link_status           = COU
+e_link_status     = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
-retrieve_metadata       = True
+retrieve_metadata = True
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
-compress_type           = None
+compress_type     = None
 ; Use AI to find doctype and entity_id (True or False)
-doctype_entity_ai       = False
+doctype_entity_ai = False
 ; Use AI to find sender (True or False)
-sender_ai     = False
+sender_ai         = False
 
 [OCForMEM_reconciliation_found]
-is_attachment       = True
-attachment_type     = signed_response
-status              = A_TRA
-doctype             =
-typist              =
-priority            =
-format              = pdf
-model_id            =
-destination         =
-reconciliation      =
-separator_qr        = False
-generate_chrono     = False
-subject             =
+is_attachment   = True
+attachment_type = signed_response
+status          = A_TRA
+doctype         =
+typist          =
+priority        =
+format          = pdf
+model_id        =
+destination     =
+reconciliation  =
+separator_qr    = False
+generate_chrono = False
+subject         =
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
-compress_type       = None
+compress_type   = None
 
 [REATTACH_DOCUMENT]
-active              = True
-action              =
-group               =
-basket              =
-status              = EENV
+active = True
+; ID of the manual reconciliation action
+action =
+; ID of the webservice user group (need to be linked to the basket)
+group  =
+; Id of reconciliation basket
+basket =
+status = EENV
