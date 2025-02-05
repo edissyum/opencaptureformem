@@ -17,7 +17,7 @@ Nothing as simple as that :
 
     sudo mkdir -p /opt/edissyum/ && sudo chmod -R 775 /opt/edissyum/ && sudo chown -R $(whoami):$(whoami) /opt/edissyum/
     sudo apt install git
-    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
+    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 5.* | tail -n1 | sed 's/.*\///; s/\^{}//')
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/edissyum/opencaptureformem/
     cd /opt/edissyum/opencaptureformem/install/
 
