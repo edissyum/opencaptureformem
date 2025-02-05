@@ -9,7 +9,7 @@ Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU
 
 Open-Capture for MEM Courrier is only tested on **Debian** distribution.
 
-For the latest version (4.X.X) you need to install **Debian 12** (Bookworm).
+For the latest version (5.X.X) you need to install **Debian 12** (Bookworm).
 
 
 ## Install Open-Capture for MEM Courrier
@@ -17,7 +17,7 @@ Nothing as simple as that :
 
     sudo mkdir -p /opt/edissyum/ && sudo chmod -R 775 /opt/edissyum/ && sudo chown -R $(whoami):$(whoami) /opt/edissyum/
     sudo apt install git
-    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
+    latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 5.* | tail -n1 | sed 's/.*\///; s/\^{}//')
     git clone -b $latest_tag https://github.com/edissyum/opencaptureformem /opt/edissyum/opencaptureformem/
     cd /opt/edissyum/opencaptureformem/install/
 
