@@ -31,24 +31,6 @@ And in the json_file here is what you can do (ou can use the default one <code>s
 
 If you want specific data you could use <code>[]</code> into your line. For example you could check the <code>example_form.json</code> and <code>example_form.txt</code> to see the settings
 
-# Informations
-## QRCode separation
-MEM Courrier permit the creation of separator, with QRCODE containing the ID of an entity. "DGS" for example. If enabled is config.ini, the separation allow us to split a PDF file
-containing QR Code and create PDF with a filename prefixed with the entity ID. e.g : "DGS_XXXX.pdf"
-On the new version 20.03 the separator now put entity ID instead of entity short label. But there is no issue.
-
-    WARNING : In MEM Courrier parameters, set QRCodePrefix to 1 instead of 0
-
-Now it's possible to send attachments with QR Code Separation. If you have a resume and a motivation letter, start with MEM Courrier entity Separation QR Code, then the resume. Add the PJ_SEPARATOR.pdf
-and then the motivation letter. In MEM Courrier you'll have the resume as principal document and the motivation letter as attachment.
-
-## Apache modifications
-In case some big files would be sent, you have to increase the **post_max_size** parameter on the following file
-
->/etc/php/7.X/apache2/php.ini
-
-By default it is recommended to replace **8M** by **20M** or more if needed
-
 ## Use AI
 Open-Capture for MEM Courrier is using AI to detect some informations automatically. By now, you can retrieve MEM Courrier destination and type_id.
 
