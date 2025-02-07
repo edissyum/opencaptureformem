@@ -1,20 +1,20 @@
 [GLOBAL]
 batchPath             = /opt/edissyum/opencaptureformem/data/MailCollect/
-# True or False
+; True or False
 smtp_notif_on_error   = False
 smtp_auth             = True
 smtp_host             = smtp.gmail.com
 smtp_port             = 587
 smtp_login            = test@gmail.com
-# If you have $ in your password, you must double it
+; If you have $ in your password, you must double it
 smtp_pwd              = test
-#True or False
+; True or False
 smtp_ssl              = False
-#True or False
+; True or False
 smtp_starttls         = True
 smtp_from_mail        =
 smtp_dest_admin_mail  =
-# Delay before send another email, in minutes. 0 to disable it
+; Delay before send another email, in minutes. 0 to disable it
 smtp_delay            = 30
 
 [OAUTH]
