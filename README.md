@@ -1,6 +1,6 @@
 ![Logo Open-Capture](https://edissyum.com/wp-content/uploads/2022/12/open_capture_for_mem_courrier.png)
 
-    Link to the full documentation : https://kutt.it/documentOC4MEM
+    Link to the full documentation : https://kutt.it/documentationOC4MEM
 
 # Open-Capture for MEM Courrier ![](https://img.shields.io/github/v/release/edissyum/opencaptureformem?color=97BF3D&label=Latest%20version) [![Open-Capture For Mem deployment](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml/badge.svg)](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml)
 Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
@@ -30,11 +30,6 @@ And in the json_file here is what you can do (ou can use the default one <code>s
             - column --> put the id of custom_fields (eg: "3") or a column of res_letterbox table
 
 If you want specific data you could use <code>[]</code> into your line. For example you could check the <code>example_form.json</code> and <code>example_form.txt</code> to see the settings
-
-## Use AI
-Open-Capture for MEM Courrier is using AI to detect some informations automatically. By now, you can retrieve MEM Courrier destination and type_id.
-
-We can't provide an AI model because it's specific to each company. But we can help you to create yours, contact us.
 
 # LICENSE
 Open-Capture for MEM Courrier is released under the GPL v3.
