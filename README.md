@@ -2,8 +2,8 @@
 
     Link to the full documentation : https://kutt.it/documentationOC4MEM
 
-# Open-Capture for MEM Courrier ![](https://img.shields.io/github/v/release/edissyum/opencaptureformem?color=97BF3D&label=Latest%20version) [![Open-Capture For Mem deployment](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml/badge.svg)](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml)
-Open-Capture for MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
+# Open-Capture For MEM Courrier ![](https://img.shields.io/github/v/release/edissyum/opencaptureformem?color=97BF3D&label=Latest%20version) [![Open-Capture For Mem deployment](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml/badge.svg)](https://github.com/edissyum/opencaptureformem/actions/workflows/main.yml)
+Open-Capture For MEM Courrier is a **free and Open Source** software under **GNU General Public License v3.0**.
 
 # Open-Capture MailCollect Forms Module
 
