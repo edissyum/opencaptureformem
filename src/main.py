@@ -131,7 +131,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                 if len(args['attachments']) > 0:
                     log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                     for attachment in args['attachments']:
-                        if attachment['format'].lower() in args['extensionsAllowed']:
+                        if attachment['format'].lower() in args['extensions_allowed']:
                             res = web_service.insert_attachment_from_mail(attachment, res_id)
                             if res[0]:
                                 log.info('Insert attachment OK : ' + str(res[1]))

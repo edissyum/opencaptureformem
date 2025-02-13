@@ -154,21 +154,21 @@ def process_mail(mail_id, custom_id, process_name, note):
 
     cfg = config_mail.cfg[process_name]
 
-    secured_connection = cfg['securedconnection']
-    import_only_attachments = str2bool(cfg['importonlyattachments'])
-    priority_mail_subject = str2bool(config_mail.cfg[process_name]['prioritytomailsubject'])
-    priority_mail_date = str2bool(config_mail.cfg[process_name]['prioritytomaildate'])
-    priority_mail_from = str2bool(config_mail.cfg[process_name]['prioritytomailfrom'])
-    force_utf8 = str2bool(config_mail.cfg[process_name]['forceutf8'])
-    add_mail_headers_in_body = str2bool(config_mail.cfg[process_name]['addmailheadersinbody'])
+    secured_connection = cfg['secured_connection']
+    import_only_attachments = str2bool(cfg['import_only_attachments'])
+    priority_mail_subject = str2bool(config_mail.cfg[process_name]['priority_to_mail_subject'])
+    priority_mail_date = str2bool(config_mail.cfg[process_name]['priority_to_mail_date'])
+    priority_mail_from = str2bool(config_mail.cfg[process_name]['priority_to_mail_from'])
+    force_utf8 = str2bool(config_mail.cfg[process_name]['force_utf8'])
+    add_mail_headers_in_body = str2bool(config_mail.cfg[process_name]['add_mail_headers_in_body'])
     mail.test_connection(secured_connection)
 
     if mail.graphql_user is None:
         return {"error": "Erreur lors de la connexion GraphQL"}, 500
 
-    extensionsAllowed = []
-    for extension in config_mail.cfg[process_name]['extensionsallowed'].split(','):
-        extensionsAllowed.append(extension.strip().lower())
+    extensions_allowed = []
+    for extension in config_mail.cfg[process_name]['extensions_allowed'].split(','):
+        extensions_allowed.append(extension.strip().lower())
 
     try:
         msg = mail.retrieve_message_by_id(mail_id)
@@ -214,7 +214,7 @@ def process_mail(mail_id, custom_id, process_name, note):
             'nb_of_mail': '1',
             'notes': [note],
             'attachments': ret['attachments'],
-            'extensionsAllowed': extensionsAllowed,
+            'extensions_allowed': extensions_allowed,
             'log': batch_path + '/' + date_batch + '.log',
             'priority_mail_subject': priority_mail_subject,
             'priority_mail_date': priority_mail_date,

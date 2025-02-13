@@ -512,7 +512,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['file'] = args['file']
             args['data']['format'] = args['format']
 
-        if 'ereconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['ereconciliation'] == 'True':
+        if 'e_reconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation'] == 'True':
             log.info('E-reconciliation enabled, trying to read barcode')
             chrono = ''
             if file.lower().endswith('.pdf'):
