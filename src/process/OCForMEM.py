@@ -125,10 +125,10 @@ def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
     else:
-        if args['process'] in config.cfg['OCForMEM']['processavailable'].split(','):
+        if args['process'] in config.cfg['OCForMEM']['process_available'].split(','):
             _process = 'OCForMEM_' + args['process'].lower()
         else:
-            _process = 'OCForMEM_' + config.cfg['OCForMEM']['defaultprocess'].lower()
+            _process = 'OCForMEM_' + config.cfg['OCForMEM']['default_process'].lower()
 
     return _process
 
@@ -285,7 +285,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False':
         # Get the OCR of the file as a string content
         if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
             ocr.text_builder(image.img)
@@ -320,7 +320,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     contact_class = FindContact(ocr.text, log, config, web_service, locale)
                     contact = contact_class.find_contact_by_ai(sender_prediction)
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False':
         # Find subject of document
         if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
                 and args.get('priority_mail_subject') is True):
@@ -328,11 +328,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
 
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chronoregex' not in config_mail.cfg[_process]:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chrono_regex' not in config_mail.cfg[_process]:
             chrono_thread = ''
-        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chrono_regex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chrono_regex']:
             chrono_thread = FindChrono(ocr.text, config_mail.cfg[_process])
-        elif _process in config.cfg and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        elif _process in config.cfg and 'chrono_regex' in config.cfg[_process] and config.cfg[_process]['chrono_regex']:
             chrono_thread = FindChrono(ocr.text, config.cfg[_process])
         else:
             chrono_thread = ''
@@ -512,7 +512,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['file'] = args['file']
             args['data']['format'] = args['format']
 
-        if 'ereconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['ereconciliation'] == 'True':
+        if 'e_reconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation'] == 'True':
             log.info('E-reconciliation enabled, trying to read barcode')
             chrono = ''
             if file.lower().endswith('.pdf'):
@@ -528,10 +528,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
                 log.info(f"Detected barcodes: {detected_barcodes}")
 
-                if 'reconciliationtype' not in config.cfg['OCForMEM']:
+                if 'reconciliation_type' not in config.cfg['OCForMEM']:
                     reconciliation_type = 'QRCODE'
                 else:
-                    reconciliation_type = config.cfg['OCForMEM']['reconciliationtype']
+                    reconciliation_type = config.cfg['OCForMEM']['reconciliation_type']
 
                 for barcode in detected_barcodes:
                     if barcode.type == reconciliation_type:
@@ -562,7 +562,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
             return res
         try:
-            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+            shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
         except shutil.Error as _e:
             log.error('Moving file ' + file + ' error : ' + str(_e))
         return False, res
@@ -616,7 +616,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(_e))
         return res
     try:
-        shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+        shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
     except shutil.Error as _e:
         log.error('Moving file ' + file + ' error : ' + str(_e))
     return False, ''

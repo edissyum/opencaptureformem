@@ -131,7 +131,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                 if len(args['attachments']) > 0:
                     log.info('Found ' + str(len(args['attachments'])) + ' attachments')
                     for attachment in args['attachments']:
-                        if attachment['format'].lower() in args['extensionsAllowed']:
+                        if attachment['format'].lower() in args['extensions_allowed']:
                             res = web_service.insert_attachment_from_mail(attachment, res_id)
                             if res[0]:
                                 log.info('Insert attachment OK : ' + str(res[1]))
@@ -180,13 +180,13 @@ def launch(args):
         if args['isMail'] is True:
             log.info('Process email n°' + args['cpt'] + '/' + args['nb_of_mail'] + ' with UID : ' + args['msg_uid'])
     else:
-        log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+        log = logClass.Log(config.cfg['GLOBAL']['log_file'])
         config_mail = False
 
     log.info(f"Launching {args['script']} script")
     log.info(f"{args['file']} is a valid file and PID file created")
 
-    tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmppath'])
+    tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmp_path'])
     filename = tempfile.NamedTemporaryFile(dir=tmp_folder).name + '.jpg'
     locale = localeClass.Locale(config)
     ocr = ocrClass.PyTesseract(locale.localeOCR, log, config)
@@ -196,13 +196,13 @@ def launch(args):
         config.cfg['OCForMEM']['password'],
         log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMEM']['certpath']
+        config.cfg['OCForMEM']['cert_path']
     )
 
     image = imagesClass.Images(
         filename,
         int(config.cfg['GLOBAL']['resolution']),
-        int(config.cfg['GLOBAL']['compressionquality']),
+        int(config.cfg['GLOBAL']['compression_quality']),
         log,
         config
     )

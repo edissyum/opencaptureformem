@@ -43,12 +43,12 @@ class Separator:
         self.enabled = False
         self.process = process
         self.divider = config.cfg['SEPARATOR_QR']['divider']
-        self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['exportpdfa']
+        self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['export_pdfa']
         tmp_folder_name = os.path.basename(os.path.normpath(tmp_folder))
-        self.separation_type = config.cfg['SEPARATOR_QR']['separationtype']
-        self.tmp_dir = config.cfg['SEPARATOR_QR']['tmppath'] + '/' + tmp_folder_name + '/'
-        self.output_dir = config.cfg['SEPARATOR_QR']['outputpdfpath'] + '/' + tmp_folder_name + '/'
-        self.output_dir_pdfa = config.cfg['SEPARATOR_QR']['outputpdfapath'] + '/' + tmp_folder_name + '/'
+        self.separation_type = config.cfg['SEPARATOR_QR']['separation_type']
+        self.tmp_dir = config.cfg['SEPARATOR_QR']['tmp_path'] + '/' + tmp_folder_name + '/'
+        self.output_dir = config.cfg['SEPARATOR_QR']['output_pdf_path'] + '/' + tmp_folder_name + '/'
+        self.output_dir_pdfa = config.cfg['SEPARATOR_QR']['output_pdfa_path'] + '/' + tmp_folder_name + '/'
 
         os.mkdir(self.output_dir)
         os.mkdir(self.output_dir_pdfa)
@@ -70,7 +70,7 @@ class Separator:
         params.filterByCircularity = True
         params.minCircularity = 0.1
         params.filterByConvexity = True
-        params.minConvexity = float(config['SEPARATOR_QR']['minconvexity'])
+        params.minConvexity = float(config['SEPARATOR_QR']['min_convexity'])
         params.filterByInertia = True
         params.minInertiaRatio = 0.01
 
@@ -79,7 +79,7 @@ class Separator:
         keypoints = detector.detect(im)
         rows, cols, channel = im.shape
         blobs_ratio = len(keypoints) / (1.0 * rows * cols)
-        if blobs_ratio < float(config['SEPARATOR_QR']['blobsratio']):
+        if blobs_ratio < float(config['SEPARATOR_QR']['blobs_ratio']):
             return True
         return False
 
@@ -93,13 +93,13 @@ class Separator:
         self.pages = []
 
         try:
-            if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
+            if self.Config.cfg['SEPARATOR_QR']['remove_blank_page'] == 'True':
                 self.remove_blank_page(file)
             with open(file, 'rb') as pdf_file:
                 pdf = pypdf.PdfReader(pdf_file)
                 self.nb_pages = len(pdf.pages)
 
-            if self.Config.cfg['SEPARATOR_QR']['separationtype'] == 'C128':
+            if self.Config.cfg['SEPARATOR_QR']['separation_type'] == 'C128':
                 self.get_xml_c128(file)
             else:
                 self.get_xml_qr_code(file)

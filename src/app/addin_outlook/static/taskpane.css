@@ -77,10 +77,23 @@ b {
 }
 
 .success {
-    color: #97BF3D;
+    color: #3A7C00;
 }
 
 .sending {
     opacity: 0.6;
     pointer-events: none;
+}
+
+#execProcess {
+    color: white;
+    background-color: #3A7C00;
+    border-color: #3A7C00;
+    box-shadow: 0 3px 1px -2px #0003,0 2px 2px #00000024,0 1px 5px #0000001f;
+    padding: 0 16px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 32px;
+    min-width: 64px;
 }

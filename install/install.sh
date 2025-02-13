@@ -19,7 +19,7 @@ group=www-data
 
 ####################
 # Handle parameters
-parameters="user custom_id supervisor_process path supervisor_systemd secure_rabbit rabbit_user rabbit_password rabbit_host rabbit_port rabbit_vhost"
+parameters="user supervisor_process path supervisor_systemd secure_rabbit rabbit_user rabbit_password rabbit_host rabbit_port rabbit_vhost"
 opts=$(getopt --longoptions "$(printf "%s:," "$parameters")" --name "$(basename "$0")" --options "" -- "$@")
 
 while [ $# -gt 0 ]; do

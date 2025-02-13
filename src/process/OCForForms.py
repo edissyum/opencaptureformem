@@ -56,7 +56,7 @@ def extract_address_from_format(line, address_format, log):
     return {}
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
-    json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
+    json_identifier = config.cfg['GLOBAL']['form_path'] + '/forms_identifier.json'
     if os.path.isfile(json_identifier):
         with open(json_identifier, 'r', encoding='UTF-8') as identifier:
             identifier = identifier.read()
@@ -109,7 +109,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
-            json_file = config.cfg['GLOBAL']['formpath'] + '/' + identifier[process]['json_file']
+            json_file = config.cfg['GLOBAL']['form_path'] + '/' + identifier[process]['json_file']
             if os.path.isfile(json_file):
                 with open(json_file, 'r', encoding='UTF-8') as data:
                     data = json.loads(data.read())['FIELDS']
@@ -179,21 +179,21 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                             else:
                                 text_data = regex_return[0].strip()
                             if column != 'custom':
-                                if field.get('correspondance_table') is not None and field['correspondance_table'] is not None and field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
+                                if field.get('correspondance_table') is not None and field['correspondance_table'] is not None and field.get('database_association') is not None and field['database_association'] is not None:
                                     for correspondance in field['correspondance_table']:
                                         if text_data.lower() == correspondance.lower():
                                             log.info('Found correspondance : ' + correspondance)
-                                            field['databaseAssociation']['filterValue'] = field['correspondance_table'][correspondance]
-                                            res = web_service.retrieve_data(field['databaseAssociation'])
-                                            if res and res[0] and res[0][field['databaseAssociation']['column']] is not None:
-                                                log.info('Found data ' + column + ' : ' + str(res[0][field['databaseAssociation']['column']]))
-                                                args['data'][column] = str(res[0][field['databaseAssociation']['column']])
-                                elif field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
-                                    field['databaseAssociation']['filterValue'] = text_data
-                                    res = web_service.retrieve_data(field['databaseAssociation'])
-                                    if res and res[0] and res[0][field['databaseAssociation']['column']] is not None:
-                                        log.info('Found data ' + column + ' : ' + str(res[0][field['databaseAssociation']['column']]))
-                                        args['data'][column] = str(res[0][field['databaseAssociation']['column']])
+                                            field['database_association']['filterValue'] = field['correspondance_table'][correspondance]
+                                            res = web_service.retrieve_data(field['database_association'])
+                                            if res and res[0] and res[0][field['database_association']['column']] is not None:
+                                                log.info('Found data ' + column + ' : ' + str(res[0][field['database_association']['column']]))
+                                                args['data'][column] = str(res[0][field['database_association']['column']])
+                                elif field.get('database_association') is not None and field['database_association'] is not None:
+                                    field['database_association']['filterValue'] = text_data
+                                    res = web_service.retrieve_data(field['database_association'])
+                                    if res and res[0] and res[0][field['database_association']['column']] is not None:
+                                        log.info('Found data ' + column + ' : ' + str(res[0][field['database_association']['column']]))
+                                        args['data'][column] = str(res[0][field['database_association']['column']])
                                 elif field.get('correspondance_table') is not None and field['correspondance_table'] is not None:
                                     for correspondance in field['correspondance_table']:
                                         if text_data.lower() == correspondance.lower():
@@ -241,7 +241,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                     return res
 
                 try:
-                    shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                    shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
                 except shutil.Error as e:
                     log.error('Moving file ' + file + ' error : ' + str(e))
                 return False, res

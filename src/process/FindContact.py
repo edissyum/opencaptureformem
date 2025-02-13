@@ -79,7 +79,7 @@ class FindContact(Thread):
             for mail in re.finditer(r"" + self.locale.emailRegex + "", self.text):
                 self.log.info('Find E-MAIL : ' + mail.group())
                 # Now sanitize email to delete potential OCR error
-                sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
+                sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitize_str'] + "]", "", mail.group())
                 self.log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
                 contact = self.web_service.retrieve_contact_by_mail(sanitized_mail)

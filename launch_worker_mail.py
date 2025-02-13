@@ -116,7 +116,7 @@ config_mail.load_file(args['config_mail'])
 if config_mail.cfg.get(process) is None:
     sys.exit('Process ' + process + ' is not set into ' + args['config_mail'] + ' file')
 
-global_log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+global_log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 
 now = datetime.datetime.now()
 path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
@@ -128,7 +128,7 @@ web_service = webserviceClass.WebServices(
     config.cfg['OCForMEM']['password'],
     global_log,
     config.cfg['GLOBAL']['timeout'],
-    config.cfg['OCForMEM']['certpath']
+    config.cfg['OCForMEM']['cert_path']
 )
 
 SMTP = SMTP(
@@ -160,22 +160,22 @@ Mail = mailClass.Mail(
 
 cfg = config_mail.cfg[process]
 
-secured_connection = cfg['securedconnection']
-action = cfg['actionafterprocess']
-folder_to_crawl = cfg['foldertocrawl']
-folder_destination = cfg['folderdestination']
-import_only_attachments = str2bool(cfg['importonlyattachments'])
-priority_mail_subject = str2bool(config_mail.cfg[process]['prioritytomailsubject'])
-priority_mail_date = str2bool(config_mail.cfg[process]['prioritytomaildate'])
-priority_mail_from = str2bool(config_mail.cfg[process]['prioritytomailfrom'])
-is_form = str2bool(config_mail.cfg[process]['isform'])
-force_utf8 = str2bool(config_mail.cfg[process]['forceutf8'])
-add_mail_headers_in_body = str2bool(config_mail.cfg[process]['addmailheadersinbody'])
+secured_connection = cfg['secured_connection']
+action = cfg['action_after_process']
+folder_to_crawl = cfg['folder_to_crawl']
+folder_destination = cfg['folder_destination']
+import_only_attachments = str2bool(cfg['import_only_attachments'])
+priority_mail_subject = str2bool(config_mail.cfg[process]['priority_to_mail_subject'])
+priority_mail_date = str2bool(config_mail.cfg[process]['priority_to_mail_date'])
+priority_mail_from = str2bool(config_mail.cfg[process]['priority_to_mail_from'])
+is_form = str2bool(config_mail.cfg[process]['is_form'])
+force_utf8 = str2bool(config_mail.cfg[process]['force_utf8'])
+add_mail_headers_in_body = str2bool(config_mail.cfg[process]['add_mail_headers_in_body'])
 Mail.test_connection(secured_connection)
 
-extensionsAllowed = []
-for extension in config_mail.cfg[process]['extensionsallowed'].split(','):
-    extensionsAllowed.append(extension.strip().lower())
+extensions_allowed = []
+for extension in config_mail.cfg[process]['extensions_allowed'].split(','):
+    extensions_allowed.append(extension.strip().lower())
 
 if action == 'move':
     check = check_folders(folder_to_crawl, folder_destination)
@@ -259,7 +259,7 @@ if check:
                     'batch_path': batch_path,
                     'nb_of_mail': str(len(emails)),
                     'attachments': ret['attachments'],
-                    'extensionsAllowed': extensionsAllowed,
+                    'extensions_allowed': extensions_allowed,
                     'log': batch_path + '/' + date_batch + '.log',
                     'priority_mail_subject': priority_mail_subject,
                     'priority_mail_date': priority_mail_date,

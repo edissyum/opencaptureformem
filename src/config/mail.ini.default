@@ -1,20 +1,20 @@
 [GLOBAL]
 batchPath             = /opt/edissyum/opencaptureformem/data/MailCollect/
-# True or False
+; True or False
 smtp_notif_on_error   = False
 smtp_auth             = True
 smtp_host             = smtp.gmail.com
 smtp_port             = 587
 smtp_login            = test@gmail.com
-# If you have $ in your password, you must double it
+; If you have $ in your password, you must double it
 smtp_pwd              = test
-#True or False
+; True or False
 smtp_ssl              = False
-#True or False
+; True or False
 smtp_starttls         = True
 smtp_from_mail        =
 smtp_dest_admin_mail  =
-# Delay before send another email, in minutes. 0 to disable it
+; Delay before send another email, in minutes. 0 to disable it
 smtp_delay            = 30
 
 [OAUTH]
@@ -48,35 +48,35 @@ auth_method             = basic
 host                    = outlook.office365.com
 port                    = 993
 ; SSL or STARTTLS or False
-securedConnection       = SSL
+secured_connection       = SSL
 
 login                   =
 ; Only for basic authentication. If you have $ in your password, you must double it
 password                =
 
 ; True or False
-isForm                  = False
-generate_chrono         = True
-forceUtf8               = True
-addMailHeadersInBody    = True
-priorityToMailSubject   = False
-priorityToMailDate      = False
-priorityToMailFrom      = False
-importOnlyAttachments   = False
-separator_qr            = False
-extensionsAllowed       = pdf,jpg,jpeg,png,docx,odt,doc
+is_form                  = False
+generate_chrono          = True
+force_utf8               = True
+add_mail_headers_in_body = True
+priority_to_mail_subject = False
+priority_to_mail_date    = False
+priority_to_mail_from    = False
+import_only_attachments  = False
+separator_qr             = False
+extensions_allowed       = pdf,jpg,jpeg,png,docx,odt,doc
 
 store_unique_id_already_processed = True
 
-folderToCrawl           = _MEM
-folderDestination       = _MEM_ARCHIVES
+folder_to_crawl           = _MEM
+folder_destination       = _MEM_ARCHIVES
 ; move or none
-actionAfterProcess      = move
+action_after_process      = move
 
 ; True or False
-eReconciliation         = False
+e_reconciliation         = False
 
-chronoRegex             = 20(1|2|3)[0-9]{1}A/\d{5}
+chrono_regex             = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
 e_link_status = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.

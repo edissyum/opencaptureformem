@@ -71,7 +71,7 @@ class Images:
                 self.img = Image.open(self.jpg_name)
             return True
         try:
-            shutil.move(pdf_name, self.config['GLOBAL']['errorpath'])
+            shutil.move(pdf_name, self.config['GLOBAL']['error_path'])
         except shutil.Error as _e:
             self.log.error('Moving file ' + pdf_name + ' error : ' + str(_e))
         return False
@@ -80,13 +80,12 @@ class Images:
         try:
             output = os.path.splitext(output)[0]
             bck_output = os.path.splitext(output)[0]
-            images = convert_from_path(pdf_name, first_page=page, last_page=page, dpi=400)
-            cpt = 1
-            for i in range(len(images)):
+            images = convert_from_path(pdf_name, first_page=page, last_page=page, dpi=400,
+                                       grayscale=True, fmt="jpeg")
+            for cpt, image in enumerate(images):
                 if not page:
                     output = bck_output + '-' + str(cpt).zfill(3)
-                images[i].save(output + '.jpg', 'JPEG')
-                cpt = cpt + 1
+                image.save(output + '.jpg', 'JPEG')
             return True
         except Exception as error:
             self.log.error('Error during pdf2image conversion : ' + str(error))
@@ -122,7 +121,7 @@ class Images:
                             try:
                                 pypdf.PdfReader(doc, strict=False)
                             except pypdf.utils.PdfReadError:
-                                shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                                shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
                                 return False
                             return True
                         elif file.lower().endswith('.html') or file.lower().endswith('.txt'):
