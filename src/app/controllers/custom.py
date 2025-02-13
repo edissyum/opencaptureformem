@@ -56,7 +56,7 @@ def get_custom_config_value(config_file_path, key, master_key="API"):
 
 
 def get_custom_config_process_list(config_file_path):
-    process_list_str, error = get_custom_config_value(config_file_path, "processavailable", "OCForMEM")
+    process_list_str, error = get_custom_config_value(config_file_path, "process_available", "OCForMEM")
     if error:
         return jsonify({"message": error}), 400
 

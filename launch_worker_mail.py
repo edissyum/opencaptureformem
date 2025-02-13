@@ -116,7 +116,7 @@ config_mail.load_file(args['config_mail'])
 if config_mail.cfg.get(process) is None:
     sys.exit('Process ' + process + ' is not set into ' + args['config_mail'] + ' file')
 
-global_log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+global_log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 
 now = datetime.datetime.now()
 path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
@@ -128,7 +128,7 @@ web_service = webserviceClass.WebServices(
     config.cfg['OCForMEM']['password'],
     global_log,
     config.cfg['GLOBAL']['timeout'],
-    config.cfg['OCForMEM']['certpath']
+    config.cfg['OCForMEM']['cert_path']
 )
 
 SMTP = SMTP(

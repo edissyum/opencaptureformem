@@ -42,10 +42,10 @@ if __name__ == '__main__':
         for info in parser[section]:
             config[section][info] = parser[section][info]
 
-    if 'reconciliationtype' not in config['OCForMEM']:
+    if 'reconciliation_type' not in config['OCForMEM']:
         reconciliation_type = 'QRCODE'
     else:
-        reconciliation_type = config['OCForMEM']['reconciliationtype']
+        reconciliation_type = config['OCForMEM']['reconciliation_type']
 
     detected_barcode = decode(Image.open(args['file']))
     for barcode in detected_barcode:

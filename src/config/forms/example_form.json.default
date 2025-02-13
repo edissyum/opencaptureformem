@@ -59,7 +59,7 @@
                 {
                     "regex": "Catégorie\\s*:\\s*(.+)",
                     "column": "doctype",
-                    "databaseAssociation": {
+                    "database_association": {
                         "tableName": "doctypes",
                         "column": "type_id",
                         "filterColumn": "description",
@@ -70,12 +70,12 @@
                     "regex": "Catégorie\\s*:\\s*(.+)",
                     "column": "destination",
                     "correspondance_table": {
-                      "Arbres": "EDDB",
-                      "Haies et arbustes": "EDAA",
-                      "Arrosage et fuite d’eau": "EDFA",
-                      "Désherbage/tonte": "EDAA"
+                        "Arbres": "EDDB",
+                        "Haies et arbustes": "EDAA",
+                        "Arrosage et fuite d’eau": "EDFA",
+                        "Désherbage/tonte": "EDAA"
                     },
-                    "databaseAssociation": {
+                    "database_association": {
                         "tableName": "entities",
                         "column": "id",
                         "filterColumn": "entity_id",

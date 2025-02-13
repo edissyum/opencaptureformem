@@ -38,7 +38,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     if error:
         return {"message": error}, 400
 
-    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmppath', 'GLOBAL')
+    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmp_path', 'GLOBAL')
     if error:
         return {"message": error}, 400
 
@@ -107,7 +107,7 @@ def process_mail(mail_id, custom_id, process_name, note):
     if config_mail.cfg.get(process_name) is None:
         sys.exit('Process ' + process_name + ' is not set into ' + config_mail_path + ' file')
 
-    global_log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+    global_log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 
     now = datetime.datetime.now()
     path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process_name + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
@@ -119,7 +119,7 @@ def process_mail(mail_id, custom_id, process_name, note):
         config.cfg['OCForMEM']['password'],
         global_log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMEM']['certpath']
+        config.cfg['OCForMEM']['cert_path']
     )
 
     smtp = SMTP(

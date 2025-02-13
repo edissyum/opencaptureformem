@@ -1,74 +1,73 @@
 [GLOBAL]
-# Use ${GLOBAL:projectPath} to specify once for all the path of the project
-# nbThtreads is use to specify how many files will be processed at the same time when OCR pdf
-nbThreads          = 4
-resolution         = 300
-compressionQuality = 100
-# Used to fix potential OCR error into mail detection
-sanitizeStr        = {}\[\]()!?§&é~èàç
-projectPath        = /opt/edissyum/opencaptureformem/
-tmpPath            = ${GLOBAL:projectPath}/data/tmp/
-errorPath          = ${GLOBAL:projectPath}/data/error/
-logFile            = ${GLOBAL:projectPath}/data/log/OCForMEM.log
-formPath           = ${GLOBAL:projectPath}/src/config/forms/
-# Time in seconds before stopping the Webservices call
-timeout            = 60
-# True or False
-disableLad         = False
+; Use ${GLOBAL:project_path} to specify once for all the path of the project
+resolution          = 300
+compression_quality = 100
+; Used to fix potential OCR error into mail detection
+sanitize_str        = {}\[\]()!?§&é~èàç
+project_path        = /opt/edissyum/opencaptureformem/
+tmp_path            = ${GLOBAL:project_path}/data/tmp/
+error_path          = ${GLOBAL:project_path}/data/error/
+log_file            = ${GLOBAL:project_path}/data/log/OCForMEM.log
+form_path           = ${GLOBAL:project_path}/src/config/forms/
+; Time in seconds before stopping the Webservices call
+timeout             = 60
+; True or False
+disable_lad         = False
+test_mode = True
 
 [LOCALE]
-# fr_FR or en_EN by default
-locale         = fr_FR
-# fra or eng by default
-localeOcr      = fra
-localeDatePath = ${GLOBAL:projectPath}/src/locale/
+; fr_FR or en_EN by default
+locale           = fr_FR
+; fra or eng by default
+locale_ocr       = fra
+locale_date_path = ${GLOBAL:project_path}/src/locale/
 
 [SEPARATOR_QR]
-# C128 or QR_CODE
-separationType  = QR_CODE
-# True or False
-exportPdfa      = False
-outputPdfPath   = ${GLOBAL:projectPath}/data/exported_pdf/
-outputPdfaPath  = ${GLOBAL:projectPath}/data/exported_pdfa/
-tmpPath         = /tmp/
-# _ or - for exemple
-divider         = _
-# Enable blank page removal
-removeBlankPage = True
-# Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
-minConvexity    = 0.5
-# Recognition threshold
-blobsratio      = 1E-6
+; C128 or QR_CODE
+separation_type  = QR_CODE
+; True or False
+export_pdfa      = False
+output_pdf_path  = ${GLOBAL:project_path}/data/exported_pdf/
+output_pdfa_path = ${GLOBAL:project_path}/data/exported_pdfa/
+tmp_path         = /tmp/
+; _ or - for exemple
+divider          = _
+; Enable blank page removal
+remove_blank_page = True
+; Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
+min_convexity    = 0.5
+; Recognition threshold
+blobs_ratio      = 1E-6
 
 [API]
-# Token expiration time in hours (float) (e.g : 1 or 2.5)
+; Token expiration time in hours (float) (e.g : 1 or 2.5)
 token_expiration_time = 1
 secret_key            =
 
 [IA]
-# Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
+; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
-sender           = ${GLOBAL:projectPath}/data/ia/sender/
-doctype_entity   = ${GLOBAL:projectPath}/data/ia/doctype_entity/
+sender           = ${GLOBAL:project_path}/data/ia/sender/
+doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
 
 [OCForMEM]
-# Dont forget to add the /rest at the end of the URL (Link to WS)
-host               = http://localhost/mem/rest/
-user               = ws_opencapture
-password           =
-processAvailable   = incoming,reconciliation_default,reconciliation_found
-defaultProcess     = incoming
-# Delta between date found and today date, in days
-# -1 to disable
-timeDelta          = 62
-# True or False
-upperCaseSubject   = False
-# Path to the .crt file
-certPath           =
-reconciliationType = QRCODE
+; Dont forget to add the /rest at the end of the URL (Link to WS)
+host                = http://localhost/mem/rest/
+user                = ws_opencapture
+password            =
+process_available   = incoming,reconciliation_default,reconciliation_found
+default_process     = incoming
+; Delta between date found and today date, in days
+; -1 to disable
+time_delta          = 62
+; True or False
+uppercase_subject  = False
+; Path to the .crt file
+cert_path           =
+reconciliation_type = QRCODE
 
-# !!!! IMPORTANT !!!!
-# The process name have to be LOWERCASE
+; !!!! IMPORTANT !!!!
+; The process name have to be LOWERCASE
 
 [OCForMEM_incoming]
 status            = INIT
@@ -77,17 +76,17 @@ typist            = ws_opencapture
 priority          = poiuytre1357nbvc
 format            = pdf
 model_id          = 1
-# Please use entity id (integer) instead of entity_id (13 instead of COU for example)
+; Please use entity id (integer) instead of entity_id (13 instead of COU for example)
 destination       = 1
 custom_mail       =
 custom_fields     = {}
-# True or False
+; True or False
 separator_qr      = False
 generate_chrono   = True
 subject           =
 ; If True and subject found by LAD, override the subject with the one specify in the configuration
 override_subject  = False
-chronoRegex       = 20(1|2|3)[0-9]{1}A/\d{5}
+chrono_regex      = 20(1|2|3)[0-9]{1}A/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
 e_link_status     = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
@@ -106,18 +105,18 @@ typist            = ws_opencapture
 priority          = poiuytre1357nbvc
 format            = pdf
 model_id          = 5
-# Please use entity id (integer) instead of entity_id (13 instead of COU for example)
+; Please use entity id (integer) instead of entity_id (13 instead of COU for example)
 destination       = 13
 reconciliation    =
 custom_mail       =
 custom_fields     = {}
-# True or False
+; True or False
 separator_qr      = False
 generate_chrono   = True
 subject           =
 ; If True and subject found by LAD, override the subject with the one specify in the configuration
 override_subject  = False
-chronoRegex       = 20(1|2|3)[0-9]{1}D/\d{5}
+chrono_regex      = 20(1|2|3)[0-9]{1}D/\d{5}
 ; If chrono is found using chronoRegex, use the following status to the linked document
 e_link_status     = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.

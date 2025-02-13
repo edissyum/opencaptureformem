@@ -71,7 +71,7 @@ class Images:
                 self.img = Image.open(self.jpg_name)
             return True
         try:
-            shutil.move(pdf_name, self.config['GLOBAL']['errorpath'])
+            shutil.move(pdf_name, self.config['GLOBAL']['error_path'])
         except shutil.Error as _e:
             self.log.error('Moving file ' + pdf_name + ' error : ' + str(_e))
         return False
@@ -121,7 +121,7 @@ class Images:
                             try:
                                 pypdf.PdfReader(doc, strict=False)
                             except pypdf.utils.PdfReadError:
-                                shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                                shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
                                 return False
                             return True
                         elif file.lower().endswith('.html') or file.lower().endswith('.txt'):
