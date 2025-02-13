@@ -80,13 +80,12 @@ class Images:
         try:
             output = os.path.splitext(output)[0]
             bck_output = os.path.splitext(output)[0]
-            images = convert_from_path(pdf_name, first_page=page, last_page=page, dpi=400)
-            cpt = 1
-            for i in range(len(images)):
+            images = convert_from_path(pdf_name, first_page=page, last_page=page, dpi=400,
+                                       grayscale=True, fmt="jpeg")
+            for cpt, image in enumerate(images):
                 if not page:
                     output = bck_output + '-' + str(cpt).zfill(3)
-                images[i].save(output + '.jpg', 'JPEG')
-                cpt = cpt + 1
+                image.save(output + '.jpg', 'JPEG')
             return True
         except Exception as error:
             self.log.error('Error during pdf2image conversion : ' + str(error))
