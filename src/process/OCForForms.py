@@ -205,9 +205,9 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                             if 'mapping' in field:
                                 mapping = field['mapping']
                                 for cpt in range(len(mapping)):
-                                    if mapping[cpt]['isCustom'] == 'True':
-                                        if mapping[cpt]['isAddress'] == 'True':
-                                            extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
+                                    if mapping[cpt]['is_custom'] == 'True':
+                                        if mapping[cpt]['is_address'] == 'True':
+                                            extracted_address = extract_address_from_format(text_data, mapping[cpt]['address_format'], log)
                                             if not extracted_address or extracted_address == {}:
                                                 args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
                                             else:
@@ -217,9 +217,9 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                                     extracted_address['longitude'] = extracted_address.pop('addressLongitude')
                                                 args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
 
-                                        elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
+                                        elif 'is_date' in mapping[cpt] and mapping[cpt]['is_date'] == 'True':
                                             locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
-                                            _date_format = mapping[cpt]['dateFormat']
+                                            _date_format = mapping[cpt]['date_format']
                                             _date = datetime.strptime(text_data, _date_format)
                                             args['data']['customFields'].update({mapping[cpt]['column']: str(_date)})
                                         else:
