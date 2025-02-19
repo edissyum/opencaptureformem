@@ -319,6 +319,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 if sender_prediction:
                     contact_class = FindContact(ocr.text, log, config, web_service, locale)
                     contact = contact_class.find_contact_by_ai(sender_prediction, _process)
+            else:
+                log.info('ERROR : Sender AI model not found')
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False':
         # Find subject of document
