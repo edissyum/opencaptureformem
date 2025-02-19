@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
+import json
 from thefuzz import fuzz
 from threading import Thread
 
@@ -110,7 +111,7 @@ class FindContact(Thread):
             self.log.info('Global ratio above ' + str(self.min_ratio) + '%, keep the original contact')
         return global_ratio >= self.min_ratio
 
-    def find_contact_by_ai(self, ai_contact):
+    def find_contact_by_ai(self, ai_contact, process):
         found_contact = {}
         for key in ai_contact:
             if ai_contact[key]:
@@ -182,6 +183,9 @@ class FindContact(Thread):
                 contact = contact_mail
             else:
                 self.log.info('No contact found, create a temporary contact')
+
+        if 'sender_custom_fields' in self.config.cfg[process] and self.config.cfg[process]['sender_custom_fields']:
+            found_contact['customFields'] = json.loads(self.config.cfg[process]['sender_custom_fields'])
 
         res, temporary_contact = self.web_service.create_contact(found_contact)
         if res:
