@@ -321,8 +321,10 @@ cp "$defaultPath"/src/config/custom.json.default "$defaultPath"/src/config/custo
 
 ####################
 # Fill Addin Outlook manifest file with secret key
+unique_id=$(python3 -c 'import uuid; print(str(uuid.uuid4()))')
 cp "$defaultPath/src/app/addin_outlook/manifest.xml.default" "$defaultPath/src/app/addin_outlook/manifest.xml"
 sed -i "s#§§SECRET_KEY§§#$secret#g" "$defaultPath/src/app/addin_outlook/manifest.xml"
+sed -i "s#§§UNIQUE_ID§§#$unique_id#g" "$defaultPath/src/app/addin_outlook/manifest.xml"
 
 ####################
 # Create the Apache service for the API
