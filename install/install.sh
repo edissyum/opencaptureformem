@@ -337,7 +337,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIDaemonProcess opencaptureformem home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     <Directory "$defaultPath">
@@ -359,7 +359,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIDaemonProcess opencaptureformem home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     SSLEngine on
