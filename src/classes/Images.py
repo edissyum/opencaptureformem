@@ -120,7 +120,7 @@ class Images:
                         if file.lower().endswith('.pdf'):
                             try:
                                 pypdf.PdfReader(doc, strict=False)
-                            except pypdf.utils.PdfReadError:
+                            except pypdf.errors.PdfReadError:
                                 shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
                                 return False
                             return True
