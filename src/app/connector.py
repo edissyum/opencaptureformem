@@ -110,8 +110,8 @@ def process_mail(mail_id, custom_id, process_name, note):
     global_log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 
     now = datetime.datetime.now()
-    path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process_name + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
-    path_without_time = config_mail.cfg['GLOBAL']['batchpath']
+    path = config_mail.cfg['GLOBAL']['batch_path'] + '/' + process_name + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
+    path_without_time = config_mail.cfg['GLOBAL']['batch_path']
 
     web_service = webserviceClass.WebServices(
         config.cfg['OCForMEM']['host'],

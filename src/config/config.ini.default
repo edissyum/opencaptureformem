@@ -13,31 +13,30 @@ form_path           = ${GLOBAL:project_path}/src/config/forms/
 timeout             = 60
 ; True or False
 disable_lad         = False
-test_mode = True
 
 [LOCALE]
 ; fr_FR or en_EN by default
-locale           = fr_FR
+locale            = fr_FR
 ; fra or eng by default
-locale_ocr       = fra
-locale_date_path = ${GLOBAL:project_path}/src/locale/
+locale_ocr        = fra
+locale_date_path  = ${GLOBAL:project_path}/src/locale/
 
 [SEPARATOR_QR]
 ; C128 or QR_CODE
-separation_type  = QR_CODE
+separation_type   = QR_CODE
 ; True or False
-export_pdfa      = False
-output_pdf_path  = ${GLOBAL:project_path}/data/exported_pdf/
-output_pdfa_path = ${GLOBAL:project_path}/data/exported_pdfa/
-tmp_path         = /tmp/
+export_pdfa       = False
+output_pdf_path   = ${GLOBAL:project_path}/data/exported_pdf/
+output_pdfa_path  = ${GLOBAL:project_path}/data/exported_pdfa/
+tmp_path          = /tmp/
 ; _ or - for exemple
-divider          = _
+divider           = _
 ; Enable blank page removal
 remove_blank_page = True
 ; Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
-min_convexity    = 0.5
+min_convexity     = 0.5
 ; Recognition threshold
-blobs_ratio      = 1E-6
+blobs_ratio       = 1E-6
 
 [API]
 ; Token expiration time in hours (float) (e.g : 1 or 2.5)
@@ -97,6 +96,8 @@ compress_type     = None
 doctype_entity_ai = False
 ; Use AI to find sender (True or False)
 sender_ai         = False
+; Custom fields to add to the contact created by AI (eg: {"1": "Non"})
+sender_custom_fields   = {}
 
 [OCForMEM_reconciliation_default]
 status            = ATTREC
@@ -127,6 +128,7 @@ compress_type     = None
 doctype_entity_ai = False
 ; Use AI to find sender (True or False)
 sender_ai         = False
+sender_custom_fields = {}
 
 [OCForMEM_reconciliation_found]
 is_attachment   = True

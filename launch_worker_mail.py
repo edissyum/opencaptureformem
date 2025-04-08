@@ -119,8 +119,8 @@ if config_mail.cfg.get(process) is None:
 global_log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 
 now = datetime.datetime.now()
-path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
-path_without_time = config_mail.cfg['GLOBAL']['batchpath']
+path = config_mail.cfg['GLOBAL']['batch_path'] + '/' + process + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
+path_without_time = config_mail.cfg['GLOBAL']['batch_path']
 
 web_service = webserviceClass.WebServices(
     config.cfg['OCForMEM']['host'],

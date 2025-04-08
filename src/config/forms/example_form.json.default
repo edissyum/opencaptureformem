@@ -87,11 +87,11 @@
                     "column": "custom",
                     "mapping": [
                         {
-                            "isCustom": "True",
-                            "isDate": "False",
-                            "dateFormat": "",
-                            "isAddress": "False",
-                            "addressFormat": "",
+                            "is_custom": "True",
+                            "is_date": "False",
+                            "date_format": "",
+                            "is_address": "False",
+                            "address_format": "",
                             "column": "12"
                         }
                     ]
@@ -101,11 +101,11 @@
                     "column": "custom",
                     "mapping": [
                         {
-                            "isCustom": "True",
-                            "isDate": "False",
-                            "dateFormat": "",
-                            "isAddress": "True",
-                            "addressFormat": "\\[addressLatitude,addressLongitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
+                            "is_custom": "True",
+                            "is_date": "False",
+                            "date_format": "",
+                            "is_address": "True",
+                            "address_format": "\\[addressLatitude,addressLongitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
                             "column": "2"
                         }
                     ]
