@@ -87,6 +87,7 @@ def graphql_request(url, method, data, headers):
 
     if method == 'POST':
         return requests.post(url, data=data, headers=headers, timeout=30)
+    return None
 
 
 def process_mail(mail_id, custom_id, process_name, note):
@@ -173,7 +174,7 @@ def process_mail(mail_id, custom_id, process_name, note):
     try:
         msg = mail.retrieve_message_by_id(mail_id)
         if msg is None or msg.status_code != 200:
-            return {"error": "Erreur lors de la récupération du mail"}, 500
+            return {"error": f"Erreur lors de la récupération du mail : {msg.text}"}, 500
 
         msg = msg.json()
         now = datetime.datetime.now()
@@ -195,8 +196,7 @@ def process_mail(mail_id, custom_id, process_name, note):
         ret, file = mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process_name], batch_path, Log)
         _from = ret['mail']['emailFrom']
         document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
-        print('document_date', document_date)
-        print(document_date.strftime('%d/%m/%Y %H:%M:%S'))
+
         launch({
             'cpt': '1',
             'file': file,
@@ -221,7 +221,7 @@ def process_mail(mail_id, custom_id, process_name, note):
             'priority_mail_from': priority_mail_from,
             'error_path': path_without_time + '/_ERROR/' + process_name + '/' + year + month + day
         })
-    except Exception as e:
-        return {"error": str(e)}, 500
+    except Exception as _e:
+        return {"error": str(_e)}, 500
 
     return {"message": "Mail envoyé avec succès"}, 200
