@@ -90,7 +90,7 @@ def graphql_request(url, method, data, headers):
     return None
 
 
-def process_mail(mail_id, custom_id, process_name, note):
+def process_mail(mail_id, custom_id, process_name, note, login):
     config_path, error = get_custom_config_file_path(custom_id)
     if error:
         return {"error": error}, 400
@@ -144,7 +144,7 @@ def process_mail(mail_id, custom_id, process_name, note):
         config_mail.cfg['GRAPHQL'],
         config_mail.cfg[process_name]['host'],
         config_mail.cfg[process_name]['port'],
-        config_mail.cfg[process_name]['login'],
+        login,
         config_mail.cfg[process_name]['password'],
         web_service,
         smtp,
