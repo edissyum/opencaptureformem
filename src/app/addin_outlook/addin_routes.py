@@ -48,7 +48,7 @@ def exec_process():
         return ({"message": error}), 400
 
     try:
-        res = process_mail(data['mail_id'], data['custom_id'], data['process'], data['note'])
+        res = process_mail(data['mail_id'], data['custom_id'], data['process'], data['note'], data['email'])
     except Exception as e:
         return ({"error": str(e)}), 400
     return res

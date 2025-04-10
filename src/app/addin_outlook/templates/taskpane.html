@@ -54,10 +54,12 @@
 
                 const process_id = document.getElementById('processes').value;
                 const note_content = document.getElementById('note').value;
+
                 const data = {
                     process: process_id,
                     note: note_content,
                     custom_id: document.getElementById('custom_id').value,
+                    email: Office.context.mailbox.userProfile.emailAddress,
                     mail_id: Office.context.mailbox.item['itemId'].replace(new RegExp('/', 'g'), '-')
                 };
 
