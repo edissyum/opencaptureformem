@@ -65,7 +65,7 @@
     "dateTimeFormat"  : "%Y %m %d",
     "dateFormat"      : "%Y-%m-%d",
     "subjectRegex"    : "([o,O]bje[c]?t|[O,o,Y,y]ur\\s*[r,R]ef(s?|erence)+|[s,S]u[b]?je[c]?t)\\s*(:)?\\s*.*",
-    "subjectOnly"     : "[o,O]bje[c]?t|[s,S]u[b]?je[c]?t",
+    "subjectOnly"     : "[o,O]bje[c]?t|[s,S]u[b]?je[c]?t\\s*.*",
     "refOnly"         : "",
     "phoneRegex"      : "([(]|[+]|[0])([+]?\\d?\\d?[)]?[ ]?\\d?[ ]?\\d{1}\\D?\\d?\\D?\\d{2}\\D?\\d{2}(?!$)\\D?\\d(?!$)\\d?(?!$)\\D?\\d{2}(?!$)?)",
     "emailRegex"      : "[^@\\s<>[]+@[^@\\s]+\\.[^@\\s\\]>]+",

@@ -1,0 +1,23 @@
+[launch_IN     ] [launch_IN.sh                   ] 10-04-2025 15:44:38 ERROR test.pdf is a not valid PDF file
+[MainThread    ] [main.py               line 186 ] 10-04-2025 15:44:42 INFO Launching launch_IN script
+[MainThread    ] [main.py               line 187 ] 10-04-2025 15:44:42 INFO /home/nch01@edissyum.lan/PycharmProjects/oc_for_mem//data/tmp//test.pdf is a valid file and PID file created
+[MainThread    ] [Separator.py          line 91  ] 10-04-2025 15:44:43 INFO Start page separation using QR_CODE
+[MainThread    ] [OCForMEM.py           line 178 ] 10-04-2025 15:44:44 INFO Processing file : /home/nch01@edissyum.lan/PycharmProjects/oc_for_mem//data/exported_pdf//tmpny2utvtk//test.pdf
+[MainThread    ] [OCForMEM.py           line 182 ] 10-04-2025 15:44:44 INFO Using the following process : OCForMEM_incoming
+[MainThread    ] [OCForMEM.py           line 188 ] 10-04-2025 15:44:44 INFO RDFF is enabled
+[MainThread    ] [OCForMEM.py           line 317 ] 10-04-2025 15:44:46 INFO Search sender with AI model
+[contactThread ] [FindContact.py        line 62  ] 10-04-2025 15:44:53 INFO Find PHONE : 01/2017 129
+[contactThread ] [FindContact.py        line 66  ] 10-04-2025 15:44:53 INFO Sanitized PHONE : 012017129
+[contactThread ] [FindContact.py        line 62  ] 10-04-2025 15:44:53 INFO Find PHONE : 00 1 250,00 5,00
+[contactThread ] [FindContact.py        line 66  ] 10-04-2025 15:44:53 INFO Sanitized PHONE : 00125000500
+[contactThread ] [FindContact.py        line 62  ] 10-04-2025 15:44:53 INFO Find PHONE : 00 250,00 5,00
+[contactThread ] [FindContact.py        line 66  ] 10-04-2025 15:44:53 INFO Sanitized PHONE : 0025000500
+[contactThread ] [FindContact.py        line 62  ] 10-04-2025 15:44:53 INFO Find PHONE : 00 400,00 5,00
+[contactThread ] [FindContact.py        line 66  ] 10-04-2025 15:44:53 INFO Sanitized PHONE : 0040000500
+[MainThread    ] [FindContact.py        line 196 ] 10-04-2025 15:44:53 INFO No contact found, create a temporary contact
+[MainThread    ] [FindContact.py        line 203 ] 10-04-2025 15:44:53 INFO Temporary contact created with success : 14
+[dateThread    ] [FindDate.py           line 67  ] 10-04-2025 15:44:53 INFO Date found : 15-12-2016
+[MainThread    ] [OCForMEM.py           line 140 ] 10-04-2025 15:44:53 INFO Compress PDF : prepress
+[MainThread    ] [OCForMEM.py           line 584 ] 10-04-2025 15:44:53 INFO Insert OK : {'resId': 105}
+[MainThread    ] [main.py               line 265 ] 10-04-2025 15:44:53 INFO Process end after 00:00:11.51
+
