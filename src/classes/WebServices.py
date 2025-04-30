@@ -224,7 +224,7 @@ class WebServices:
             self.log.error('InsertIntoMEMError : ' + str(e))
             return False, str(e)
 
-    def insert_attachment(self, file_content, config, res_id, _process):
+    def insert_attachment(self, file_content, config, args, _process):
         """
         Insert attachment into MEM Courrier database
 
@@ -234,11 +234,19 @@ class WebServices:
         :param _process: Process we will use to insert on MEM Courrier (from config file)
         :return: res_id from MEM Courrier
         """
+        title = 'Rapprochement note interne'
+        if 'title' in config.cfg[_process] and config.cfg[_process]['title']:
+            title = config.cfg[_process]['title']
+            if '#chrono' in title:
+                title = title.replace('#chrono', args['chrono'])
+            if '#resid' in title:
+                title = title.replace('#resid', str(args['resid']))
+
         data = {
             'status': config.cfg[_process]['status'],
-            'title': 'Rapprochement note interne',
+            'title': title,
             'type': config.cfg[_process]['attachment_type'],
-            'resIdMaster': res_id,
+            'resIdMaster': args['resid'],
             'encodedFile': base64.b64encode(file_content).decode('utf-8'),
             'format': config.cfg[_process]['format'],
         }
@@ -361,7 +369,7 @@ class WebServices:
             self.log.error('ReattachToDocumentError : ' + str(e))
             return False, str(e)
 
-    def change_status(self, res_id, config):
+    def change_status(self, res_id, config, status=None):
         """
         Change status of a MEM Courrier document
         :param res_id: res_id of the MEM Courrier document
@@ -377,7 +385,7 @@ class WebServices:
             })
         else:
             args = json.dumps({
-                "status": config.cfg['REATTACH_DOCUMENT']['status'],
+                "status": status,
                 "resId": [res_id],
             })
 
