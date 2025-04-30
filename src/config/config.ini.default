@@ -135,6 +135,7 @@ sender_custom_fields = {}
 is_attachment   = True
 separator_qr    = False
 attachment_type = simple_attachment
+format          = pdf
 status          = A_TRA
 ; Status of the principal document after adding the attachment
 document_status = EENV
