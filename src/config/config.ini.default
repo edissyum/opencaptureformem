@@ -140,7 +140,7 @@ status          = A_TRA
 ; Status of the principal document after adding the attachment
 document_status = EENV
 ; You can use keyword (chrono, res_id) or brute value
-subject         = Note #chrono - Avec annotation
+title           = Note #chrono - Avec annotation
 ; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
 compress_type   = None
 
