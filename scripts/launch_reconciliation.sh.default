@@ -107,15 +107,23 @@ mv "$inputPath" "$tmpPath"
 # Start process
 imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
-chrono=$(readBarCode "$imgFile")
+qrcode_content=$(readBarCode "$imgFile")
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Barcode content : $chrono" >> "$logFile"
+if jq -e . >/dev/null 2>&1 <<< "$qrcode_content"; then
+    chrono=$(echo "$qrcode_content" | jq --raw-output .chrono)
+    chrono=$(echo "$chrono" | sed 's/^MEM_//g')
+    chrono=$(echo "$chrono" | sed 's/^MAARCH_//g')
+else
+    chrono=qrcode_content
+fi
+
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $qrcode_content" >> "$logFile"
 
 rm "$imgFile"
 
-if [[ -z "$chrono" ]]
+if [[ -z "$qrcode_content" ]]
 then
-	  echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
     defaultProcess "$tmpPath"
 else
     attachmentOK=$(check_attachment "$chrono")
