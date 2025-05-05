@@ -121,6 +121,21 @@ class WebServices:
                 self.log.error('getResourceByChrono : ' + str(e))
                 return False, str(e)
 
+    def retrieve_res_id_master_by_chrono(self, chrono):
+        data = {
+            'chrono': {
+                'values': chrono
+            }
+        }
+        res = requests.post(self.base_url + '/search', auth=self.auth, data=json.dumps(data),
+                            headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                            timeout=self.timeout, verify=self.cert)
+        if res.status_code != 200:
+            self.log.error('(' + str(res.status_code) + ') getResIdMasterByChrono : ' + str(res.text))
+            return False
+        return json.loads(res.text)
+
+
     def link_documents(self, res_id_master, res_id):
         data = {
             'linkedResources': [res_id]

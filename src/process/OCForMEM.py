@@ -575,7 +575,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         return False, res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
         if args['isinternalnote']:
-            res = web_service.insert_attachment(file_to_send, config, args, _process)
+            res_id_master = web_service.retrieve_res_id_master_by_chrono(args['chrono'])
+            if res_id_master and len(res_id_master['resources']) == 1:
+                args['resid'] = res_id_master['resources'][0]['resId']
+                res = web_service.insert_attachment(file_to_send, config, args, _process)
         else:
             res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:

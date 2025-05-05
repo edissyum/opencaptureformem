@@ -94,19 +94,16 @@ mv "$inputPath" "$tmpPath"
 # Start process
 imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
-qrcode_content=$(readBarCode "$imgFile")
+chrono=$(readBarCode "$imgFile")
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $qrcode_content" >> "$logFile"
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $chrono" >> "$logFile"
 
 rm "$imgFile"
 
-if [[ -z "$qrcode_content" ]]
+if [[ -z "$chrono" ]]
 then
-    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO No document found. Exit..." >> "$logFile"
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Chrono is empty. Exit..." >> "$logFile"
 else
-    residMaster=$(echo "$qrcode_content" | jq --raw-output .resIdMaster)
-    chrono=$(echo "$qrcode_content" | jq --raw-output .chrono)
-
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start ATTACHMENT process" >> "$logFile"
-    attachmentProcess "$tmpPath" "$residMaster" "$chrono"
+    attachmentProcess "$tmpPath" "$chrono"
 fi
