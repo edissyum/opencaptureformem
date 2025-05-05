@@ -45,10 +45,7 @@ tmp_dir="$OCPath"/data/tmp/
 
 §§PYTHON_VENV§§
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
-
 # Define functions
-
 convertToJpg() {
     # This command convert first page of the pdf to jpg and crop only the bottom of the image using "x500+0+1500"
     # If you want to crop the top use, for example, "x500+0+0"

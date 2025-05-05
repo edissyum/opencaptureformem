@@ -38,12 +38,11 @@ cd $OCPath
 
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
+process_pj=reconciliation_default
 process=attachment
 tmp_dir="$OCPath"/data/tmp/
 
 §§PYTHON_VENV§§
-
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Launching $script script" >> "$logFile"
 
 # Define functions
 
@@ -61,7 +60,13 @@ readBarCode() {
 
 attachmentProcess() {
     # If all things went good, start the reconciliation process and insert the document as a MEM Courrier attachment
-    python3 ${OCPath}/launch_worker.py -c "$config_file" --isinternalnote --process $process -f "$1" --keep-pdf-debug false --script $script --resid "$2" --chrono "$3"
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --isinternalnote --process $process -f "$1" --keep-pdf-debug false --script $script --chrono "$2"
+}
+
+defaultProcess() {
+    # If barcode couldn't be read or isn't present, use default process
+    # Same if the barcode is read but the attachment doesn't exist on MEM Courrier database
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1" --chrono "${2:-default}" --keep-pdf-debug false --script $script
 }
 
 # Main
@@ -102,7 +107,8 @@ rm "$imgFile"
 
 if [[ -z "$chrono" ]]
 then
-    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Chrono is empty. Exit..." >> "$logFile"
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Chrono is empty. Start DEFAULT process" >> "$logFile"
+    defaultProcess "$tmpPath"
 else
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start ATTACHMENT process" >> "$logFile"
     attachmentProcess "$tmpPath" "$chrono"

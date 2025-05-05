@@ -552,50 +552,57 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
             if chrono != '':
                 log.info('Start RECONCILIATION process')
-                res = web_service.insert_attachment_reconciliation(file_to_send, chrono,
+                ws_res = web_service.insert_attachment_reconciliation(file_to_send, chrono,
                                                                    'OCForMEM_reconciliation_found', config)
             else:
                 log.info('Start DEFAULT process')
                 args['data']['file'] = file
-                res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+                ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         else:
             log.info('Insert letterbox from mail default')
-            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+            ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
 
-        if res:
-            log.info('Insert email OK : ' + str(res))
+        if ws_res:
+            log.info('Insert email OK : ' + str(ws_res))
             if chrono_number:
                 if chrono_res_id:
-                    web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
-            return res
+                    web_service.link_documents(ws_res[1]['resId'], chrono_res_id['resId'])
+            return ws_res
         try:
             shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
         except shutil.Error as _e:
             log.error('Moving file ' + file + ' error : ' + str(_e))
-        return False, res
+        return False, ws_res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
         if args['isinternalnote']:
             res_id_master = web_service.retrieve_res_id_master_by_chrono(args['chrono'])
             if res_id_master and len(res_id_master['resources']) == 1:
                 args['resid'] = res_id_master['resources'][0]['resId']
-                res = web_service.insert_attachment(file_to_send, config, args, _process)
+                ws_res = web_service.insert_attachment(file_to_send, config, args, _process)
+            else:
+                log.error('Unable to find master document for attachment, exit...')
+                try:
+                    shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
+                except shutil.Error as _e:
+                    log.error('Moving file ' + file + ' error : ' + str(_e))
+                return False, ''
         else:
-            res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
+            ws_res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
         if 'custom_fields' not in args:
             args['custom_fields'] = None
 
-        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
+        ws_res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
                                            config.cfg[_process], custom_mail, file_format, args['custom_fields'])
 
-    if res and res[0] is not False:
+    if ws_res and ws_res[0] is not False:
         if not args['isinternalnote']:
-            log.info("Insert OK : " + str(res[1]))
+            log.info("Insert OK : " + str(ws_res[1]))
         else:
-            log.info("Insert attachment OK : " + str(res[1]))
+            log.info("Insert attachment OK : " + str(ws_res[1]))
 
         if chrono_res_id and chrono_number:
-            new_res_id = json.loads(res)['resId']
+            new_res_id = json.loads(ws_res)['resId']
             web_service.link_documents(new_res_id, chrono_res_id['resId'])
 
         if args['isinternalnote']:
@@ -612,7 +619,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 log.info("Reattach check result : " + str(check_document_res))
                 if check_document_res['resources']:
                     res_id_origin = check_document_res['resources'][0]['res_id']
-                    res_id_signed = json.loads(res)['resId']
+                    res_id_signed = json.loads(ws_res)['resId']
 
                     log.info("Reattach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
                     # Get ws user id and reattach the document
@@ -633,7 +640,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     os.remove(file)
             except FileNotFoundError as _e:
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(_e))
-        return res
+        return ws_res
     try:
         shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
     except shutil.Error as _e:
