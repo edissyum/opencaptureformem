@@ -607,8 +607,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         if args['isinternalnote']:
             if 'document_status' in config.cfg[_process] and config.cfg[_process]['document_status'] != '':
-                change_status_res = web_service.change_status(args['resid'], config, config.cfg[_process]['document_status'])
-                log.info("Change status : " + str(change_status_res))
+                web_service.change_status(args['resid'], config, config.cfg[_process]['document_status'])
+                log.info('Status changed for principal document')
 
     # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
