@@ -219,10 +219,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         tmp_doctype = config_mail.cfg[_process]['doctype']
     else:
-        if not args['isinternalnote']:
+        if 'isinternalnote' not in args or not args['isinternalnote']:
             tmp_doctype = config.cfg[_process]['doctype']
 
-    if not args['isinternalnote']:
+    if 'isinternalnote' not in args or not args['isinternalnote']:
         if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
             log.error('Document type not found, exit...')
             sys.exit(os.EX_CONFIG)
@@ -232,7 +232,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             destination = args['data']['destination']
         else:
-            if not args['isinternalnote']:
+            if 'isinternalnote' not in args or not args['isinternalnote']:
                 destination = config.cfg[_process]['destination']
 
         for dest in destinations_list['entities']:
@@ -246,9 +246,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         typist = args['data']['typist']
     else:
-        if not args['isinternalnote']:
+        if 'isinternalnote' not in args or not args['isinternalnote']:
             typist = config.cfg[_process]['typist']
-    if not args['isinternalnote']:
+    if 'isinternalnote' not in args or not args['isinternalnote']:
         if type(typist) is not int:
             list_of_users = web_service.retrieve_users()
             for user in list_of_users['users']:
@@ -574,7 +574,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             log.error('Moving file ' + file + ' error : ' + str(_e))
         return False, ws_res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
-        if args['isinternalnote']:
+        if 'isinternalnote' in args and args['isinternalnote']:
             res_id_master = web_service.retrieve_res_id_master_by_chrono(args['chrono'])
             if res_id_master and len(res_id_master['resources']) == 1:
                 args['resid'] = res_id_master['resources'][0]['resId']
@@ -596,7 +596,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                                            config.cfg[_process], custom_mail, file_format, args['custom_fields'])
 
     if ws_res and ws_res[0] is not False:
-        if not args['isinternalnote']:
+        if 'isinternalnote' not in args or not args['isinternalnote']:
             log.info("Insert OK : " + str(ws_res[1]))
         else:
             log.info("Insert attachment OK : " + str(ws_res[1]))
@@ -605,14 +605,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             new_res_id = json.loads(ws_res)['resId']
             web_service.link_documents(new_res_id, chrono_res_id['resId'])
 
-        if args['isinternalnote']:
+        if 'isinternalnote' in args and args['isinternalnote']:
             if 'document_status' in config.cfg[_process] and config.cfg[_process]['document_status'] != '':
                 web_service.change_status(args['resid'], config, config.cfg[_process]['document_status'])
                 log.info('Status changed for principal document')
 
     # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
-        if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None and not args['isinternalnote']:
+        if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None and ('isinternalnote' not in args or not args['isinternalnote']):
             log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
             if args['chrono']:
                 check_document_res = web_service.check_document(args['chrono'])
