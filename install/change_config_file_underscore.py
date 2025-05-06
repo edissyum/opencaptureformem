@@ -16,6 +16,8 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import shutil
+import datetime
 from configparser import RawConfigParser, Error, ConfigParser
 
 
@@ -36,6 +38,9 @@ if __name__ == '__main__':
 
     OLD_CONFIG_FILE = '/opt/edissyum/opencaptureformem/src/config/config.ini'
     NEW_CONFIG_FILE = '/opt/edissyum/opencaptureformem/src/config/config.ini.default'
+
+    today = datetime.datetime.today()
+    shutil.copy(OLD_CONFIG_FILE, OLD_CONFIG_FILE + '.bak_' + today.strftime('%Y-%m-%d_%H-%M-%S'))
 
     try:
         new_parser = ConfigParser(comment_prefixes="", allow_no_value=True, strict=False)
@@ -61,28 +66,33 @@ if __name__ == '__main__':
                         if key_exists_in_old_config(new_section, tmp_info, old_parser):
                             os.system(f'sed -i "s/{tmp_info}/{new_info}/g" {OLD_CONFIG_FILE}')
 
-            old_parser = RawConfigParser(comment_prefixes="", allow_no_value=True, strict=False)
-            old_parser.optionxform = str
-            with open(OLD_CONFIG_FILE, 'r', encoding='utf-8') as file:
-                old_parser.read_file(file)
+                        if key_exists_in_old_config(new_section, tmp_info.lower(), old_parser):
+                            os.system(f'sed -i "s/{tmp_info.lower()}/{new_info}/g" {OLD_CONFIG_FILE}')
 
-            # Check if new informations exists to fill old config file
-            for new_section in new_parser.sections():
-                if not old_parser.has_section(new_section):
-                    old_parser[new_section] = new_parser[new_section]
+                        if new_info == 'uppercase_subject':
+                            os.system(f'sed -i "s/upperCaseSubject/uppercase_subject/g" {OLD_CONFIG_FILE}')
 
-                for new_info in new_parser[new_section]:
-                    if not new_info[0] == ';':
-                        if not key_exists_in_old_config(new_section, new_info, old_parser):
-                            tmp_info = new_info.split('_')
-                            for i in range(1, len(tmp_info)):
-                                tmp_info[i] = tmp_info[i].capitalize()
-                            TMP_INFO = ''.join(tmp_info)
+        old_parser = RawConfigParser(comment_prefixes="", allow_no_value=True, strict=False)
+        old_parser.optionxform = str
+        with open(OLD_CONFIG_FILE, 'r', encoding='utf-8') as file:
+            old_parser.read_file(file)
 
-                            if not key_exists_in_old_config(new_section, tmp_info, old_parser):
-                                old_parser[new_section][new_info] = new_parser[new_section][new_info]
+        # Check if new informations exists to fill old config file
+        for new_section in new_parser.sections():
+            if not old_parser.has_section(new_section):
+                old_parser[new_section] = new_parser[new_section]
 
-            with open(OLD_CONFIG_FILE, 'w', encoding='utf-8') as file:
-                old_parser.write(file)
+            for new_info in new_parser[new_section]:
+                if not new_info[0] == ';':
+                    if not key_exists_in_old_config(new_section, new_info, old_parser):
+                        tmp_info = new_info.split('_')
+                        for i in range(1, len(tmp_info)):
+                            tmp_info[i] = tmp_info[i].capitalize()
+                        TMP_INFO = ''.join(tmp_info)
+                        if not key_exists_in_old_config(new_section, tmp_info, old_parser):
+                            old_parser[new_section][new_info] = new_parser[new_section][new_info]
+
+        with open(OLD_CONFIG_FILE, 'w', encoding='utf-8') as file:
+            old_parser.write(file)
     except Error as e:
         print('Error while parse .INI file : ' + str(e))
