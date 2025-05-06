@@ -203,7 +203,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     elif args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         destination = args['data']['destination']
 
-    if not destination and not args['isinternalnote']:
+    if not destination and ('isinternalnote' not in args or not args['isinternalnote']):
         # Put default destination
         destination = config.cfg[_process]['destination']
         log.info("Destination can't be found, using default destination : " + destination)
@@ -290,14 +290,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and not args['isinternalnote']:
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
         # Get the OCR of the file as a string content
         if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
             ocr.text_builder(image.img)
 
     contact = {}
     custom_mail = ''
-    if not args.get('isMail') and not args['isinternalnote']:
+    if not args.get('isMail') and ('isinternalnote' not in args or not args['isinternalnote']):
         if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA']):
             doctype_entity_model = config.cfg['IA']['doctype_entity']
@@ -327,7 +327,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             else:
                 log.info('ERROR : Sender AI model not found')
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and not args['isinternalnote']:
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
         # Find subject of document
         if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
                 and args.get('priority_mail_subject') is True):
@@ -453,7 +453,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if chrono_number:
         log.info('Chrono found in body : ' + chrono_number)
 
-    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True] and not args['isinternalnote']:
+    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True] and ('isinternalnote' not in args or not args['isinternalnote']):
         chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
         chrono_class.run()
         chrono_number = chrono_class.chrono
