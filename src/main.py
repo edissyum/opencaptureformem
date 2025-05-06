@@ -119,7 +119,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
     if check_file(image, path, config, log):
         # Process the file and send it to MEM Courrier
         res = process(args, path, log, separator, config, image, ocr, locale, web_service, tmp_folder, config_mail)
-        if res[0] and not args['isinternalnote']:
+        if res[0] and ('isinternalnote' not in args or not args['isinternalnote']):
             res_id = res[1]['resId']
             if 'notes' in args and args['notes']:
                 for note in args['notes']:
