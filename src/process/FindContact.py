@@ -157,10 +157,10 @@ class FindContact(Thread):
 
             if contact:
                 self.log.info('Contact found using email : ' + found_contact['email'])
-                contact_mail = self.web_service.retrieve_contact_by_id(contact['id'])
-                match_contact = self.compare_contact(contact_mail, found_contact)
+                contact = self.web_service.retrieve_contact_by_id(contact['id'])
+                match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
-                    return contact_mail
+                    return contact
                 self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
 
         if 'phone' in found_contact and found_contact['phone']:
