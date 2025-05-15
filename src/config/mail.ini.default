@@ -43,6 +43,11 @@ tenant_id   =
 secret      =
 
 [MAIL_1]
+; Label used to display this process in Office 365 addin
+label = Processus MailCollect par défaut
+; Enable this process in Office 365 addin
+addin_enabled = False
+
 ; basic, oauth, exchange or graphql
 auth_method             = basic
 host                    = outlook.office365.com

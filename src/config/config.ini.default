@@ -54,7 +54,7 @@ doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
 host                = http://localhost/mem/rest/
 user                = ws_opencapture
 password            =
-process_available   = incoming,reconciliation_default,reconciliation_found
+process_available   = incoming,reconciliation_default,reconciliation_found,attachment
 default_process     = incoming
 ; Delta between date found and today date, in days
 ; -1 to disable
@@ -129,6 +129,19 @@ doctype_entity_ai = False
 ; Use AI to find sender (True or False)
 sender_ai         = False
 sender_custom_fields = {}
+
+[OCForMEM_attachment]
+is_attachment   = True
+separator_qr    = False
+attachment_type = simple_attachment
+format          = pdf
+status          = A_TRA
+; Status of the principal document after adding the attachment
+document_status = EENV
+; You can use keyword (chrono, res_id) or brute value
+title           = Note #chrono - Avec annotation
+; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+compress_type   = None
 
 [OCForMEM_reconciliation_found]
 is_attachment   = True

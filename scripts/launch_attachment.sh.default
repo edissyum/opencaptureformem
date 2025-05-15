@@ -15,15 +15,14 @@
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
-# @dev : Pierre-Yvon Bezert <pierreyvon.bezert@edissyum.com>
 
 if [[ -d "$1" ]]
 then
-        exit 0
+    exit 0
 fi
 
 # Variables
-script="RECONCILIATION"
+script="ATTACHMENT"
 # Made 14 char for name, to have the same layout in log as OC application
 # Made 31 char for filename, to have the same layout in log as OC application
 spaces="              "
@@ -40,17 +39,18 @@ cd $OCPath
 config_file="$OCPath"/src/config/config.ini
 logFile="$OCPath"/data/log/OCForMEM.log
 process_pj=reconciliation_default
-process_attfnd=reconciliation_found
+process=attachment
 tmp_dir="$OCPath"/data/tmp/
 
 §§PYTHON_VENV§§
 
 # Define functions
+
 convertToJpg() {
     # This command convert first page of the pdf to jpg and crop only the bottom of the image using "x500+0+1500"
     # If you want to crop the top use, for example, "x500+0+0"
     # -alpha remove avoid the black background after the convert in a random way
-    convert -density 200 "$1[0]" -quality 100 -alpha remove -geometry x2000 -crop x500+0+1500 "$2"
+    convert -density 200 "$1[0]" -quality 100 -alpha remove -geometry x2000 -crop x500+0+0 "$2"
 }
 
 readBarCode() {
@@ -58,20 +58,15 @@ readBarCode() {
     python3 ${OCPath}/scripts/read_barcode.py -c "$config_file" -f "$1"
 }
 
-check_attachment() {
-    # Using MEM Courrier WebService, check if the chrono number is related to an attachment
-    python3 ${OCPath}/src/process/checkAttachment.py -c "$config_file" -chrono "$1"
+attachmentProcess() {
+    # If all things went good, start the reconciliation process and insert the document as a MEM Courrier attachment
+    python3 ${OCPath}/launch_worker.py -c "$config_file" --isinternalnote --process $process -f "$1" --keep-pdf-debug false --script $script --chrono "$2"
 }
 
 defaultProcess() {
     # If barcode couldn't be read or isn't present, use default process
     # Same if the barcode is read but the attachment doesn't exist on MEM Courrier database
     python3 ${OCPath}/launch_worker.py -c "$config_file" --read-destination-from-filename --process ${process_pj} -f "$1" --chrono "${2:-default}" --keep-pdf-debug false --script $script
-}
-
-reconciliationProcess() {
-    # If all things went good, start the reconciliation process and insert the document as a MEM Courrier attachment
-    python3 ${OCPath}/launch_worker.py -c "$config_file" --process "$process_attfnd" -f "$1" -chrono "$2" --keep-pdf-debug false --script $script
 }
 
 # Main
@@ -88,10 +83,10 @@ fi
 
 fileName=$(basename "$1")
 
-separatorEnabled=$(crudini --get $config_file "OCForMEM_$process_pj" "separator_qr" | sed 's/:.*//')
+separatorEnabled=$(crudini --get $config_file "OCForMEM_$process" "separator_qr" | sed 's/:.*//')
 if [[ "$fileName" != *"SEPARATED"* ]] && { [ "$separatorEnabled" == 'True' ] || [ "$separatorEnabled" == 'true' ]; }; then
     echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") Separate document by QR Code (QRPrefix on MEM Courrier need to be enabled)" >> "$logFile"
-    python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file" -p "$process_pj"
+    python3 ${OCPath}/separator_qr_reconciliation.py -f "$1" -c "$config_file" -p "$process"
     exit
 fi
 
@@ -106,23 +101,15 @@ imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
 chrono=$(readBarCode "$imgFile")
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $qrcode_content" >> "$logFile"
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $chrono" >> "$logFile"
 
 rm "$imgFile"
 
 if [[ -z "$chrono" ]]
 then
-    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Chrono is empty. Start DEFAULT process" >> "$logFile"
     defaultProcess "$tmpPath"
 else
-    attachmentOK=$(check_attachment "$chrono")
-
-    if [[ "$attachmentOK" == "OK" ]]
-    then
-        echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start RECONCILIATION process" >> "$logFile"
-        reconciliationProcess "$tmpPath" "$chrono"
-    else
-        echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
-        defaultProcess "$tmpPath" "$chrono"
-      fi
+    echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start ATTACHMENT process" >> "$logFile"
+    attachmentProcess "$tmpPath" "$chrono"
 fi

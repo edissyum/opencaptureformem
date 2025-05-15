@@ -19,7 +19,7 @@
         <select id="processes" style="margin-bottom: 20px;" onchange="checkValue(this)">
             <option value="0">Selectionnez votre processus MailCollect</option>
             {% for process in process_list %}
-                <option value="{{ process }}">{{ process }}</option>
+                <option value="{{ process['id'] }}">{{ process['label'] }}</option>
             {% endfor %}
         </select>
         <div style="margin-bottom: 20px; width: 100%">
