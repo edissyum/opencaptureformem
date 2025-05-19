@@ -353,7 +353,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             sender_model = config.cfg['IA']['sender']
             if os.path.isdir(sender_model) and os.listdir(sender_model):
                 log.info('Search sender with AI model')
-                sender_prediction = run_inference_sender_bis(sender_model, image.img)
+                sender_prediction = run_inference_sender(sender_model, image.img)
                 if sender_prediction:
                     contact_class = FindContact(ocr.text, log, config, web_service, locale)
                     contact = contact_class.find_contact_by_ai(sender_prediction, _process)
