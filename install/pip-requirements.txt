@@ -16,5 +16,6 @@ exchangelib
 transformers
 configparser
 opencv-python
+qwen_vl_utils
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch
