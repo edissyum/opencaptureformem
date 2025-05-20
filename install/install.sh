@@ -15,7 +15,7 @@ normal=$(tput sgr0)
 defaultPath=/opt/edissyum/opencaptureformem/
 imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
-group=www-data
+group=$(who am i | awk '{print $1}')
 
 ####################
 # Handle parameters
@@ -339,7 +339,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     <Directory "$defaultPath">
@@ -361,7 +361,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     SSLEngine on
@@ -370,12 +370,12 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
 
     <Directory "$defaultPath">
         AllowOverride All
-        Options +Indexes
+        Options -Indexes
         WSGIProcessGroup opencaptureformem
         WSGIApplicationGroup %{GLOBAL}
         WSGIPassAuthorization On
         Require all granted
-        <Files ~ "(.ini)">
+        <Files ~ "(.ini|.json)">
             Require all denied
         </Files>
     </Directory>
@@ -397,4 +397,3 @@ chown -R "$user":"$group" $defaultPath
 
 echo ""
 echo "#######################################################################################################################"
-
