@@ -392,7 +392,7 @@ class WebServices:
         :return: process success (boolean)
         """
 
-        if config.cfg['REATTACH_DOCUMENT']['status']:
+        if config.cfg['REATTACH_DOCUMENT']['status'] and not status:
             args = json.dumps({
                 "status": config.cfg['REATTACH_DOCUMENT']['status'],
                 "resId": [res_id],
