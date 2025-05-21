@@ -635,7 +635,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             log.info("Insert attachment OK : " + str(ws_res[1]))
 
         if chrono_res_id and chrono_number:
-            new_res_id = json.loads(ws_res)['resId']
+            new_res_id = ws_res[1]['resId']
             web_service.link_documents(new_res_id, chrono_res_id['resId'])
 
         if 'isinternalnote' in args and args['isinternalnote']:
@@ -643,7 +643,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 web_service.change_status(args['resid'], config, config.cfg[_process]['document_status'])
                 log.info('Status changed for principal document')
 
-    # BEGIN OBR01
+        # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
         if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None and ('isinternalnote' not in args or not args['isinternalnote']):
             log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
@@ -652,7 +652,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 log.info("Reattach check result : " + str(check_document_res))
                 if check_document_res['resources']:
                     res_id_origin = check_document_res['resources'][0]['res_id']
-                    res_id_signed = json.loads(ws_res)['resId']
+                    res_id_signed = ws_res[1]['resId']
 
                     log.info("Reattach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
                     # Get ws user id and reattach the document
