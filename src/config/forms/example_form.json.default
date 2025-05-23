@@ -59,7 +59,7 @@
                 {
                     "regex": "Catégorie\\s*:\\s*(.+)",
                     "column": "doctype",
-                    "databaseAssociation": {
+                    "database_association": {
                         "tableName": "doctypes",
                         "column": "type_id",
                         "filterColumn": "description",
@@ -70,12 +70,12 @@
                     "regex": "Catégorie\\s*:\\s*(.+)",
                     "column": "destination",
                     "correspondance_table": {
-                      "Arbres": "EDDB",
-                      "Haies et arbustes": "EDAA",
-                      "Arrosage et fuite d’eau": "EDFA",
-                      "Désherbage/tonte": "EDAA"
+                        "Arbres": "EDDB",
+                        "Haies et arbustes": "EDAA",
+                        "Arrosage et fuite d’eau": "EDFA",
+                        "Désherbage/tonte": "EDAA"
                     },
-                    "databaseAssociation": {
+                    "database_association": {
                         "tableName": "entities",
                         "column": "id",
                         "filterColumn": "entity_id",
@@ -87,11 +87,11 @@
                     "column": "custom",
                     "mapping": [
                         {
-                            "isCustom": "True",
-                            "isDate": "False",
-                            "dateFormat": "",
-                            "isAddress": "False",
-                            "addressFormat": "",
+                            "is_custom": "True",
+                            "is_date": "False",
+                            "date_format": "",
+                            "is_address": "False",
+                            "address_format": "",
                             "column": "12"
                         }
                     ]
@@ -101,11 +101,11 @@
                     "column": "custom",
                     "mapping": [
                         {
-                            "isCustom": "True",
-                            "isDate": "False",
-                            "dateFormat": "",
-                            "isAddress": "True",
-                            "addressFormat": "\\[addressLatitude,addressLongitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
+                            "is_custom": "True",
+                            "is_date": "False",
+                            "date_format": "",
+                            "is_address": "True",
+                            "address_format": "\\[addressLatitude,addressLongitude\\] addressNumber addressStreet, addressPostcode addressTown, addressCountry",
                             "column": "2"
                         }
                     ]

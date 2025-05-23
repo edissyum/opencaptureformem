@@ -25,6 +25,7 @@ import shutil
 import warnings
 import subprocess
 import transformers
+import qwen_vl_utils
 from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
@@ -90,45 +91,77 @@ def run_inference_destination(trained_model, img):
     return prediction
 
 
-def run_inference_sender(trained_model, img):
-    warnings.filterwarnings('ignore')
-    transformers.logging.set_verbosity_error()
-
-    processor = transformers.DonutProcessor.from_pretrained(trained_model, local_files_only=True)
-    model = transformers.VisionEncoderDecoderModel.from_pretrained(trained_model, local_files_only=True)
-
-    pixel_values = processor(img, random_padding="test", return_tensors="pt").pixel_values.squeeze()
-    pixel_values = torch.tensor(pixel_values).unsqueeze(0)
-    task_prompt = "<s>"
-    decoder_input_ids = processor.tokenizer(task_prompt, add_special_tokens=False, return_tensors="pt").input_ids
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    outputs = model.generate(
-        pixel_values.to(device),
-        decoder_input_ids=decoder_input_ids.to(device),
-        max_length=model.decoder.config.max_position_embeddings,
-        early_stopping=True,
-        pad_token_id=processor.tokenizer.pad_token_id,
-        eos_token_id=processor.tokenizer.eos_token_id,
-        use_cache=True,
-        num_beams=1,
-        bad_words_ids=[[processor.tokenizer.unk_token_id]],
-        return_dict_in_generate=True
+def run_inference_sender(model_path, img):
+    model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
+        model_path, torch_dtype=torch.float32, device_map=None
     )
-    prediction = processor.batch_decode(outputs.sequences)[0]
-    prediction = processor.token2json(prediction)
-    return prediction
+    model = torch.compile(model)
+    model.eval()
+
+    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28,
+                                                           max_pixels=512 * 28 * 28, use_fast=True)
+
+    with torch.inference_mode():
+        with torch.no_grad():
+            formatted_data = [
+                {
+                    "role": "system",
+                    "content": [{"type": "text", "text": ""}],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": img},
+                        {"type": "text", "text": "Extract sender's data in a python dictionary"},
+                    ],
+                },
+            ]
+
+            chat_text = processor.apply_chat_template(
+                formatted_data,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+            model_inputs = processor(
+                text=[chat_text],
+                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
+                return_tensors="pt",
+                padding=True
+            )
+
+            input_ids = model_inputs["input_ids"].to(model.device)
+            generated_ids = model.generate(
+                input_ids=input_ids,
+                attention_mask=model_inputs["attention_mask"].to(model.device),
+                pixel_values=model_inputs["pixel_values"].to(model.device),
+                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
+                max_new_tokens=256
+            )
+
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):]
+                for in_ids, out_ids in zip(input_ids, generated_ids)
+            ]
+            generated_texts = processor.batch_decode(
+                generated_ids_trimmed,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False
+            )
+
+            data = {}
+            if generated_texts and isinstance(generated_texts[0], str):
+                data = json.loads(generated_texts[0])
+            return data
 
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
     else:
-        if args['process'] in config.cfg['OCForMEM']['processavailable'].split(','):
+        if args['process'] in config.cfg['OCForMEM']['process_available'].split(','):
             _process = 'OCForMEM_' + args['process'].lower()
         else:
-            _process = 'OCForMEM_' + config.cfg['OCForMEM']['defaultprocess'].lower()
+            _process = 'OCForMEM_' + config.cfg['OCForMEM']['default_process'].lower()
 
     return _process
 
@@ -203,7 +236,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     elif args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         destination = args['data']['destination']
 
-    if not destination:
+    if not destination and ('isinternalnote' not in args or not args['isinternalnote']):
         # Put default destination
         destination = config.cfg[_process]['destination']
         log.info("Destination can't be found, using default destination : " + destination)
@@ -219,18 +252,21 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         tmp_doctype = config_mail.cfg[_process]['doctype']
     else:
-        tmp_doctype = config.cfg[_process]['doctype']
+        if 'isinternalnote' not in args or not args['isinternalnote']:
+            tmp_doctype = config.cfg[_process]['doctype']
 
-    if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
-        log.error('Document type not found, exit...')
-        sys.exit(os.EX_CONFIG)
+    if 'isinternalnote' not in args or not args['isinternalnote']:
+        if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
+            log.error('Document type not found, exit...')
+            sys.exit(os.EX_CONFIG)
 
     # If destination still not good, try with default destination
     if not isinstance(destination, int) or not destination:
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             destination = args['data']['destination']
         else:
-            destination = config.cfg[_process]['destination']
+            if 'isinternalnote' not in args or not args['isinternalnote']:
+                destination = config.cfg[_process]['destination']
 
         for dest in destinations_list['entities']:
             if destination == dest['id']:
@@ -239,20 +275,22 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     args['data']['destination'] = destination
 
     # Retrieve user_id to use it as typist
+
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         typist = args['data']['typist']
     else:
-        typist = config.cfg[_process]['typist']
-
-    if type(typist) is not int:
-        list_of_users = web_service.retrieve_users()
-        for user in list_of_users['users']:
-            if typist == user['user_id']:
-                typist = user['id']
-                if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
-                    args['data']['typist'] = typist
-                else:
-                    config.cfg[_process]['typist'] = typist
+        if 'isinternalnote' not in args or not args['isinternalnote']:
+            typist = config.cfg[_process]['typist']
+    if 'isinternalnote' not in args or not args['isinternalnote']:
+        if type(typist) is not int:
+            list_of_users = web_service.retrieve_users()
+            for user in list_of_users['users']:
+                if typist == user['user_id']:
+                    typist = user['id']
+                    if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+                        args['data']['typist'] = typist
+                    else:
+                        config.cfg[_process]['typist'] = typist
 
     if args.get('isMail') is not None and args.get('isMail') is True:
         if args['isForm']:
@@ -285,14 +323,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         image.open_img(file)
         is_ocr = False
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
         # Get the OCR of the file as a string content
         if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
             ocr.text_builder(image.img)
 
     contact = {}
     custom_mail = ''
-    if not args.get('isMail'):
+    if not args.get('isMail') and ('isinternalnote' not in args or not args['isinternalnote']):
         if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA']):
             doctype_entity_model = config.cfg['IA']['doctype_entity']
@@ -318,9 +356,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 sender_prediction = run_inference_sender(sender_model, image.img)
                 if sender_prediction:
                     contact_class = FindContact(ocr.text, log, config, web_service, locale)
-                    contact = contact_class.find_contact_by_ai(sender_prediction)
+                    contact = contact_class.find_contact_by_ai(sender_prediction, _process)
+            else:
+                log.info('ERROR : Sender AI model not found')
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disablelad'] == 'False':
+    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
         # Find subject of document
         if (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']
                 and args.get('priority_mail_subject') is True):
@@ -328,11 +368,11 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             subject_thread = FindSubject(ocr.text, locale, log)
 
-        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chronoregex' not in config_mail.cfg[_process]:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chrono_regex' not in config_mail.cfg[_process]:
             chrono_thread = ''
-        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chronoregex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chronoregex']:
+        elif args.get('isMail') is not None and args.get('isMail') in [True] and 'chrono_regex' in config_mail.cfg[_process] and config_mail.cfg[_process]['chrono_regex']:
             chrono_thread = FindChrono(ocr.text, config_mail.cfg[_process])
-        elif _process in config.cfg and 'chronoregex' in config.cfg[_process] and config.cfg[_process]['chronoregex']:
+        elif _process in config.cfg and 'chrono_regex' in config.cfg[_process] and config.cfg[_process]['chrono_regex']:
             chrono_thread = FindChrono(ocr.text, config.cfg[_process])
         else:
             chrono_thread = ''
@@ -446,7 +486,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if chrono_number:
         log.info('Chrono found in body : ' + chrono_number)
 
-    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True]:
+    if not chrono_number and args.get('isMail') is not None and args.get('isMail') in [True] and ('isinternalnote' not in args or not args['isinternalnote']):
         chrono_class = FindChrono(args['msg']['subject'], config_mail.cfg[_process])
         chrono_class.run()
         chrono_number = chrono_class.chrono
@@ -512,7 +552,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['file'] = args['file']
             args['data']['format'] = args['format']
 
-        if 'ereconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['ereconciliation'] == 'True':
+        if 'e_reconciliation' in config_mail.cfg[_process] and config_mail.cfg[_process]['e_reconciliation'] == 'True':
             log.info('E-reconciliation enabled, trying to read barcode')
             chrono = ''
             if file.lower().endswith('.pdf'):
@@ -528,10 +568,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
                 log.info(f"Detected barcodes: {detected_barcodes}")
 
-                if 'reconciliationtype' not in config.cfg['OCForMEM']:
+                if 'reconciliation_type' not in config.cfg['OCForMEM']:
                     reconciliation_type = 'QRCODE'
                 else:
-                    reconciliation_type = config.cfg['OCForMEM']['reconciliationtype']
+                    reconciliation_type = config.cfg['OCForMEM']['reconciliation_type']
 
                 for barcode in detected_barcodes:
                     if barcode.type == reconciliation_type:
@@ -545,55 +585,74 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
             if chrono != '':
                 log.info('Start RECONCILIATION process')
-                res = web_service.insert_attachment_reconciliation(file_to_send, chrono,
+                ws_res = web_service.insert_attachment_reconciliation(file_to_send, chrono,
                                                                    'OCForMEM_reconciliation_found', config)
             else:
                 log.info('Start DEFAULT process')
                 args['data']['file'] = file
-                res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+                ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         else:
             log.info('Insert letterbox from mail default')
-            res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
+            ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
 
-        if res:
-            log.info('Insert email OK : ' + str(res))
+        if ws_res:
+            log.info('Insert email OK : ' + str(ws_res))
             if chrono_number:
                 if chrono_res_id:
-                    web_service.link_documents(res[1]['resId'], chrono_res_id['resId'])
-            return res
+                    web_service.link_documents(ws_res[1]['resId'], chrono_res_id['resId'])
+            return ws_res
         try:
-            shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+            shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
         except shutil.Error as _e:
             log.error('Moving file ' + file + ' error : ' + str(_e))
-        return False, res
+        return False, ws_res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
-        if args['isinternalnote']:
-            res = web_service.insert_attachment(file_to_send, config, args['resid'], _process)
+        if 'isinternalnote' in args and args['isinternalnote']:
+            res_id_master = web_service.retrieve_res_id_master_by_chrono(args['chrono'])
+            if res_id_master and len(res_id_master['resources']) == 1:
+                args['resid'] = res_id_master['resources'][0]['resId']
+                ws_res = web_service.insert_attachment(file_to_send, config, args, _process)
+            else:
+                log.error('Unable to find master document for attachment, exit...')
+                try:
+                    shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
+                except shutil.Error as _e:
+                    log.error('Moving file ' + file + ' error : ' + str(_e))
+                return False, ''
         else:
-            res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
+            ws_res = web_service.insert_attachment_reconciliation(file_to_send, args['chrono'], _process, config)
     else:
         if 'custom_fields' not in args:
             args['custom_fields'] = None
 
-        res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
+        ws_res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
                                            config.cfg[_process], custom_mail, file_format, args['custom_fields'])
 
-    if res and res[0] is not False:
-        log.info("Insert OK : " + str(res[1]))
+    if ws_res and ws_res[0] is not False:
+        if 'isinternalnote' not in args or not args['isinternalnote']:
+            log.info("Insert OK : " + str(ws_res[1]))
+        else:
+            log.info("Insert attachment OK : " + str(ws_res[1]))
+
         if chrono_res_id and chrono_number:
-            new_res_id = json.loads(res)['resId']
+            new_res_id = ws_res[1]['resId']
             web_service.link_documents(new_res_id, chrono_res_id['resId'])
+
+        if 'isinternalnote' in args and args['isinternalnote']:
+            if 'document_status' in config.cfg[_process] and config.cfg[_process]['document_status'] != '':
+                web_service.change_status(args['resid'], config, config.cfg[_process]['document_status'])
+                log.info('Status changed for principal document')
 
         # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
-        if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None:
+        if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None and ('isinternalnote' not in args or not args['isinternalnote']):
             log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
             if args['chrono']:
                 check_document_res = web_service.check_document(args['chrono'])
                 log.info("Reattach check result : " + str(check_document_res))
                 if check_document_res['resources']:
                     res_id_origin = check_document_res['resources'][0]['res_id']
-                    res_id_signed = json.loads(res)['resId']
+                    res_id_signed = ws_res[1]['resId']
 
                     log.info("Reattach res_id : " + str(res_id_origin) + " to " + str(res_id_signed))
                     # Get ws user id and reattach the document
@@ -614,9 +673,9 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     os.remove(file)
             except FileNotFoundError as _e:
                 log.error('Unable to delete ' + file + ' after insertion : ' + str(_e))
-        return res
+        return ws_res
     try:
-        shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+        shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
     except shutil.Error as _e:
         log.error('Moving file ' + file + ' error : ' + str(_e))
     return False, ''

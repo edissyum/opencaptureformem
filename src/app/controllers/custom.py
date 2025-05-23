@@ -56,7 +56,7 @@ def get_custom_config_value(config_file_path, key, master_key="API"):
 
 
 def get_custom_config_process_list(config_file_path):
-    process_list_str, error = get_custom_config_value(config_file_path, "processavailable", "OCForMEM")
+    process_list_str, error = get_custom_config_value(config_file_path, "process_available", "OCForMEM")
     if error:
         return jsonify({"message": error}), 400
 
@@ -96,5 +96,9 @@ def get_custom_config_mail_process_list(custom_id):
     process_list = []
     for section in config_mail.cfg:
         if section not in ['GLOBAL', 'OAUTH', 'EXCHANGE', 'GRAPHQL']:
-            process_list.append(section)
+            if 'addin_enabled' in config_mail.cfg[section] and config_mail.cfg[section]['addin_enabled'] == 'True':
+                if 'label' in config_mail.cfg[section] and config_mail.cfg[section]['label']:
+                    process_list.append({'id': section, 'label': config_mail.cfg[section]['label']})
+                else:
+                    process_list.append({"id": section, "label": section})
     return process_list, None

@@ -38,7 +38,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
     if error:
         return {"message": error}, 400
 
-    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmppath', 'GLOBAL')
+    config_temp_dir, error = get_custom_config_value(config_file_path, 'tmp_path', 'GLOBAL')
     if error:
         return {"message": error}, 400
 
@@ -87,9 +87,10 @@ def graphql_request(url, method, data, headers):
 
     if method == 'POST':
         return requests.post(url, data=data, headers=headers, timeout=30)
+    return None
 
 
-def process_mail(mail_id, custom_id, process_name, note):
+def process_mail(mail_id, custom_id, process_name, note, login):
     config_path, error = get_custom_config_file_path(custom_id)
     if error:
         return {"error": error}, 400
@@ -107,11 +108,11 @@ def process_mail(mail_id, custom_id, process_name, note):
     if config_mail.cfg.get(process_name) is None:
         sys.exit('Process ' + process_name + ' is not set into ' + config_mail_path + ' file')
 
-    global_log = logClass.Log(config.cfg['GLOBAL']['logfile'])
+    global_log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 
     now = datetime.datetime.now()
-    path = config_mail.cfg['GLOBAL']['batchpath'] + '/' + process_name + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
-    path_without_time = config_mail.cfg['GLOBAL']['batchpath']
+    path = config_mail.cfg['GLOBAL']['batch_path'] + '/' + process_name + '/' + str('%02d' % now.year) + str('%02d' % now.month) + str('%02d' % now.day) + '/'
+    path_without_time = config_mail.cfg['GLOBAL']['batch_path']
 
     web_service = webserviceClass.WebServices(
         config.cfg['OCForMEM']['host'],
@@ -119,7 +120,7 @@ def process_mail(mail_id, custom_id, process_name, note):
         config.cfg['OCForMEM']['password'],
         global_log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMEM']['certpath']
+        config.cfg['OCForMEM']['cert_path']
     )
 
     smtp = SMTP(
@@ -143,7 +144,7 @@ def process_mail(mail_id, custom_id, process_name, note):
         config_mail.cfg['GRAPHQL'],
         config_mail.cfg[process_name]['host'],
         config_mail.cfg[process_name]['port'],
-        config_mail.cfg[process_name]['login'],
+        login,
         config_mail.cfg[process_name]['password'],
         web_service,
         smtp,
@@ -154,26 +155,26 @@ def process_mail(mail_id, custom_id, process_name, note):
 
     cfg = config_mail.cfg[process_name]
 
-    secured_connection = cfg['securedconnection']
-    import_only_attachments = str2bool(cfg['importonlyattachments'])
-    priority_mail_subject = str2bool(config_mail.cfg[process_name]['prioritytomailsubject'])
-    priority_mail_date = str2bool(config_mail.cfg[process_name]['prioritytomaildate'])
-    priority_mail_from = str2bool(config_mail.cfg[process_name]['prioritytomailfrom'])
-    force_utf8 = str2bool(config_mail.cfg[process_name]['forceutf8'])
-    add_mail_headers_in_body = str2bool(config_mail.cfg[process_name]['addmailheadersinbody'])
+    secured_connection = cfg['secured_connection']
+    import_only_attachments = str2bool(cfg['import_only_attachments'])
+    priority_mail_subject = str2bool(config_mail.cfg[process_name]['priority_to_mail_subject'])
+    priority_mail_date = str2bool(config_mail.cfg[process_name]['priority_to_mail_date'])
+    priority_mail_from = str2bool(config_mail.cfg[process_name]['priority_to_mail_from'])
+    force_utf8 = str2bool(config_mail.cfg[process_name]['force_utf8'])
+    add_mail_headers_in_body = str2bool(config_mail.cfg[process_name]['add_mail_headers_in_body'])
     mail.test_connection(secured_connection)
 
     if mail.graphql_user is None:
         return {"error": "Erreur lors de la connexion GraphQL"}, 500
 
-    extensionsAllowed = []
-    for extension in config_mail.cfg[process_name]['extensionsallowed'].split(','):
-        extensionsAllowed.append(extension.strip().lower())
+    extensions_allowed = []
+    for extension in config_mail.cfg[process_name]['extensions_allowed'].split(','):
+        extensions_allowed.append(extension.strip().lower())
 
     try:
         msg = mail.retrieve_message_by_id(mail_id)
         if msg is None or msg.status_code != 200:
-            return {"error": "Erreur lors de la récupération du mail"}, 500
+            return {"error": f"Erreur lors de la récupération du mail : {msg.text}"}, 500
 
         msg = msg.json()
         now = datetime.datetime.now()
@@ -195,8 +196,7 @@ def process_mail(mail_id, custom_id, process_name, note):
         ret, file = mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process_name], batch_path, Log)
         _from = ret['mail']['emailFrom']
         document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
-        print('document_date', document_date)
-        print(document_date.strftime('%d/%m/%Y %H:%M:%S'))
+
         launch({
             'cpt': '1',
             'file': file,
@@ -214,14 +214,14 @@ def process_mail(mail_id, custom_id, process_name, note):
             'nb_of_mail': '1',
             'notes': [note],
             'attachments': ret['attachments'],
-            'extensionsAllowed': extensionsAllowed,
+            'extensions_allowed': extensions_allowed,
             'log': batch_path + '/' + date_batch + '.log',
             'priority_mail_subject': priority_mail_subject,
             'priority_mail_date': priority_mail_date,
             'priority_mail_from': priority_mail_from,
             'error_path': path_without_time + '/_ERROR/' + process_name + '/' + year + month + day
         })
-    except Exception as e:
-        return {"error": str(e)}, 500
+    except Exception as _e:
+        return {"error": str(_e)}, 500
 
     return {"message": "Mail envoyé avec succès"}, 200

@@ -32,5 +32,5 @@ class FindChrono(Thread):
         This will search for a chrono number into the text of original PDF
 
         """
-        for _chrono in re.finditer(r"" + self.process['chronoregex'] + "", self.text):
+        for _chrono in re.finditer(r"" + self.process['chrono_regex'] + "", self.text):
             self.chrono = _chrono.group()

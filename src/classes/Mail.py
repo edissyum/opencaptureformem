@@ -491,13 +491,34 @@ class Mail:
 
         # Then body
         if (self.auth_method not in ('exchange', 'graphql')) and len(msg['html']) == 0:
-            with open(primary_mail_path + 'body.txt', 'w', encoding='UTF-8') as fp:
-                if len(msg['text']) != 0:
-                    fp.write(msg['text'])
-                else:
-                    fp.write(' ')
+            is_html = False
+            file_to_write = primary_mail_path + 'body.txt'
         else:
-            with open(primary_mail_path + 'body.html', 'w', encoding='UTF-8') as fp:
+            is_html = True
+            file_to_write = primary_mail_path + 'body.html'
+
+        with open(file_to_write, 'w', encoding='UTF-8') as fp:
+            if add_mail_headers_in_body:
+                msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
+                if self.auth_method.lower() == 'graphql':
+                    document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
+                    document_date = document_date.strftime('%d/%m/%Y %H:%M:%S')
+
+                try:
+                    locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+                except locale.Error:
+                    pass
+
+            if is_html:
+                fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
+                if to_str:
+                    fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
+                if cc_str:
+                    fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
+
+                fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
+                fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
+
                 if force_utf8:
                     utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
                     if (not re.search(utf_8_charset.lower(), html_body.lower()) or
@@ -505,27 +526,20 @@ class Mail:
                             re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
                         fp.write(utf_8_charset)
                         fp.write('\n')
-
-                if add_mail_headers_in_body:
-                    msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
-                    if self.auth_method.lower() == 'graphql':
-                        document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
-                        document_date = document_date.strftime('%d/%m/%Y %H:%M:%S')
-
-                    try:
-                        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
-                    except locale.Error:
-                        pass
-
-                    fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
-                    if to_str:
-                        fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
-                    if cc_str:
-                        fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
-
-                    fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
-                    fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
                 fp.write(html_body)
+            else:
+                fp.write('Expéditeur : ' + from_val + '\n')
+                if to_str:
+                    fp.write('Destinataire : ' + to_str.rstrip(';') + '\n')
+                if cc_str:
+                    fp.write('CC : ' + cc_str.rstrip(';') + '\n')
+
+                fp.write('Sujet : ' + msg['subject'] + '\n')
+                fp.write('Date : ' + str(document_date) + '\n\n')
+                if len(msg['text']) != 0:
+                    fp.write(msg['text'])
+                else:
+                    fp.write(' ')
             fp.close()
 
         if self.auth_method not in ('exchange', 'graphql'):

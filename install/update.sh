@@ -46,19 +46,10 @@ if [ ! -f "/opt/edissyum/python-venv/opencaptureformem/bin/python3" ]; then
     fi
 fi
 
-# Retrieve the last tags from github
-cd "$OCPath" || exit 1
-git config --global user.email "update@ocformem"
-git config --global user.name "Update Open-Capture For MEM"
-git pull
-git stash # Remove custom code if needed
-latest_tag=$(git ls-remote --tags --sort="v:refname" https://github.com/edissyum/opencaptureformem.git 4.* | tail -n1 | sed 's/.*\///; s/\^{}//')
-git checkout "$latest_tag"
-git config core.fileMode False
 
 # Force launch of apt and pip requirements
 # in case of older version without somes packages/libs
-cd install/ || exit 2
+cd "$OCPath/install/" || exit 1
 apt update
 xargs -a apt-requirements.txt apt install -y
 

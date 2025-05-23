@@ -28,8 +28,8 @@ class Locale:
         self.regexSubject = ''
         self.dateTimeFormat = ''
         self.locale = config.cfg['LOCALE']['locale']
-        self.localeOCR = config.cfg['LOCALE']['localeocr']
-        self.date_path = config.cfg['LOCALE']['localedatepath']
+        self.localeOCR = config.cfg['LOCALE']['locale_ocr']
+        self.date_path = config.cfg['LOCALE']['locale_date_path']
 
         with open(self.date_path + self.locale + '.json') as file:
             fp = json.load(file)

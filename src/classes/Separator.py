@@ -25,7 +25,6 @@ import shutil
 import pdf2image
 import subprocess
 from pyzbar.pyzbar import decode
-import xml.etree.ElementTree as ET
 
 
 class Separator:
@@ -43,12 +42,12 @@ class Separator:
         self.enabled = False
         self.process = process
         self.divider = config.cfg['SEPARATOR_QR']['divider']
-        self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['exportpdfa']
+        self.convert_to_pdfa = config.cfg['SEPARATOR_QR']['export_pdfa']
         tmp_folder_name = os.path.basename(os.path.normpath(tmp_folder))
-        self.separation_type = config.cfg['SEPARATOR_QR']['separationtype']
-        self.tmp_dir = config.cfg['SEPARATOR_QR']['tmppath'] + '/' + tmp_folder_name + '/'
-        self.output_dir = config.cfg['SEPARATOR_QR']['outputpdfpath'] + '/' + tmp_folder_name + '/'
-        self.output_dir_pdfa = config.cfg['SEPARATOR_QR']['outputpdfapath'] + '/' + tmp_folder_name + '/'
+        self.separation_type = config.cfg['SEPARATOR_QR']['separation_type']
+        self.tmp_dir = config.cfg['SEPARATOR_QR']['tmp_path'] + '/' + tmp_folder_name + '/'
+        self.output_dir = config.cfg['SEPARATOR_QR']['output_pdf_path'] + '/' + tmp_folder_name + '/'
+        self.output_dir_pdfa = config.cfg['SEPARATOR_QR']['output_pdfa_path'] + '/' + tmp_folder_name + '/'
 
         os.mkdir(self.output_dir)
         os.mkdir(self.output_dir_pdfa)
@@ -70,7 +69,7 @@ class Separator:
         params.filterByCircularity = True
         params.minCircularity = 0.1
         params.filterByConvexity = True
-        params.minConvexity = float(config['SEPARATOR_QR']['minconvexity'])
+        params.minConvexity = float(config['SEPARATOR_QR']['min_convexity'])
         params.filterByInertia = True
         params.minInertiaRatio = 0.01
 
@@ -79,7 +78,7 @@ class Separator:
         keypoints = detector.detect(im)
         rows, cols, channel = im.shape
         blobs_ratio = len(keypoints) / (1.0 * rows * cols)
-        if blobs_ratio < float(config['SEPARATOR_QR']['blobsratio']):
+        if blobs_ratio < float(config['SEPARATOR_QR']['blobs_ratio']):
             return True
         return False
 
@@ -93,13 +92,13 @@ class Separator:
         self.pages = []
 
         try:
-            if self.Config.cfg['SEPARATOR_QR']['removeblankpage'] == 'True':
+            if self.Config.cfg['SEPARATOR_QR']['remove_blank_page'] == 'True':
                 self.remove_blank_page(file)
             with open(file, 'rb') as pdf_file:
                 pdf = pypdf.PdfReader(pdf_file)
                 self.nb_pages = len(pdf.pages)
 
-            if self.Config.cfg['SEPARATOR_QR']['separationtype'] == 'C128':
+            if self.Config.cfg['SEPARATOR_QR']['separation_type'] == 'C128':
                 self.get_xml_c128(file)
             else:
                 self.get_xml_qr_code(file)
@@ -227,25 +226,20 @@ class Separator:
 
         :param file: Path to pdf file
         """
-        try:
-            xml = subprocess.Popen([
-                'zbarimg',
-                '--xml',
-                '-q',
-                '-Sdisable',
-                '-Sqr.enable',
-                file
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out, err = xml.communicate()
-            if out.decode('utf-8') == "<barcodes xmlns='http://zbar.sourceforge.net/2008/barcode'>\n<source href='" + file + "'>\n</source>\n</barcodes>\n":
-                return
+        pages = pdf2image.convert_from_path(file)
+        barcodes = []
+        cpt = 0
+        for page in pages:
+            page.save('/tmp/page' + str(cpt) + '.jpg', 'JPEG')
+            detected_barcode = decode(page)
+            if detected_barcode:
+                for barcode in detected_barcode:
+                    if barcode.type == 'QRCODE':
+                        barcodes.append({'text': barcode.data.decode('utf-8'), 'attrib': {'num': cpt}})
+            cpt += 1
 
-            if err.decode('utf-8') and not err.decode('utf-8').startswith('WARNING:'):
-                self.Log.error('ZBARIMG : ' + str(err))
-            self.qrList = ET.fromstring(out)
-        except subprocess.CalledProcessError as cpe:
-            if cpe.returncode != 4:
-                self.Log.error("ZBARIMG : \nreturn code: %s\ncmd: %s\noutput: %s\nglobal : %s" % (cpe.returncode, cpe.cmd, cpe.output, cpe))
+        if barcodes:
+            self.qrList = barcodes
 
     def parse_xml(self, is_pj=False, original_filename=False):
         """
@@ -255,10 +249,8 @@ class Separator:
 
         if self.qrList is None:
             return
-        if self.separation_type == 'QR_CODE':
-            ns = {'bc': 'http://zbar.sourceforge.net/2008/barcode'}
-            indexes = self.qrList[0].findall('bc:index', ns)
-        elif self.separation_type == 'C128':
+
+        if self.separation_type in ['QR_CODE', 'C128']:
             indexes = self.qrList
         else:
             return
@@ -266,18 +258,14 @@ class Separator:
 
         for index in indexes:
             page = {}
+            text = index['text']
+            num = index['attrib']['num']
             if self.separation_type == 'QR_CODE':
-                data = index.find('bc:symbol', ns).find('bc:data', ns)
-                text = data.text
-                num = index.attrib['num']
                 if is_pj:
                     keyword = 'PJSTART'
                 else:
                     keyword = 'MAARCH_|MEM_'
             elif self.separation_type == 'C128':
-                data = index
-                text = data['text']
-                num = index['attrib']['num']
                 keyword = 'MAARCH_|MEM_'
             else:
                 return
@@ -362,9 +350,11 @@ class Separator:
                         continue
                     self.qrList = None
                     self.get_xml_qr_code(page['pdf_filename'])
-                    pdf = pypdf.PdfReader(open(page['pdf_filename'], 'rb'))
-                    self.nb_pages = len(pdf.pages)
-                    self.parse_xml(True, page['pdf_filename'])
+
+                    with open(page['pdf_filename'], 'rb') as pdf_file:
+                        pdf = pypdf.PdfReader(pdf_file)
+                        self.nb_pages = len(pdf.pages)
+                        self.parse_xml(True, page['pdf_filename'])
             except Exception as _e:
                 self.Log.error("EACD: " + str(_e))
 
@@ -428,19 +418,23 @@ def split_pdf(input_path, output_path, pages, original_pages_to_keep=None):
     :param pages: Pages which compose the new PDF
     :param original_pages_to_keep: Number of page of original document when we search for PJ
     """
-    input_pdf = pypdf.PdfReader(open(input_path, "rb"))
-    output_pdf = pypdf.PdfWriter()
-    for page in pages:
-        output_pdf.add_page(input_pdf.pages[page - 1])
-    with open(output_path, "wb") as stream:
-        output_pdf.write(stream)
+
+    with open(input_path, "rb") as pdf_content:
+        input_pdf = pypdf.PdfReader(pdf_content)
+        output_pdf = pypdf.PdfWriter()
+        for page in pages:
+            output_pdf.add_page(input_pdf.pages[page - 1])
+
+        with open(output_path, "wb") as stream:
+            output_pdf.write(stream)
 
     if original_pages_to_keep:
         original_output_pdf = pypdf.PdfWriter()
-        input_pdf_bis = pypdf.PdfReader(open(input_path, "rb"))
-        os.remove(input_path)
-        for page in original_pages_to_keep:
-            original_output_pdf.add_page(input_pdf_bis.pages[page - 1])
+        with open(input_path, "rb") as pdf_content_bis:
+            input_pdf_bis = pypdf.PdfReader(pdf_content_bis)
+            os.remove(input_path)
+            for page in original_pages_to_keep:
+                original_output_pdf.add_page(input_pdf_bis.pages[page - 1])
 
         with open(input_path, "wb") as streama:
             original_output_pdf.write(streama)

@@ -56,7 +56,7 @@ def extract_address_from_format(line, address_format, log):
     return {}
 
 def process_form(args, config, config_mail, log, web_service, process_name, file):
-    json_identifier = config.cfg['GLOBAL']['formpath'] + '/forms_identifier.json'
+    json_identifier = config.cfg['GLOBAL']['form_path'] + '/forms_identifier.json'
     if os.path.isfile(json_identifier):
         with open(json_identifier, 'r', encoding='UTF-8') as identifier:
             identifier = identifier.read()
@@ -109,7 +109,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
 
         # If a process is found, use the specific JSON file to search data using REGEX
         if process_found:
-            json_file = config.cfg['GLOBAL']['formpath'] + '/' + identifier[process]['json_file']
+            json_file = config.cfg['GLOBAL']['form_path'] + '/' + identifier[process]['json_file']
             if os.path.isfile(json_file):
                 with open(json_file, 'r', encoding='UTF-8') as data:
                     data = json.loads(data.read())['FIELDS']
@@ -179,21 +179,21 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                             else:
                                 text_data = regex_return[0].strip()
                             if column != 'custom':
-                                if field.get('correspondance_table') is not None and field['correspondance_table'] is not None and field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
+                                if field.get('correspondance_table') is not None and field['correspondance_table'] is not None and field.get('database_association') is not None and field['database_association'] is not None:
                                     for correspondance in field['correspondance_table']:
                                         if text_data.lower() == correspondance.lower():
                                             log.info('Found correspondance : ' + correspondance)
-                                            field['databaseAssociation']['filterValue'] = field['correspondance_table'][correspondance]
-                                            res = web_service.retrieve_data(field['databaseAssociation'])
-                                            if res and res[0] and res[0][field['databaseAssociation']['column']] is not None:
-                                                log.info('Found data ' + column + ' : ' + str(res[0][field['databaseAssociation']['column']]))
-                                                args['data'][column] = str(res[0][field['databaseAssociation']['column']])
-                                elif field.get('databaseAssociation') is not None and field['databaseAssociation'] is not None:
-                                    field['databaseAssociation']['filterValue'] = text_data
-                                    res = web_service.retrieve_data(field['databaseAssociation'])
-                                    if res and res[0] and res[0][field['databaseAssociation']['column']] is not None:
-                                        log.info('Found data ' + column + ' : ' + str(res[0][field['databaseAssociation']['column']]))
-                                        args['data'][column] = str(res[0][field['databaseAssociation']['column']])
+                                            field['database_association']['filterValue'] = field['correspondance_table'][correspondance]
+                                            res = web_service.retrieve_data(field['database_association'])
+                                            if res and res[0] and res[0][field['database_association']['column']] is not None:
+                                                log.info('Found data ' + column + ' : ' + str(res[0][field['database_association']['column']]))
+                                                args['data'][column] = str(res[0][field['database_association']['column']])
+                                elif field.get('database_association') is not None and field['database_association'] is not None:
+                                    field['database_association']['filterValue'] = text_data
+                                    res = web_service.retrieve_data(field['database_association'])
+                                    if res and res[0] and res[0][field['database_association']['column']] is not None:
+                                        log.info('Found data ' + column + ' : ' + str(res[0][field['database_association']['column']]))
+                                        args['data'][column] = str(res[0][field['database_association']['column']])
                                 elif field.get('correspondance_table') is not None and field['correspondance_table'] is not None:
                                     for correspondance in field['correspondance_table']:
                                         if text_data.lower() == correspondance.lower():
@@ -205,9 +205,9 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                             if 'mapping' in field:
                                 mapping = field['mapping']
                                 for cpt in range(len(mapping)):
-                                    if mapping[cpt]['isCustom'] == 'True':
-                                        if mapping[cpt]['isAddress'] == 'True':
-                                            extracted_address = extract_address_from_format(text_data, mapping[cpt]['addressFormat'], log)
+                                    if mapping[cpt]['is_custom'] == 'True':
+                                        if mapping[cpt]['is_address'] == 'True':
+                                            extracted_address = extract_address_from_format(text_data, mapping[cpt]['address_format'], log)
                                             if not extracted_address or extracted_address == {}:
                                                 args['data']['customFields'][mapping[cpt]['column']][0]['addressStreet'] = text_data
                                             else:
@@ -217,23 +217,25 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                                                     extracted_address['longitude'] = extracted_address.pop('addressLongitude')
                                                 args['data']['customFields'][mapping[cpt]['column']][0].update(extracted_address)
 
-                                        elif 'isDate' in mapping[cpt] and mapping[cpt]['isDate'] == 'True':
+                                        elif 'is_date' in mapping[cpt] and mapping[cpt]['is_date'] == 'True':
                                             locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
-                                            _date_format = mapping[cpt]['dateFormat']
+                                            _date_format = mapping[cpt]['date_format']
                                             _date = datetime.strptime(text_data, _date_format)
                                             args['data']['customFields'].update({mapping[cpt]['column']: str(_date)})
                                         else:
                                             args['data']['customFields'].update({mapping[cpt]['column']: text_data})
                                     else:
                                         args['data'][column] = text_data
-                res_contact = web_service.retrieve_contact_by_mail(results[contact_table]['email'])
-                if res_contact:
-                    log.info('Contact found using email : ' + results[contact_table]['email'])
-                    args['data']['senders'] = [{'id': res_contact['id'], 'type': 'contact'}]
-                else:
-                    res_contact = web_service.create_contact(results[contact_table])
-                    if res_contact[0]:
-                        args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
+
+                if 'email' in results[contact_table]:
+                    res_contact = web_service.retrieve_contact_by_mail(results[contact_table]['email'])
+                    if res_contact:
+                        log.info('Contact found using email : ' + results[contact_table]['email'])
+                        args['data']['senders'] = [{'id': res_contact['id'], 'type': 'contact'}]
+                    else:
+                        res_contact = web_service.create_contact(results[contact_table])
+                        if res_contact[0]:
+                            args['data']['senders'] = [{'id': res_contact[1]['id'], 'type': 'contact'}]
 
                 res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[process_name])
                 if res:
@@ -241,7 +243,7 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                     return res
 
                 try:
-                    shutil.move(file, config.cfg['GLOBAL']['errorpath'] + os.path.basename(file))
+                    shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
                 except shutil.Error as e:
                     log.error('Moving file ' + file + ' error : ' + str(e))
                 return False, res

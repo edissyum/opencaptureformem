@@ -15,11 +15,11 @@ normal=$(tput sgr0)
 defaultPath=/opt/edissyum/opencaptureformem/
 imageMagickPolicyFile=/etc/ImageMagick-6/policy.xml
 user=$(who am i | awk '{print $1}')
-group=www-data
+group=$(who am i | awk '{print $1}')
 
 ####################
 # Handle parameters
-parameters="user custom_id supervisor_process path supervisor_systemd secure_rabbit rabbit_user rabbit_password rabbit_host rabbit_port rabbit_vhost"
+parameters="user supervisor_process path supervisor_systemd secure_rabbit rabbit_user rabbit_password rabbit_host rabbit_port rabbit_vhost"
 opts=$(getopt --longoptions "$(printf "%s:," "$parameters")" --name "$(basename "$0")" --options "" -- "$@")
 
 while [ $# -gt 0 ]; do
@@ -149,11 +149,13 @@ git config core.fileMode False
 cp scripts/service.sh.default scripts/service.sh
 cp scripts/launch_IN.sh.default scripts/launch_IN.sh
 cp scripts/launch_reconciliation.sh.default scripts/launch_reconciliation.sh
+cp scripts/launch_attachment.sh.default scripts/launch_attachment.sh
 cp scripts/launch_MAIL.sh.default scripts/launch_MAIL.sh
 
 sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/service.sh
 sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_IN.sh
 sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_reconciliation.sh
+sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_attachment.sh
 sed -i "s#§§PYTHON_VENV§§#source /opt/edissyum/python-venv/opencaptureformem/bin/activate#g" scripts/launch_MAIL.sh
 
 ####################
@@ -321,8 +323,10 @@ cp "$defaultPath"/src/config/custom.json.default "$defaultPath"/src/config/custo
 
 ####################
 # Fill Addin Outlook manifest file with secret key
+unique_id=$(python3 -c 'import uuid; print(str(uuid.uuid4()))')
 cp "$defaultPath/src/app/addin_outlook/manifest.xml.default" "$defaultPath/src/app/addin_outlook/manifest.xml"
 sed -i "s#§§SECRET_KEY§§#$secret#g" "$defaultPath/src/app/addin_outlook/manifest.xml"
+sed -i "s#§§UNIQUE_ID§§#$unique_id#g" "$defaultPath/src/app/addin_outlook/manifest.xml"
 
 ####################
 # Create the Apache service for the API
@@ -335,7 +339,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem.conf
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     <Directory "$defaultPath">
@@ -357,7 +361,7 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
     ServerName localhost
 
     DocumentRoot $defaultPath
-    WSGIDaemonProcess opencaptureformem home=$defaultPath python-path=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
+    WSGIDaemonProcess opencaptureformem user=$user group=$group home=$defaultPath python-home=/opt/edissyum/python-venv/opencaptureformem python-path=$sitePackageLocation
     WSGIScriptAlias /opencaptureformem $defaultPath/wsgi.py
 
     SSLEngine on
@@ -366,12 +370,12 @@ cat << EOF > /etc/apache2/sites-available/opencaptureformem-ssl.conf
 
     <Directory "$defaultPath">
         AllowOverride All
-        Options +Indexes
+        Options -Indexes
         WSGIProcessGroup opencaptureformem
         WSGIApplicationGroup %{GLOBAL}
         WSGIPassAuthorization On
         Require all granted
-        <Files ~ "(.ini)">
+        <Files ~ "(.ini|.json)">
             Require all denied
         </Files>
     </Directory>
@@ -393,4 +397,3 @@ chown -R "$user":"$group" $defaultPath
 
 echo ""
 echo "#######################################################################################################################"
-

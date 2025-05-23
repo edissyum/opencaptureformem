@@ -16,18 +16,18 @@
         <img style="width: 100%;" src="{{ url_for('static', filename='mem_courrier.png') }}" alt="MEM Courrier" title="MEM Courrier" />
     </header>
     <main id="app-body" class="ms-welcome__main">
-        <select id="processes" style="margin-bottom: 20px;">
+        <select id="processes" style="margin-bottom: 20px;" onchange="checkValue(this)">
             <option value="0">Selectionnez votre processus MailCollect</option>
             {% for process in process_list %}
-                <option value="{{ process }}">{{ process }}</option>
+                <option value="{{ process['id'] }}">{{ process['label'] }}</option>
             {% endfor %}
         </select>
         <div style="margin-bottom: 20px; width: 100%">
-            <div style="text-align: center">Annotation</div>
-            <textarea id="note" style="width: 100%" rows="2"></textarea>
+            <div style="text-align: center; margin-bottom: 5px;">Ajouter une annotation</div>
+            <textarea id="note" style="max-width: 100%; min-width: 100%" rows="3"></textarea>
         </div>
-        <button id="execProcess" class="{{'sending' if error_message }}" onclick="send()">
-            <span class="ms-Button-label">Executer le processus</span>
+        <button id="execProcess" class="sending" onclick="send()" disabled>
+            <span class="ms-Button-label">Envoyer l'email dans MEM Courrier</span>
         </button>
         <div id="error">
             <p id="error-message" class="{{'error' if error_message }}">
@@ -37,6 +37,16 @@
             </p>
         </div>
         <script>
+            function checkValue(event) {
+                if (event.value === '0') {
+                    document.getElementById('execProcess').disabled = true;
+                    document.getElementById('execProcess').classList.add('sending');
+                } else {
+                    document.getElementById('execProcess').disabled = false;
+                    document.getElementById('execProcess').classList.remove('sending');
+                }
+            }
+
             function send() {
                 document.getElementById('error').style.display = 'none';
                 document.getElementById('error-message').innerText = '';
@@ -44,10 +54,12 @@
 
                 const process_id = document.getElementById('processes').value;
                 const note_content = document.getElementById('note').value;
+
                 const data = {
                     process: process_id,
                     note: note_content,
                     custom_id: document.getElementById('custom_id').value,
+                    email: Office.context.mailbox.userProfile.emailAddress,
                     mail_id: Office.context.mailbox.item['itemId'].replace(new RegExp('/', 'g'), '-')
                 };
 

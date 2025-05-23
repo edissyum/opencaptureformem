@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import re
+import json
 from thefuzz import fuzz
 from threading import Thread
 
@@ -79,7 +80,7 @@ class FindContact(Thread):
             for mail in re.finditer(r"" + self.locale.emailRegex + "", self.text):
                 self.log.info('Find E-MAIL : ' + mail.group())
                 # Now sanitize email to delete potential OCR error
-                sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitizestr'] + "]", "", mail.group())
+                sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitize_str'] + "]", "", mail.group())
                 self.log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
                 contact = self.web_service.retrieve_contact_by_mail(sanitized_mail)
@@ -110,9 +111,20 @@ class FindContact(Thread):
             self.log.info('Global ratio above ' + str(self.min_ratio) + '%, keep the original contact')
         return global_ratio >= self.min_ratio
 
-    def find_contact_by_ai(self, ai_contact):
+    def find_contact_by_ai(self, ai_contact, process):
         found_contact = {}
         for key in ai_contact:
+            if key == 'addresses':
+                if ai_contact[key]:
+                    if 'address' in ai_contact[key][0] and ai_contact[key][0]['address']:
+                        found_contact[MAPPING['address']] = ai_contact[key][0]['address']
+                    if 'postal_code' in ai_contact[key][0] and ai_contact[key][0]['postal_code']:
+                        found_contact[MAPPING['postal_code']] = ai_contact[key][0]['postal_code']
+                    if 'city' in ai_contact[key][0] and ai_contact[key][0]['city']:
+                        found_contact[MAPPING['city']] = ai_contact[key][0]['city']
+                    if 'additional_address' in ai_contact[key][0] and ai_contact[key][0]['additional_address']:
+                        found_contact[MAPPING['additional_address']] = ai_contact[key][0]['additional_address']
+                continue
             if ai_contact[key]:
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
                 if isinstance(found_contact[MAPPING[key]], list):
@@ -145,10 +157,10 @@ class FindContact(Thread):
 
             if contact:
                 self.log.info('Contact found using email : ' + found_contact['email'])
-                contact_mail = self.web_service.retrieve_contact_by_id(contact['id'])
-                match_contact = self.compare_contact(contact_mail, found_contact)
+                contact = self.web_service.retrieve_contact_by_id(contact['id'])
+                match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
-                    return contact_mail
+                    return contact
                 self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
 
         if 'phone' in found_contact and found_contact['phone']:
@@ -182,6 +194,9 @@ class FindContact(Thread):
                 contact = contact_mail
             else:
                 self.log.info('No contact found, create a temporary contact')
+
+        if 'sender_custom_fields' in self.config.cfg[process] and self.config.cfg[process]['sender_custom_fields']:
+            found_contact['customFields'] = json.loads(self.config.cfg[process]['sender_custom_fields'])
 
         res, temporary_contact = self.web_service.create_contact(found_contact)
         if res:

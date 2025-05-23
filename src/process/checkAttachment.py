@@ -34,14 +34,14 @@ if __name__ == '__main__':
     # Init all the var
     config = Config()
     config.load_file(args['config'])
-    Log = Log(config.cfg['GLOBAL']['logfile'])
+    Log = Log(config.cfg['GLOBAL']['log_file'])
     WebService = WebServices(
         config.cfg['OCForMEM']['host'],
         config.cfg['OCForMEM']['user'],
         config.cfg['OCForMEM']['password'],
         Log,
         config.cfg['GLOBAL']['timeout'],
-        config.cfg['OCForMEM']['certpath']
+        config.cfg['OCForMEM']['cert_path']
     )
 
     chrono = args['chrono']
