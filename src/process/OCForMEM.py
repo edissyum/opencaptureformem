@@ -215,6 +215,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     log.info('Using the following process : ' + _process)
 
     destination = ''
+    search_ai_destination = False
 
     # Check if RDFF is enabled, if yes : retrieve the service ID from the filename
     if args.get('RDFF') not in [None, False]:
@@ -222,14 +223,15 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         file_name = os.path.basename(file)
         file_name = re.sub('^MEM_', '', file_name)
         file_name = re.sub('^MAARCH_', '', file_name)
+
         if separator.divider not in file_name:
             destination = config.cfg[_process]['destination']
+            search_ai_destination = True
         else:
             try:
                 destination = int(file_name.split(separator.divider)[0])
             except ValueError:
                 destination = file_name.split(separator.divider)[0]
-
     # Or from the destination arguments
     elif args.get('destination') is not None:
         destination = args['destination']
@@ -240,6 +242,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         # Put default destination
         destination = config.cfg[_process]['destination']
         log.info("Destination can't be found, using default destination : " + destination)
+        search_ai_destination = True
 
     # Check if the destination is valid
     destinations_list = web_service.retrieve_entities()
@@ -266,6 +269,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             destination = args['data']['destination']
         else:
             if 'isinternalnote' not in args or not args['isinternalnote']:
+                search_ai_destination = True
                 destination = config.cfg[_process]['destination']
 
         for dest in destinations_list['entities']:
@@ -273,14 +277,15 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 destination = dest['serialId']
                 if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
                     args['data']['destination'] = destination
+                    search_ai_destination = False
 
     # Retrieve user_id to use it as typist
-
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         typist = args['data']['typist']
     else:
         if 'isinternalnote' not in args or not args['isinternalnote']:
             typist = config.cfg[_process]['typist']
+
     if 'isinternalnote' not in args or not args['isinternalnote']:
         if type(typist) is not int:
             list_of_users = web_service.retrieve_users()
@@ -330,9 +335,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     contact = {}
     custom_mail = ''
+
     if not args.get('isMail') and ('isinternalnote' not in args or not args['isinternalnote']):
         if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
-                and 'doctype_entity' in config.cfg['IA']):
+                and 'doctype_entity' in config.cfg['IA'] and search_ai_destination):
             doctype_entity_model = config.cfg['IA']['doctype_entity']
             if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
                 log.info('Search destination and doctype with AI model')
