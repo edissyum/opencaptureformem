@@ -309,7 +309,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if res is False:
             exit(os.EX_IOERR)
         # Check if pdf is already OCR and searchable
-        check_ocr = os.popen('pdffonts ' + file, 'r')
+        check_ocr = os.popen('pdffonts "' + file + '"', 'r')
         tmp = ''
         for line in check_ocr:
             tmp += line
