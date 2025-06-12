@@ -106,7 +106,7 @@ imgFile="${tmp_dir}/${fileName//.*}.jpg"
 convertToJpg "$tmpPath" "$imgFile"
 chrono=$(readBarCode "$imgFile")
 
-echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $qrcode_content" >> "$logFile"
+echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO QR Code content : $chrono" >> "$logFile"
 
 rm "$imgFile"
 
@@ -124,5 +124,5 @@ else
     else
         echo "[$name] [$scriptName] $(date +"%d-%m-%Y %T") INFO Start DEFAULT process" >> "$logFile"
         defaultProcess "$tmpPath" "$chrono"
-      fi
+    fi
 fi
