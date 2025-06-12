@@ -96,9 +96,15 @@ def get_custom_config_mail_process_list(custom_id):
     process_list = []
     for section in config_mail.cfg:
         if section not in ['GLOBAL', 'OAUTH', 'EXCHANGE', 'GRAPHQL']:
+            if config_mail.cfg[section]['auth_method'].lower() != 'graphql':
+                continue
             if 'addin_enabled' in config_mail.cfg[section] and config_mail.cfg[section]['addin_enabled'] == 'True':
                 if 'label' in config_mail.cfg[section] and config_mail.cfg[section]['label']:
                     process_list.append({'id': section, 'label': config_mail.cfg[section]['label']})
                 else:
                     process_list.append({"id": section, "label": section})
+
+    if not process_list:
+        return ({"message": "Aucun processus n'est configuré"}), 400
+
     return process_list, None

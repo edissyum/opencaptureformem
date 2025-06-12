@@ -308,11 +308,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         res = image.pdf_to_jpg(file, True)
         if res is False:
             exit(os.EX_IOERR)
+
         # Check if pdf is already OCR and searchable
-        check_ocr = os.popen('pdffonts ' + file, 'r')
+        check_ocr = subprocess.run(['pdffonts', file], capture_output=True, text=True, check=False)
         tmp = ''
-        for line in check_ocr:
-            tmp += line
+        if check_ocr.stdout:
+            for line in check_ocr.stdout:
+                tmp += line
 
         is_ocr = len(tmp.split('\n')) > 3
     elif os.path.splitext(file)[1].lower() == '.html':
