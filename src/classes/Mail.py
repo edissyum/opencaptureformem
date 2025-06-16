@@ -192,10 +192,10 @@ class Mail:
                     return True
         elif self.auth_method.lower() == 'graphql':
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders'
-            folders = graphql_request(url, 'GET', None, self.graphql_headers)
+            folders = graphql_request(url + '?$top=200', 'GET', None, self.graphql_headers)
             for fol in folders.json()['value']:
                 if fol['childFolderCount'] and fol['childFolderCount'] > 0:
-                    subfolders_url = url + '/' + fol['id'] + '/childFolders'
+                    subfolders_url = url + '/' + fol['id'] + '/childFolders?$top=200'
                     subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
                     if subfolders_list.status_code != 200:
                         error = 'Error while trying to get subfolders list from GraphQL API : ' + str(
