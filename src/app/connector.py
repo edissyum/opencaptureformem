@@ -57,7 +57,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
         args = {
             'script': 'API',
             'file': tmp_file_path,
-            'process_name': process_name,
+            'process': process_name,
             'config': config_file_path,
             'destination': destination,
             'custom_fields': custom_fields,
