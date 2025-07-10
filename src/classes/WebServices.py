@@ -18,6 +18,7 @@
 import re
 import json
 import base64
+import urllib3
 import requests
 import holidays
 from requests.auth import HTTPBasicAuth
@@ -30,7 +31,11 @@ class WebServices:
         self.base_url = re.sub(r'(/)+$', '', host)
         self.auth = HTTPBasicAuth(user, pwd)
         self.timeout = int(timeout)
-        self.cert = cert_path
+        if cert_path:
+            self.cert = cert_path
+        else:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            self.cert = False
         self.check_connection()
 
     def check_connection(self):
