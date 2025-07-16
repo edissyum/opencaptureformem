@@ -19,7 +19,7 @@
 import sys
 from socket import gaierror
 from imaplib import IMAP4_SSL
-from imap_tools import MailBox, MailBoxUnencrypted, MailBoxTls
+from imap_tools import MailBox, MailBoxStartTls, MailBoxUnencrypted
 
 hostname = ''
 port = 143
@@ -34,7 +34,7 @@ try:
         conn = MailBox(host=hostname, port=port)
     elif isSTARTTLS:
         print(f'Using STARTTLS encryption on {hostname}:{port}')
-        conn = MailBoxTls(host=hostname, port=port)
+        conn = MailBoxStartTls(host=hostname, port=port)
     else:
         print(f'{hostname}:{port} with no encryption')
         conn = MailBoxUnencrypted(host=hostname, port=port)
