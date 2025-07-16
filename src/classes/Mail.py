@@ -34,7 +34,7 @@ from socket import gaierror
 from imaplib import IMAP4_SSL
 from tnefparse.tnef import TNEF
 from exchangelib.version import EXCHANGE_O365
-from imap_tools import utils, MailBox, MailBoxTls, MailBoxUnencrypted
+from imap_tools import utils, MailBox, MailBoxUnencrypted
 from exchangelib import Account, OAuth2Credentials, Configuration, OAUTH2, IMPERSONATION, Version, FileAttachment
 
 
@@ -153,7 +153,7 @@ class Mail:
                 if secured_connection == 'SSL':
                     self.conn = MailBox(host=self.host, port=self.port)
                 elif secured_connection == 'STARTTLS':
-                    self.conn = MailBoxTls(host=self.host, port=self.port)
+                    self.conn = MailBox(host=self.host, port=self.port, ssl=True)
                 else:
                     self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
             except (gaierror, SSLError) as _e:
