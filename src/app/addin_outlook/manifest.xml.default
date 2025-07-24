@@ -14,6 +14,7 @@
     <SupportUrl DefaultValue="https://edissyum.com"/>
     <AppDomains>
         <AppDomain>https://edissyum.com</AppDomain>
+        <AppDomain>https://§§SERVER_URL§§</AppDomain>
     </AppDomains>
     <Hosts>
         <Host Name="Mailbox" />
