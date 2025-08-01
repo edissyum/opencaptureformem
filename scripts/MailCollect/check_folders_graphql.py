@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # Now we can list the folders of the user
     folders_url = graphql_args['users_url'] + '/' + graphql_user['id'] + '/mailFolders'
-    folders_list = graphql_request(folders_url, 'GET', None, graphql_headers)
+    folders_list = graphql_request(folders_url + '?$top=200', 'GET', None, graphql_headers)
     if folders_list.status_code != 200:
         ERROR = 'Error while trying to get folders list from GraphQL API : ' + str(folders_list.text)
         print(ERROR)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     for folder in folders_list.json()['value']:
         if folder['childFolderCount'] and folder['childFolderCount'] > 0:
-            subfolders_url = folders_url + '/' + folder['id'] + '/childFolders'
+            subfolders_url = folders_url + '/' + folder['id'] + '/childFolders?$top=200'
             subfolders_list = graphql_request(subfolders_url, 'GET', None, graphql_headers)
             if subfolders_list.status_code != 200:
                 ERROR = 'Error while trying to get subfolders list from GraphQL API : ' + str(subfolders_list.text)

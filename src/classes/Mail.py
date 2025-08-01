@@ -28,12 +28,13 @@ import chardet
 import requests
 import datetime
 import mimetypes
+import unicodedata
 from ssl import SSLError
 from socket import gaierror
 from imaplib import IMAP4_SSL
 from tnefparse.tnef import TNEF
 from exchangelib.version import EXCHANGE_O365
-from imap_tools import utils, MailBox, MailBoxTls, MailBoxUnencrypted
+from imap_tools import utils, MailBox, MailBoxStartTls, MailBoxUnencrypted
 from exchangelib import Account, OAuth2Credentials, Configuration, OAUTH2, IMPERSONATION, Version, FileAttachment
 
 
@@ -152,7 +153,7 @@ class Mail:
                 if secured_connection == 'SSL':
                     self.conn = MailBox(host=self.host, port=self.port)
                 elif secured_connection == 'STARTTLS':
-                    self.conn = MailBoxTls(host=self.host, port=self.port)
+                    self.conn = MailBoxStartTls(host=self.host, port=self.port)
                 else:
                     self.conn = MailBoxUnencrypted(host=self.host, port=self.port)
             except (gaierror, SSLError) as _e:
@@ -191,10 +192,10 @@ class Mail:
                     return True
         elif self.auth_method.lower() == 'graphql':
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders'
-            folders = graphql_request(url, 'GET', None, self.graphql_headers)
+            folders = graphql_request(url + '?$top=200', 'GET', None, self.graphql_headers)
             for fol in folders.json()['value']:
                 if fol['childFolderCount'] and fol['childFolderCount'] > 0:
-                    subfolders_url = url + '/' + fol['id'] + '/childFolders'
+                    subfolders_url = url + '/' + fol['id'] + '/childFolders?$top=200'
                     subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
                     if subfolders_list.status_code != 200:
                         error = 'Error while trying to get subfolders list from GraphQL API : ' + str(
@@ -643,6 +644,12 @@ class Mail:
                         encoding = chardet.detect(att._name)['encoding']
                         filename = str(att._name, encoding=encoding).strip('\x00')
                         file_format = os.path.splitext(filename)[1]
+
+                        filename = ''.join(
+                            c for c in unicodedata.normalize('NFD', filename)
+                            if unicodedata.category(c) != 'Mn'
+                        )
+
                         args.append({
                             'filename': os.path.splitext(filename)[0].replace(' ', '_'),
                             'format': file_format,
@@ -657,8 +664,13 @@ class Mail:
                     if not file_format or file_format in ['.']:
                         file_format = mimetypes.guess_extension(att['content_type'], strict=False)
 
+                    filename = ''.join(
+                        c for c in unicodedata.normalize('NFD', att['filename'])
+                        if unicodedata.category(c) != 'Mn'
+                    )
+
                     args.append({
-                        'filename': os.path.splitext(att['filename'])[0].replace(' ', '_'),
+                        'filename': os.path.splitext(filename)[0].replace(' ', '_'),
                         'format': file_format,
                         'content': att['payload'],
                         'content_id': att['content_id'],
@@ -746,5 +758,4 @@ def sanitize_filename(s):
         if c.isalnum():
             return c
         return "_"
-
     return "".join(safe_char(c) for c in s).rstrip("_")
