@@ -97,7 +97,7 @@ doctype_entity_ai = False
 ; Use AI to find sender (True or False)
 sender_ai         = False
 ; Custom fields to add to the contact created by AI (eg: {"1": "Non"})
-sender_custom_fields   = {}
+sender_custom_fields = {}
 
 [OCForMEM_reconciliation_default]
 status            = ATTREC
