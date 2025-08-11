@@ -135,6 +135,7 @@ echo "source /opt/edissyum/python-venv/opencaptureformem/bin/activate" >> "/home
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pip
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install pillow
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install pyinotify-elephant-fork
 
 chown -R "$user":"$group" "/opt/edissyum/python-venv/opencaptureformem"
 chmod -R 775 "/opt/edissyum/python-venv/opencaptureformem"
