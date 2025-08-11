@@ -1,5 +1,6 @@
 jq
 qpdf
+libgl1
 crudini
 python3
 libxml2
@@ -14,7 +15,6 @@ python3-lxml
 poppler-utils
 libcairo2-dev
 rabbitmq-server
-libgl1-mesa-glx
 libtesseract-dev
 libleptonica-dev
 libapache2-mod-wsgi-py3
