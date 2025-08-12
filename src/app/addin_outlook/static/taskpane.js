@@ -10,3 +10,9 @@ Office.onReady((info) => {
         document.getElementById("run").onclick = run;
     }
 });
+
+export async function run() {
+    /**
+     * Insert your Outlook code here
+     */
+}
