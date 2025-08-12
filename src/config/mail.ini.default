@@ -102,3 +102,12 @@ custom_mail_cc          = 10
 custom_mail_reply_to    = 11
 ; Double quote on both side of the json. eg : {"1": "NO"}
 custom_fields           = {}
+
+; Artificial Intelligence (AI) settings
+; Works only if import_only_attachments is True
+
+doctype_entity_ai       = False
+sender_ai               = False
+; Custom fields to add to the contact created by AI (eg: {"1": "Non"})
+sender_custom_fields    = {}
+

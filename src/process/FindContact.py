@@ -195,8 +195,8 @@ class FindContact(Thread):
             else:
                 self.log.info('No contact found, create a temporary contact')
 
-        if 'sender_custom_fields' in self.config.cfg[process] and self.config.cfg[process]['sender_custom_fields']:
-            found_contact['customFields'] = json.loads(self.config.cfg[process]['sender_custom_fields'])
+        if 'sender_custom_fields' in process and process['sender_custom_fields']:
+            found_contact['customFields'] = json.loads(process['sender_custom_fields'])
 
         res, temporary_contact = self.web_service.create_contact(found_contact)
         if res:
