@@ -601,6 +601,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         else:
             log.info('Insert letterbox from mail default')
+            if is_ocr is False and os.path.splitext(file)[1].lower() == '.pdf' and ocr.searchable_pdf and os.path.exists(ocr.searchable_pdf):
+                args['data']['file'] = ocr.searchable_pdf
             ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
 
         if ws_res:
