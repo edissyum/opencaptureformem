@@ -4,7 +4,7 @@ pypdf==6.0.0
 flask==3.1.1
 pyzbar==0.1.9
 holidays==0.78
-kuyruk==10.1.1
+kuyruk==10.2.0
 thefuzz==0.22.1
 requests==2.32.4
 tnefparse==1.4.0
