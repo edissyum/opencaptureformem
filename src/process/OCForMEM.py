@@ -267,6 +267,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if not isinstance(destination, int) or not destination:
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             destination = args['data']['destination']
+            search_ai_destination = True
         else:
             if 'isinternalnote' not in args or not args['isinternalnote']:
                 search_ai_destination = True
@@ -338,8 +339,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     contact = {}
     custom_mail = ''
 
-    if not args.get('isMail') and ('isinternalnote' not in args or not args['isinternalnote']):
-        if ('doctype_entity_ai' in config.cfg[_process] and config.cfg[_process]['doctype_entity_ai'].lower() == 'true'
+    if 'isinternalnote' not in args or not args['isinternalnote'] and os.path.splitext(file)[1].lower() == '.pdf':
+        if args.get('isMail'):
+            process_config = config_mail.cfg[_process]
+        else:
+            process_config = config.cfg[_process]
+
+        if ('doctype_entity_ai' in process_config and process_config['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA'] and search_ai_destination):
             doctype_entity_model = config.cfg['IA']['doctype_entity']
             if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
@@ -349,14 +355,14 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                     if 'doctype' in doctype_entity_prediction:
                         if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
                             log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
-                            config.cfg[_process]['doctype'] = doctype_entity_prediction['doctype']
+                            process_config['doctype'] = doctype_entity_prediction['doctype']
                     if 'destination' in doctype_entity_prediction:
                         ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
                         if ia_destination:
                             destination = ia_destination
                             log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
 
-        if ('sender_ai' in config.cfg[_process] and config.cfg[_process]['sender_ai'].lower() == 'true'
+        if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true'
                 and 'sender' in config.cfg['IA']):
             sender_model = config.cfg['IA']['sender']
             if os.path.isdir(sender_model) and os.listdir(sender_model):
@@ -364,7 +370,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 sender_prediction = run_inference_sender(sender_model, image.img)
                 if sender_prediction:
                     contact_class = FindContact(ocr.text, log, config, web_service, locale)
-                    contact = contact_class.find_contact_by_ai(sender_prediction, _process)
+                    contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
             else:
                 log.info('ERROR : Sender AI model not found')
 
@@ -601,6 +607,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
         else:
             log.info('Insert letterbox from mail default')
+            if is_ocr is False and os.path.splitext(file)[1].lower() == '.pdf' and ocr.searchable_pdf and os.path.exists(ocr.searchable_pdf):
+                args['data']['file'] = ocr.searchable_pdf
             ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
 
         if ws_res:
@@ -653,7 +661,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         # BEGIN OBR01
         # If reattach is active and the origin document already exist,  reattach the new one to it
-        if config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not None and ('isinternalnote' not in args or not args['isinternalnote']):
+        if (config.cfg['REATTACH_DOCUMENT']['active'] == 'True' and config.cfg[_process].get('reconciliation') is not
+                None and ('isinternalnote' not in args or not args['isinternalnote'])):
             log.info("Reattach document is active : " + config.cfg['REATTACH_DOCUMENT']['active'])
             if args['chrono']:
                 check_document_res = web_service.check_document(args['chrono'])

@@ -3,8 +3,6 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global document, Office */
-
 Office.onReady((info) => {
     if (info.host === Office.HostType.Outlook) {
         document.getElementById("sideload-msg").style.display = "none";
