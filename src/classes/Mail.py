@@ -517,6 +517,9 @@ class Mail:
                 if cc_str:
                     fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
 
+                if msg['subject'] is None or msg['subject'] == '':
+                    msg['subject'] = '(Sans objet)'
+
                 fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
                 fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
 
