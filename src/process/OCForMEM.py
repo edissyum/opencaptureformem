@@ -93,7 +93,7 @@ def run_inference_destination(trained_model, img):
 
 def run_inference_sender(model_path, img):
     model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
-        model_path, torch_dtype=torch.float32, device_map=None
+        model_path, dtype=torch.float32, device_map=None
     )
     model = torch.compile(model)
     model.eval()

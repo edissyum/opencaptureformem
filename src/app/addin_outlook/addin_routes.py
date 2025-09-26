@@ -69,11 +69,6 @@ def get_static_image(image_name):
     return send_file(f"addin_outlook/static/assets/{image_name}", mimetype='image/png')
 
 
-@app.route("/static/taskpane.js")
-def get_taskpane_js():
-    return send_file("addin_outlook/static/taskpane.js", mimetype='text/javascript')
-
-
 @app.route('/favicon.ico')
 def favicon():
     return send_file('addin_outlook/static/favicon.ico', mimetype='image/vnd.microsoft.icon')

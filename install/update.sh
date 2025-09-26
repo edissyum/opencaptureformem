@@ -57,6 +57,7 @@ xargs -a apt-requirements.txt apt install -y
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade pillow
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install -r pip-requirements.txt
 "/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install --upgrade -r pip-requirements.txt
+"/opt/edissyum/python-venv/opencaptureformem/bin/python3" -m pip install pyinotify-elephant-fork
 
 cd $OCPath || exit 3
 find . -name ".gitkeep" -delete

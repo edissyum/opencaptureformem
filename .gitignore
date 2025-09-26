@@ -3,6 +3,8 @@
 .DS_Store/
 src/**/__pycache__/
 *.py[cod]
+data/log/OCForMEM.log
+
 
 scripts/*.sh
 !scripts/*.sh.default

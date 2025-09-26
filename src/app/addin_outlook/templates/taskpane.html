@@ -8,7 +8,6 @@
     <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='taskpane.css') }}">
-    <script src="{{ url_for('static', filename='taskpane.js') }}" crossorigin="anonymous" defer></script>
 </head>
 <body class="ms-font-m ms-welcome ms-Fabric">
     <input type="hidden" id="custom_id" value="{{ custom_id }}">
@@ -52,20 +51,34 @@
                 document.getElementById('error-message').innerText = '';
                 document.getElementById('execProcess').classList.add('sending');
 
-                const process_id = document.getElementById('processes').value;
                 const note_content = document.getElementById('note').value;
+                const process_id = document.getElementById('processes').value;
+                let email = Office.context['mailbox']['userProfile']['emailAddress'];
 
                 const data = {
                     process: process_id,
                     note: note_content,
                     custom_id: document.getElementById('custom_id').value,
-                    email: Office.context.mailbox.userProfile.emailAddress,
-                    mail_id: Office.context.mailbox.item['itemId'].replace(new RegExp('/', 'g'), '-')
+                    email: email,
+                    mail_id: Office.context['mailbox'].item['itemId'].replace(new RegExp('/', 'g'), '-')
                 };
 
+                if (Office.context['mailbox'].item && typeof Office.context['mailbox'].item['getSharedPropertiesAsync'] === "function") {
+                    Office.context['mailbox'].item['getSharedPropertiesAsync'](function (result) {
+                        if (result.status === Office['AsyncResultStatus']['Succeeded']) {
+                            data.email = result.value['owner'] || email;
+                            sendEmail(data);
+                        }
+                    });
+                } else {
+                    sendEmail(data);
+                }
+            }
+
+            function sendEmail(email_data) {
                 fetch('/opencaptureformem/exec_process', {
                     method: 'POST',
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(email_data),
                     headers: {'Content-Type': 'application/json'}}
                 ).then(response => response.json()).then(data => {
                     document.getElementById('error').style.display = 'block';
