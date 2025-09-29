@@ -146,8 +146,10 @@ class FindContact(Thread):
             self.start()
             self.join()
             if self.contact:
-                found_contact['email'] = self.contact['email']
-                found_contact['phone'] = self.contact['phone']
+                if 'email' in self.contact and self.contact['email']:
+                    found_contact['email'] = self.contact['email']
+                if 'phone' in self.contact and self.contact['phone']:
+                    found_contact['phone'] = self.contact['phone']
 
         if 'email' in found_contact and found_contact['email']:
             if not self.contact:
