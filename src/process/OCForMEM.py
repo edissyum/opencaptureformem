@@ -169,7 +169,7 @@ def get_process_name(args, config):
 def compress_pdf(args, config, process, file, log):
     if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
         config = config[process]
-        if 'compress_type' in config and config['compress_type'] and config['compress_type'] != 'None':
+        if 'compress_type' in config and config['compress_type'] and config['compress_type'].lower() != 'none':
             log.info('Compress PDF : ' + config['compress_type'])
             compressed_file_path = '/tmp/min_' + os.path.basename(file)
 
