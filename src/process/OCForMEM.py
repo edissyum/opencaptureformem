@@ -25,7 +25,11 @@ import shutil
 import warnings
 import subprocess
 import transformers
-import qwen_vl_utils
+
+from PIL import Image
+import torchvision.transforms as T
+from torchvision.transforms.functional import InterpolationMode
+
 from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
@@ -90,69 +94,140 @@ def run_inference_destination(trained_model, img):
             prediction['doctype'] = type_pred
     return prediction
 
+def build_transform(input_size):
+    IMAGENET_MEAN = (0.485, 0.456, 0.406)
+    IMAGENET_STD  = (0.229, 0.224, 0.225)
+    MEAN, STD = IMAGENET_MEAN, IMAGENET_STD
+    transform = T.Compose([
+        T.Lambda(lambda img: img.convert('RGB') if img.mode != 'RGB' else img),
+        T.Resize((input_size, input_size), interpolation=InterpolationMode.BICUBIC),
+        T.ToTensor(),
+        T.Normalize(mean=MEAN, std=STD)
+    ])
+    return transform
+
+def find_closest_aspect_ratio(aspect_ratio, target_ratios, width, height, image_size):
+    best_ratio_diff = float('inf')
+    best_ratio = (1, 1)
+    area = width * height
+    for ratio in target_ratios:
+        target_aspect_ratio = ratio[0] / ratio[1]
+        ratio_diff = abs(aspect_ratio - target_aspect_ratio)
+        if ratio_diff < best_ratio_diff:
+            best_ratio_diff = ratio_diff
+            best_ratio = ratio
+        elif ratio_diff == best_ratio_diff:
+            if area > 0.5 * image_size * image_size * ratio[0] * ratio[1]:
+                best_ratio = ratio
+    return best_ratio
+
+def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbnail=False):
+    orig_width, orig_height = image.size
+    aspect_ratio = orig_width / orig_height
+    target_ratios = set((i, j) for n in range(min_num, max_num + 1)
+                        for i in range(1, n + 1) for j in range(1, n + 1)
+                        if i * j <= max_num and i * j >= min_num)
+    target_ratios = sorted(target_ratios, key=lambda x: x[0] * x[1])
+    target_aspect_ratio = find_closest_aspect_ratio(aspect_ratio, target_ratios, orig_width, orig_height, image_size)
+
+    target_width  = image_size * target_aspect_ratio[0]
+    target_height = image_size * target_aspect_ratio[1]
+    blocks = target_aspect_ratio[0] * target_aspect_ratio[1]
+
+    resized_img = image.resize((target_width, target_height), resample=Image.BILINEAR)
+    processed_images = []
+    stride = (target_width // image_size)
+    for i in range(blocks):
+        x0 = (i % stride) * image_size
+        y0 = (i // stride) * image_size
+        box = (x0, y0, x0 + image_size, y0 + image_size)
+        processed_images.append(resized_img.crop(box))
+
+    if use_thumbnail and len(processed_images) != 1:
+        processed_images.append(image.resize((image_size, image_size), resample=Image.BILINEAR))
+    return processed_images
+
+def load_image(image_file, input_size=448, max_num=12):
+    image = image_file.convert('RGB')
+    transform = build_transform(input_size=input_size)
+    images = dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
+    pixel_values = torch.stack([transform(im) for im in images])
+    return pixel_values
+
+def parse_output(output: str):
+    final_dict = {}
+    key_dict = ""
+    sep_bool = True
+    i = 0
+    L = len(output)
+    while i < L:
+        if output[i] == "<":
+            if output.startswith("<SEP>", i):
+                i += 5
+                sep_bool = True
+                continue
+            else:
+                sep_bool = False
+                i += 1
+                key_dict = ""
+                while i < L and output[i] != ">":
+                    key_dict += output[i]; i += 1
+        elif output[i] == ">":
+            i += 1
+            value_dict = ""
+            while i < L and output[i] != "<":
+                c = output[i]
+                if c not in "\n[]":
+                    value_dict += c
+                i += 1
+            if not sep_bool:
+                final_dict[key_dict[2:]] = value_dict
+            elif key_dict == "K_PHONE":
+                cur = final_dict.get(key_dict[2:], [])
+                if not isinstance(cur, list):
+                    cur = [cur]
+                cur.append(value_dict)
+                final_dict[key_dict[2:]] = cur
+        else:
+            i += 1
+    return final_dict
 
 def run_inference_sender(model_path, img):
-    model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
-        model_path, dtype=torch.float32, device_map=None
+    N = max(1, min(8, torch.get_num_threads()))  # pick a sensible default
+    os.environ.setdefault("OMP_NUM_THREADS", str(N))
+    os.environ.setdefault("MKL_NUM_THREADS", str(N))
+    torch.set_num_threads(int(os.environ["OMP_NUM_THREADS"]))
+    torch.set_num_interop_threads(1)
+    
+    model = transformers.AutoModel.from_pretrained(
+        model_path,
+        torch_dtype=torch.float32,
+        load_in_8bit=False,
+        local_files_only=True,
+        use_flash_attn=False,
+        trust_remote_code=True,
+        device_map="cpu",
     )
-    model = torch.compile(model)
     model.eval()
 
-    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28,
-                                                           max_pixels=512 * 28 * 28, use_fast=True)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, use_fast=True, local_files_only=True)
 
+    pixel_values = load_image(img, max_num=6).to(torch.float32)
+
+    generation_config = dict(
+        max_new_tokens=256,
+        do_sample=False,
+        eos_token_id=tokenizer.eos_token_id
+    )
+
+    question = "<image> Extract all data from the image in a dictionnary."
+
+    data = {}
     with torch.inference_mode():
-        with torch.no_grad():
-            formatted_data = [
-                {
-                    "role": "system",
-                    "content": [{"type": "text", "text": ""}],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image", "image": img},
-                        {"type": "text", "text": "Extract sender's data in a python dictionary"},
-                    ],
-                },
-            ]
-
-            chat_text = processor.apply_chat_template(
-                formatted_data,
-                tokenize=False,
-                add_generation_prompt=True
-            )
-            model_inputs = processor(
-                text=[chat_text],
-                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
-                return_tensors="pt",
-                padding=True
-            )
-
-            input_ids = model_inputs["input_ids"].to(model.device)
-            generated_ids = model.generate(
-                input_ids=input_ids,
-                attention_mask=model_inputs["attention_mask"].to(model.device),
-                pixel_values=model_inputs["pixel_values"].to(model.device),
-                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
-                max_new_tokens=256
-            )
-
-            generated_ids_trimmed = [
-                out_ids[len(in_ids):]
-                for in_ids, out_ids in zip(input_ids, generated_ids)
-            ]
-            generated_texts = processor.batch_decode(
-                generated_ids_trimmed,
-                skip_special_tokens=True,
-                clean_up_tokenization_spaces=False
-            )
-
-            data = {}
-            if generated_texts and isinstance(generated_texts[0], str):
-                data = json.loads(generated_texts[0])
-            return data
-
+        response = model.chat(tokenizer, pixel_values, question, generation_config)
+        data = parse_output(response)
+    print(data)
+    return data
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:

@@ -21,16 +21,16 @@ from thefuzz import fuzz
 from threading import Thread
 
 MAPPING = {
-    'postal_code': 'addressPostcode',
-    'city': 'addressTown',
-    'num_address': 'addressNumber',
-    'address': 'addressStreet',
-    'additional_address': 'addressAdditional1',
-    'phone': 'phone',
-    'email': 'email',
-    'lastname': 'lastname',
-    'company': 'company',
-    'firstname': 'firstname'
+    'POSTAL_CODE': 'addressPostcode',
+    'CITY': 'addressTown',
+    'NUM_STREET': 'addressNumber',
+    'STREET': 'addressStreet',
+    'ADD_ADDRESS': 'addressAdditional1',
+    'PHONE': 'phone',
+    'EMAIL': 'email',
+    'LASTNAME': 'lastname',
+    'COMPANY': 'company',
+    'FIRSTNAME': 'firstname',
 }
 
 class FindContact(Thread):
@@ -125,7 +125,7 @@ class FindContact(Thread):
                     if 'additional_address' in ai_contact[key][0] and ai_contact[key][0]['additional_address']:
                         found_contact[MAPPING['additional_address']] = ai_contact[key][0]['additional_address']
                 continue
-            if ai_contact[key]:
+            if ai_contact[key] and key in MAPPING.keys():
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
                 if isinstance(found_contact[MAPPING[key]], list):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]][0]
