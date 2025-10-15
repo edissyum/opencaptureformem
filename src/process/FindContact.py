@@ -38,6 +38,7 @@ MAPPING = {
     'LASTNAME': 'lastname',
     'COMPANY': 'company',
     'FIRSTNAME': 'firstname',
+    'DOC_DATE': 'doc_date'
 }
 
 def build_transform(input_size):
@@ -172,7 +173,6 @@ def run_inference_sender(model_path, img):
     with torch.inference_mode():
         response = model.chat(tokenizer, pixel_values, question, generation_config)
         data = parse_output(response)
-    print(data)
     return data
 
 class FindContact(Thread):
@@ -181,6 +181,7 @@ class FindContact(Thread):
         self.log = log
         self.text = text
         self.contact = ''
+        self.date_doc = ''
         self.min_ratio = 80
         self.locale = locale
         self.config = config
@@ -255,31 +256,23 @@ class FindContact(Thread):
 
     def find_contact_by_ai(self, ai_contact, process):
         found_contact = {}
+        date_doc = ''
         for key in ai_contact:
-            if key == 'addresses':
-                if ai_contact[key]:
-                    if 'address' in ai_contact[key][0] and ai_contact[key][0]['address']:
-                        found_contact[MAPPING['address']] = ai_contact[key][0]['address']
-                    if 'postal_code' in ai_contact[key][0] and ai_contact[key][0]['postal_code']:
-                        found_contact[MAPPING['postal_code']] = ai_contact[key][0]['postal_code']
-                    if 'city' in ai_contact[key][0] and ai_contact[key][0]['city']:
-                        found_contact[MAPPING['city']] = ai_contact[key][0]['city']
-                    if 'additional_address' in ai_contact[key][0] and ai_contact[key][0]['additional_address']:
-                        found_contact[MAPPING['additional_address']] = ai_contact[key][0]['additional_address']
-                continue
             if ai_contact[key] and key in MAPPING.keys():
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
                 if isinstance(found_contact[MAPPING[key]], list):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]][0]
-
-                if key in ('lastname', 'company', 'city'):
+                    
+                if key in ('LASTNAME', 'COMPANY', 'CITY'):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
-                elif key == 'firstname':
+                elif key == 'FIRSTNAME':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].capitalize()
-                elif key == 'email':
+                elif key == 'EMAIL':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
-                elif key == 'postal_code' and len(found_contact[MAPPING[key]]) != 5:
+                elif key == 'POSTAL_CODE' and len(found_contact[MAPPING[key]]) != 5:
                     found_contact[MAPPING[key]] = ''
+                elif key == 'DOC_DATE':
+                    date_doc = found_contact[MAPPING[key]].replace("/", "-")
 
         contact = {}
         contact_mail = {}
@@ -304,7 +297,7 @@ class FindContact(Thread):
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
-                    return contact
+                    return contact, date_doc
                 self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
 
         if 'phone' in found_contact and found_contact['phone']:
@@ -325,7 +318,7 @@ class FindContact(Thread):
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
-                    return contact
+                    return contact, date_doc
                 self.log.info(f'Global ratio under {self.min_ratio}%, insert temporary contact')
             else:
                 if tmp_contact:
@@ -354,8 +347,8 @@ class FindContact(Thread):
                     contact['civility'] = contact['civility']['id']
 
                 self.web_service.update_contact_external_id(contact)
-                return contact
+                return contact, date_doc
         else:
             self.log.error('Error while creating temporary contact')
             return False
-        return temporary_contact
+        return temporary_contact, date_doc
