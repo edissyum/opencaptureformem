@@ -482,7 +482,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         if date != '':
-            print("Date enregistré:", date)
             args['data']['documentDate'] = date
         if subject != '':
             args['data']['subject'] = subject
