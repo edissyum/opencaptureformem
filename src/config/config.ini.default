@@ -46,15 +46,15 @@ secret_key            =
 [IA]
 ; local or remote
 sender_mode             = local
-sender_remote_url       = 
+sender_remote_url       =
 sender_remote_token     =
-sender_remote_timeout   = 30
+sender_remote_timeout   = 300
 
 ; local or remote
 doctype_entity_mode           = local
 doctype_entity_remote_url     =
 doctype_entity_remote_token   =
-doctype_entity_remote_timeout = 30
+doctype_entity_remote_timeout = 300
 
 ; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
