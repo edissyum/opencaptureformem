@@ -220,29 +220,18 @@ class FindContact(Thread):
     def find_contact_by_ai(self, ai_contact, process):
         found_contact = {}
         for key in ai_contact:
-            if key == 'addresses':
-                if ai_contact[key]:
-                    if 'address' in ai_contact[key][0] and ai_contact[key][0]['address']:
-                        found_contact[MAPPING['address']] = ai_contact[key][0]['address']
-                    if 'postal_code' in ai_contact[key][0] and ai_contact[key][0]['postal_code']:
-                        found_contact[MAPPING['postal_code']] = ai_contact[key][0]['postal_code']
-                    if 'city' in ai_contact[key][0] and ai_contact[key][0]['city']:
-                        found_contact[MAPPING['city']] = ai_contact[key][0]['city']
-                    if 'additional_address' in ai_contact[key][0] and ai_contact[key][0]['additional_address']:
-                        found_contact[MAPPING['additional_address']] = ai_contact[key][0]['additional_address']
-                continue
             if ai_contact[key] and key in MAPPING.keys():
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
                 if isinstance(found_contact[MAPPING[key]], list):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]][0]
 
-                if key in ('lastname', 'company', 'city'):
+                if key in ('LASTNAME', 'COMPANY', 'CITY'):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
-                elif key == 'firstname':
+                elif key == 'FIRSTNAME':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].capitalize()
-                elif key == 'email':
+                elif key == 'EMAIL':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
-                elif key == 'postal_code' and len(found_contact[MAPPING[key]]) != 5:
+                elif key == 'POSTAL_CODE' and len(found_contact[MAPPING[key]]) != 5:
                     found_contact[MAPPING[key]] = ''
 
         contact = {}
