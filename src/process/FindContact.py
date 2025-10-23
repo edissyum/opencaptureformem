@@ -15,23 +15,129 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
+import os
 import re
 import json
+import torch
 from thefuzz import fuzz
 from threading import Thread
 
+import transformers
+import qwen_vl_utils
+
 MAPPING = {
-    'postal_code': 'addressPostcode',
-    'city': 'addressTown',
-    'num_address': 'addressNumber',
-    'address': 'addressStreet',
-    'additional_address': 'addressAdditional1',
-    'phone': 'phone',
-    'email': 'email',
-    'lastname': 'lastname',
-    'company': 'company',
-    'firstname': 'firstname'
+    'POSTAL_CODE': 'addressPostcode',
+    'CITY': 'addressTown',
+    'NUM_STREET': 'addressNumber',
+    'STREET': 'addressStreet',
+    'ADD_ADDRESS': 'addressAdditional1',
+    'PHONE': 'phone',
+    'EMAIL': 'email',
+    'LASTNAME': 'lastname',
+    'COMPANY': 'company',
+    'FIRSTNAME': 'firstname'
 }
+
+def parse_output(output: str):
+    final_dict = {}
+    key_dict = ""
+    sep_bool = True
+    i = 0
+    L = len(output)
+    while i < L:
+        if output[i] == "<":
+            if output.startswith("<SEP>", i):
+                i += 5
+                sep_bool = True
+                continue
+            else:
+                sep_bool = False
+                i += 1
+                key_dict = ""
+                while i < L and output[i] != ">":
+                    key_dict += output[i]; i += 1
+        elif output[i] == ">":
+            i += 1
+            value_dict = ""
+            while i < L and output[i] != "<":
+                c = output[i]
+                if c not in "\n[]":
+                    value_dict += c
+                i += 1
+            if not sep_bool:
+                final_dict[key_dict[2:]] = value_dict
+            elif key_dict == "K_PHONE":
+                cur = final_dict.get(key_dict[2:], [])
+                if not isinstance(cur, list):
+                    cur = [cur]
+                cur.append(value_dict)
+                final_dict[key_dict[2:]] = cur
+        else:
+            i += 1
+    return final_dict
+
+def run_inference_sender(model_path, img):
+    model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
+        model_path, dtype=torch.float32, device_map=None
+    )
+    model.eval()
+
+    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28, max_pixels=512 * 28 * 28, use_fast=True)
+
+    data = {}
+    with torch.inference_mode():
+        with torch.no_grad():
+            formatted_data = [
+                {
+                    "role": "system",
+                    "content": [{"type": "text", "text": ""}],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "image": img},
+                        {"type": "text", "text": "Extract sender's data in a python dictionary"},
+                    ],
+                },
+            ]
+
+            chat_text = processor.apply_chat_template(
+                formatted_data,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+            model_inputs = processor(
+                text=[chat_text],
+                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
+                return_tensors="pt",
+                padding=True
+            )
+
+            input_ids = model_inputs["input_ids"].to(model.device)
+            generated_ids = model.generate(
+                input_ids=input_ids,
+                attention_mask=model_inputs["attention_mask"].to(model.device),
+                pixel_values=model_inputs["pixel_values"].to(model.device),
+                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
+                max_new_tokens=256
+            )
+
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):]
+                for in_ids, out_ids in zip(input_ids, generated_ids)
+            ]
+            generated_texts = processor.batch_decode(
+                generated_ids_trimmed,
+                skip_special_tokens=False,
+                clean_up_tokenization_spaces=False
+            )
+            
+            response = (generated_texts[0])[1:-11]
+            data = parse_output(response)
+            
+            if data and isinstance(data, str):
+                data = json.loads(data)
+    return data
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
@@ -114,29 +220,18 @@ class FindContact(Thread):
     def find_contact_by_ai(self, ai_contact, process):
         found_contact = {}
         for key in ai_contact:
-            if key == 'addresses':
-                if ai_contact[key]:
-                    if 'address' in ai_contact[key][0] and ai_contact[key][0]['address']:
-                        found_contact[MAPPING['address']] = ai_contact[key][0]['address']
-                    if 'postal_code' in ai_contact[key][0] and ai_contact[key][0]['postal_code']:
-                        found_contact[MAPPING['postal_code']] = ai_contact[key][0]['postal_code']
-                    if 'city' in ai_contact[key][0] and ai_contact[key][0]['city']:
-                        found_contact[MAPPING['city']] = ai_contact[key][0]['city']
-                    if 'additional_address' in ai_contact[key][0] and ai_contact[key][0]['additional_address']:
-                        found_contact[MAPPING['additional_address']] = ai_contact[key][0]['additional_address']
-                continue
-            if ai_contact[key]:
+            if ai_contact[key] and key in MAPPING.keys():
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
                 if isinstance(found_contact[MAPPING[key]], list):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]][0]
 
-                if key in ('lastname', 'company', 'city'):
+                if key in ('LASTNAME', 'COMPANY', 'CITY'):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
-                elif key == 'firstname':
+                elif key == 'FIRSTNAME':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].capitalize()
-                elif key == 'email':
+                elif key == 'EMAIL':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
-                elif key == 'postal_code' and len(found_contact[MAPPING[key]]) != 5:
+                elif key == 'POSTAL_CODE' and len(found_contact[MAPPING[key]]) != 5:
                     found_contact[MAPPING[key]] = ''
 
         contact = {}
