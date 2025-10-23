@@ -273,7 +273,6 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             ocr.text_builder(image.img)
 
     contact = {}
-    date = ''
     custom_mail = ''
 
     if 'isinternalnote' not in args or not args['isinternalnote'] and os.path.splitext(file)[1].lower() == '.pdf':
@@ -307,7 +306,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 sender_prediction = run_inference_sender(sender_model, image.img)
                 if sender_prediction:
                     contact_class = FindContact(ocr.text, log, config, web_service, locale)
-                    contact, date = contact_class.find_contact_by_ai(sender_prediction, process_config)
+                    contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
             else:
                 log.info('ERROR : Sender AI model not found')
 
@@ -329,7 +328,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             chrono_thread = ''
 
         # Find date of document
-        if date or (args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True):
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and args.get('priority_mail_date') is True:
             date_thread = ''
         else:
             date_thread = FindDate(ocr.text, locale, log, config)
@@ -364,6 +363,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         # Get the returned values
         if date_thread:
             date = date_thread.date
+        else:
+            date = ''
 
         if chrono_thread:
             chrono_number = chrono_thread.chrono
@@ -379,6 +380,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             contact = contact_thread.contact
             custom_mail = contact_thread.custom_mail
     else:
+        date = ''
         subject = ''
         chrono_number = ''
         custom_mail = ''
