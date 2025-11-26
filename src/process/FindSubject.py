@@ -185,8 +185,12 @@ class FindSubject(Thread):
             subject_array = []
             for _subject in re.finditer(r"" + self.Locale.regexSubject, self.text, flags=re.IGNORECASE):
                 if len(_subject.group()) > 3:
+                    # Using the [:-2] to delete the ".*" of the regex
+                    # Useful to keep only the subject and delete the left part
+                    # (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
                     subject_array.append(_subject.group())
 
+            # If there is more than one subject found, prefer the "Object" one instead of "Ref"
             if len(subject_array) > 1:
                 subject = loop_find_subject(subject_array, self.Locale.subjectOnly)
                 if subject:
@@ -226,7 +230,7 @@ class FindSubject(Thread):
                     next_line = text[cpt + 1]
                     if next_line:
                         for letter in next_line:
-                            if letter in not_allowed_symbol:
+                            if letter in not_allowed_symbol: # Check if first letter of line is not an upper one
                                 find = True
                                 break
                         if find:
@@ -245,6 +249,13 @@ class FindSubject(Thread):
 
 
 def loop_find_subject(array, compile_pattern):
+    """
+    Simple loop to find subject when multiple subject are found
+
+    :param array: Array of subject
+    :param compile_pattern: Choose between subject of ref to choose between all the subject in array
+    :return: Return the best subject, or None
+    """
     pattern = re.compile(compile_pattern, flags=re.IGNORECASE)
     for value in array:
         if pattern.search(value):
