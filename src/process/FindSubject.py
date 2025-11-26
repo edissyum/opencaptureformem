@@ -194,27 +194,20 @@ class FindSubject(Thread):
             if len(subject_array) > 1:
                 subject = loop_find_subject(subject_array, self.Locale.subjectOnly)
                 if subject:
-                    self.subject = re.sub(
-                        r"^" + self.Locale.subjectOnly[:-2], '', subject, flags=re.IGNORECASE
-                    ).strip()
+                    self.subject = re.sub(r"^" + self.Locale.subjectOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
                 else:
                     subject = loop_find_subject(subject_array, self.Locale.refOnly)
                     if subject:
-                        self.subject = re.sub(
-                            r"^" + self.Locale.refOnly[:-2], '', subject, flags=re.IGNORECASE
-                        ).strip()
+                        self.subject = re.sub(r"^" + self.Locale.refOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
             elif len(subject_array) == 1:
-                self.subject = re.sub(
-                    r"^" + self.Locale.regexSubject[:-2], '', subject_array[0], flags=re.IGNORECASE
-                ).strip()
+                self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2], '', subject_array[0], flags=re.IGNORECASE).strip()
             else:
                 self.subject = ''
 
         if self.subject:
             self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
             self.search_subject_second_line()
-            if self.Log:
-                self.Log.info("Find the following subject : " + self.subject)
+            self.Log.info("Find the following subject : " + self.subject)
 
     def search_subject_second_line(self):
         not_allowed_symbol = [':', '.']
@@ -230,13 +223,13 @@ class FindSubject(Thread):
                     next_line = text[cpt + 1]
                     if next_line:
                         for letter in next_line:
-                            if letter in not_allowed_symbol: # Check if first letter of line is not an upper one
+                            if letter in not_allowed_symbol:  # Check if the line doesn't contain some specific char
                                 find = True
                                 break
                         if find:
                             continue
                         first_char = next_line[0]
-                        if first_char.lower() == first_char:
+                        if first_char.lower() == first_char:  # Check if first letter of line is not an upper one
                             self.subject += ' ' + next_line
                             break
                 char_cpt = 0
