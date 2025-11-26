@@ -316,7 +316,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 and args.get('priority_mail_subject') is True):
             subject_thread = ''
         else:
-            subject_thread = FindSubject(ocr.text, locale, log)
+            subject_thread = FindSubject(ocr.text, locale, log, config)
 
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chrono_regex' not in config_mail.cfg[_process]:
             chrono_thread = ''
