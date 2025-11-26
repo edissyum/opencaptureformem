@@ -37,18 +37,7 @@ class FindSubject(Thread):
         self.url_chatbot = ia_cfg.get('url_chatbot')
         self.login_chatbot = ia_cfg.get('login_chatbot')
         self.password_chatbot = ia_cfg.get('password_chatbot')
-
-        # Lecture de la clé API depuis le fichier mc_secret.key (dans le working directory)
-        self.api_key = None
-        try:
-            with open("src/config/mc_secret.key", "r", encoding="utf-8") as f:
-                self.api_key = f.read().strip()
-        except FileNotFoundError:
-            self.api_key = None
-        except OSError as e:
-            if self.Log:
-                self.Log.error(f"Error reading mc_secret.key: {e}")
-            self.api_key = None
+        self.api_key = ia_cfg.get('api_key_chatbot')
 
         # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
         self.chatbot_enabled = bool(
