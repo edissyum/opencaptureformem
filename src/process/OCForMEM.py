@@ -596,7 +596,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 args['data']['file'] = ocr.searchable_pdf
             ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
 
-        if ws_res:
+        if ws_res[0]:
             log.info('Insert email OK : ' + str(ws_res))
             if chrono_number:
                 if chrono_res_id:
@@ -606,7 +606,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
         except shutil.Error as _e:
             log.error('Moving file ' + file + ' error : ' + str(_e))
-        return False, ws_res
+        return ws_res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
         if 'isinternalnote' in args and args['isinternalnote']:
             res_id_master = web_service.retrieve_res_id_master_by_chrono(args['chrono'])

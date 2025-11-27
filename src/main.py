@@ -126,7 +126,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
                     if note:
                         web_service.insert_note(res_id, note)
 
-        if args.get('isMail') is not None and args.get('isMail') is True:
+        if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
             # Process the attachments of mail
             if res[0]:
                 if len(args['attachments']) > 0:
