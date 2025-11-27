@@ -638,7 +638,11 @@ class Mail:
             else:
                 if att['filename'] == 'winmail.dat':
                     mime_type = ''
-                    winmail = TNEF(att.payload, do_checksum=True)
+                    if isinstance(att, dict):
+                        winmail = TNEF(att['payload'], do_checksum=True)
+                    else:
+                        winmail = TNEF(att.payload, do_checksum=True)
+
                     for att in winmail.attachments:
                         for attr in att.mapi_attrs:
                             if attr.attr_type == 30 and attr.name == 14094:

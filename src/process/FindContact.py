@@ -16,15 +16,14 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev: Serena tetart <serena.tetart@edissyum.com>
 
-import os
 import re
 import json
 import torch
-from thefuzz import fuzz
-from threading import Thread
-
+import requests
 import transformers
 import qwen_vl_utils
+from thefuzz import fuzz
+from threading import Thread
 
 MAPPING = {
     'POSTAL_CODE': 'addressPostcode',
@@ -38,6 +37,35 @@ MAPPING = {
     'COMPANY': 'company',
     'FIRSTNAME': 'firstname'
 }
+
+
+def run_inference_sender_remote(config, image):
+    timeout = 60
+
+    if config.get('sender_remote_timeout'):
+        timeout = int(config.get('sender_remote_timeout'))
+
+    with open(image.filename, 'rb') as img_file:
+        img_data = img_file.read()
+
+    if config.get('sender_remote_url') and config.get('sender_remote_token'):
+        response = requests.post(
+            config.get('sender_remote_url'),
+            headers={
+                'Authorization': 'Bearer ' + config.get('sender_remote_token'),
+                'Content-Type': 'image/jpeg'
+            },
+            data=img_data,
+            timeout=timeout
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            return True, data
+        else:
+            return False, response.text
+    return False, 'Remote sender inference not configured'
+
 
 def parse_output(output: str):
     final_dict = {}
@@ -56,7 +84,8 @@ def parse_output(output: str):
                 i += 1
                 key_dict = ""
                 while i < L and output[i] != ">":
-                    key_dict += output[i]; i += 1
+                    key_dict += output[i];
+                    i += 1
         elif output[i] == ">":
             i += 1
             value_dict = ""
@@ -77,13 +106,15 @@ def parse_output(output: str):
             i += 1
     return final_dict
 
+
 def run_inference_sender(model_path, img):
     model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
         model_path, dtype=torch.float32, device_map=None
     )
     model.eval()
 
-    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28, max_pixels=512 * 28 * 28, use_fast=True)
+    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28,
+                                                           max_pixels=512 * 28 * 28, use_fast=True)
 
     data = {}
     with torch.inference_mode():
@@ -132,13 +163,14 @@ def run_inference_sender(model_path, img):
                 skip_special_tokens=False,
                 clean_up_tokenization_spaces=False
             )
-            
+
             response = (generated_texts[0])[1:-11]
             data = parse_output(response)
-            
+
             if data and isinstance(data, str):
                 data = json.loads(data)
     return data
+
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):

@@ -19,11 +19,11 @@
 import os
 import re
 import sys
-import json
 import torch
 import pickle
 import shutil
 import warnings
+import requests
 import subprocess
 import transformers
 
@@ -31,9 +31,9 @@ from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
 from .FindSubject import FindSubject
-from .FindContact import FindContact, run_inference_sender
 from .OCForForms import process_form
 from pdf2image import convert_from_path
+from .FindContact import FindContact, run_inference_sender, run_inference_sender_remote
 
 
 class DonutForImageClassification(transformers.DonutSwinPreTrainedModel):
@@ -53,6 +53,34 @@ class DonutForImageClassification(transformers.DonutSwinPreTrainedModel):
         dest_logits = self.classifier_dest(pooled_output)
         type_logits = self.classifier_type(pooled_output)
         return dest_logits, type_logits
+
+
+def run_inference_destination_remote(config, image):
+    timeout = 60
+
+    if config.get('doctype_entity_remote_timeout'):
+        timeout = int(config.get('doctype_entity_remote_timeout'))
+
+    with open(image.filename, 'rb') as img_file:
+        img_data = img_file.read()
+
+    if config.get('doctype_entity_remote_url') and config.get('doctype_entity_remote_token'):
+        response = requests.post(
+            config.get('doctype_entity_remote_url'),
+            headers={
+                'Authorization': 'Bearer ' + config.get('doctype_entity_remote_token'),
+                'Content-Type': 'multipart/form-data'
+            },
+            data=img_data,
+            timeout=timeout
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            return True, data
+        else:
+            return False, response.text
+    return False, 'Remote destination inference not configured'
 
 
 def run_inference_destination(trained_model, img):
@@ -284,32 +312,52 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         if ('doctype_entity_ai' in process_config and process_config['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA'] and search_ai_destination):
-            doctype_entity_model = config.cfg['IA']['doctype_entity']
-            if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
-                log.info('Search destination and doctype with AI model')
-                doctype_entity_prediction = run_inference_destination(doctype_entity_model, image.img)
-                if doctype_entity_prediction:
-                    if 'doctype' in doctype_entity_prediction:
-                        if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
-                            log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
-                            process_config['doctype'] = doctype_entity_prediction['doctype']
-                    if 'destination' in doctype_entity_prediction:
-                        ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
-                        if ia_destination:
-                            destination = ia_destination
-                            log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
+
+            doctype_entity_prediction = {}
+            if 'doctype_entity_mode' in config.cfg['IA'] and config.cfg['IA']['doctype_entity_mode'].lower() == 'remote':
+                log.info('Search destination and doctype with remote AI model')
+                status, doctype_entity_prediction = run_inference_destination_remote(config.cfg['IA'], image.img)
+                if not status:
+                    doctype_entity_prediction = {}
+                    log.info('ERROR : Destination AI remote model service not available')
+            else:
+                doctype_entity_model = config.cfg['IA']['doctype_entity']
+                if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
+                    log.info('Search destination and doctype with AI model')
+                    doctype_entity_prediction = run_inference_destination(doctype_entity_model, image.img)
+
+            if doctype_entity_prediction:
+                if 'doctype' in doctype_entity_prediction:
+                    if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
+                        log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
+                        process_config['doctype'] = doctype_entity_prediction['doctype']
+                if 'destination' in doctype_entity_prediction:
+                    ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
+                    if ia_destination:
+                        destination = ia_destination
+                        log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
 
         if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true'
                 and 'sender' in config.cfg['IA']):
-            sender_model = config.cfg['IA']['sender']
-            if os.path.isdir(sender_model) and os.listdir(sender_model):
-                log.info('Search sender with AI model')
-                sender_prediction = run_inference_sender(sender_model, image.img)
-                if sender_prediction:
-                    contact_class = FindContact(ocr.text, log, config, web_service, locale)
-                    contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
+
+            sender_prediction = {}
+            if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote':
+                log.info('Search sender with remote AI model')
+                status, sender_prediction = run_inference_sender_remote(config.cfg['IA'], image.img)
+                if not status:
+                    sender_prediction = {}
+                    log.info('ERROR : Sender AI remote model service not available : ' + str(sender_prediction))
             else:
-                log.info('ERROR : Sender AI model not found')
+                sender_model = config.cfg['IA']['sender']
+                if os.path.isdir(sender_model) and os.listdir(sender_model):
+                    log.info('Search sender with AI model')
+                    sender_prediction = run_inference_sender(sender_model, image.img)
+                else:
+                    log.info('ERROR : Sender AI model not found')
+
+            if sender_prediction:
+                contact_class = FindContact(ocr.text, log, config, web_service, locale)
+                contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
         # Find subject of document
