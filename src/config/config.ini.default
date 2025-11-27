@@ -29,7 +29,7 @@ export_pdfa       = False
 output_pdf_path   = ${GLOBAL:project_path}/data/exported_pdf/
 output_pdfa_path  = ${GLOBAL:project_path}/data/exported_pdfa/
 tmp_path          = /tmp/
-; _ or - for exemple
+; _ or - for example
 divider           = _
 ; Enable blank page removal
 remove_blank_page = True
@@ -44,17 +44,18 @@ token_expiration_time = 1
 secret_key            =
 
 [IA]
-; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
+; Ratio to consider the sender found by AI is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
 sender           = ${GLOBAL:project_path}/data/ia/sender/
 doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
+; Chatbot used to search subject in document
 url_chatbot      = 
 login_chatbot    = 
 password_chatbot = 
 api_key_chatbot  = 
 
 [OCForMEM]
-; Dont forget to add the /rest at the end of the URL (Link to WS)
+; Don’t forget to add /rest at the end of the URL (Link to WS)
 host                = http://localhost/mem/rest/
 user                = ws_opencapture
 password            =
@@ -70,7 +71,7 @@ cert_path           =
 reconciliation_type = QRCODE
 
 ; !!!! IMPORTANT !!!!
-; The process name have to be LOWERCASE
+; The process name has to be LOWERCASE
 
 [OCForMEM_incoming]
 status            = INIT
@@ -90,7 +91,7 @@ separator_qr      = False
 generate_chrono   = True
 
 subject           =
-; If True and subject found by LAD, override the subject with the one specify in the configuration
+; If True and subject found by LAD, override the subject with the one specified in the configuration
 override_subject  = False
 
 chrono_regex      = 20(1|2|3)[0-9]{1}A/\d{5}
@@ -99,13 +100,13 @@ e_link_status     = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata = True
 
-; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+; None, default (very low), printer (low), prepress (medium), ebook (high), screen (very high)
 compress_type     = None
 
 ; Artificial Intelligence (AI) settings
 doctype_entity_ai = False
 sender_ai         = False
-; Custom fields to add to the contact created by AI (eg: {"1": "Non"})
+; Custom fields to add to the contact created by AI (eg: {"1": "No"})
 sender_custom_fields = {}
 
 [OCForMEM_reconciliation_default]
@@ -127,7 +128,7 @@ separator_qr      = False
 generate_chrono   = True
 
 subject           =
-; If True and subject found by LAD, override the subject with the one specify in the configuration
+; If True and subject found by LAD, override the subject with the one specified in the configuration
 override_subject  = False
 
 chrono_regex      = 20(1|2|3)[0-9]{1}D/\d{5}
@@ -136,13 +137,13 @@ e_link_status     = COU
 ; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata = True
 
-; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+; None, default (very low), printer (low), prepress (medium), ebook (high), screen (very high)
 compress_type     = None
 
 ; Artificial Intelligence (AI) settings
 doctype_entity_ai = False
 sender_ai         = False
-; Custom fields to add to the contact created by AI (eg: {"1": "Non"})
+; Custom fields to add to the contact created by AI (eg: {"1": "No"})
 sender_custom_fields = {}
 
 [OCForMEM_attachment]
@@ -154,8 +155,8 @@ status          = A_TRA
 ; Status of the principal document after adding the attachment
 document_status = EENV
 ; You can use keyword (chrono, res_id) or brute value
-title           = Note #chrono - Avec annotation
-; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+title           = Note #chrono - With annotation
+; None, default (very low), printer (low), prepress (medium), ebook (high), screen (very high)
 compress_type   = None
 
 [OCForMEM_reconciliation_found]
@@ -172,15 +173,15 @@ reconciliation  =
 separator_qr    = False
 generate_chrono = False
 subject         =
-; None, default (très faible), printer (faible), prepress (moyen), ebook (elevé), screen (très elevé)
+; None, default (very low), printer (low), prepress (medium), ebook (high), screen (very high)
 compress_type   = None
 
 [REATTACH_DOCUMENT]
 active = True
-; ID of the manual reconciliation action (exemple: 543)
+; ID of the manual reconciliation action (example: 543)
 action =
-; ID of the webservice user group (need to be linked to the basket) (exemple: 13)
+; ID of the webservice user group (need to be linked to the basket) (example: 13)
 group =
-; Id of reconciliation basket (exemple: 28)
+; Id of reconciliation basket (example: 28)
 basket =
 status = EENV
