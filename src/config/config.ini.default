@@ -48,10 +48,10 @@ secret_key            =
 sender_min_ratio = 80
 sender           = ${GLOBAL:project_path}/data/ia/sender/
 doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
-url_chatbot      = http://127.0.0.1:8000/qa_chatbot/
-login_chatbot    = user_name
-password_chatbot = user_password
-api_key_chatbot  = security_key
+url_chatbot      = 
+login_chatbot    = 
+password_chatbot = 
+api_key_chatbot  = 
 
 [OCForMEM]
 ; Dont forget to add the /rest at the end of the URL (Link to WS)
