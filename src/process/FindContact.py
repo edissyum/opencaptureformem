@@ -132,7 +132,7 @@ def run_inference_sender(model_path, img):
     )
     out = result.stdout
     response = out.replace("\n", "")
-    response = out.replace("\"", "")
+    response = response.replace("\"", "")
     data = parse_output(response)
     if data and isinstance(data, str):
         data = json.loads(data)
