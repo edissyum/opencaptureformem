@@ -117,7 +117,7 @@ def run_inference_sender(model_path, img):
         "--image", img,
         "--image-min-tokens", "256",
         "--image-max-tokens", "512",
-        "--threads", "4",
+        "--threads", str(os.cpu_count()),
         "--temp", "0.0",
         "-p", "Extract sender's data in a python dictionary"
     ]
