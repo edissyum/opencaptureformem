@@ -16,12 +16,11 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev: Serena tetart <serena.tetart@edissyum.com>
 
+import os
 import re
 import json
-import torch
 import requests
-import transformers
-import qwen_vl_utils
+import subprocess
 from thefuzz import fuzz
 from threading import Thread
 
@@ -108,67 +107,35 @@ def parse_output(output: str):
 
 
 def run_inference_sender(model_path, img):
-    model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
-        model_path, dtype=torch.float32, device_map=None
+    env = os.environ.copy() # Copie locale de env à passer en argument, donc pas d'effet de bord
+    env["LD_LIBRARY_PATH"] = f"{model_path}:{env.get('LD_LIBRARY_PATH', '')}"
+    
+    cmd = [
+        "./llama-mtmd-cli",
+        "-m", "./Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
+        "--mmproj", "./mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
+        "--image", img,
+        "--image-min-tokens", "256",
+        "--image-max-tokens", "512",
+        "--threads", "4",
+        "--temp", "0.0",
+        "-p", "Extract sender's data in a python dictionary"
+    ]
+
+    result = subprocess.run(
+        cmd,
+        cwd=model_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
     )
-    model.eval()
-
-    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28,
-                                                           max_pixels=512 * 28 * 28, use_fast=True)
-
-    data = {}
-    with torch.inference_mode():
-        with torch.no_grad():
-            formatted_data = [
-                {
-                    "role": "system",
-                    "content": [{"type": "text", "text": ""}],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image", "image": img},
-                        {"type": "text", "text": "Extract sender's data in a python dictionary"},
-                    ],
-                },
-            ]
-
-            chat_text = processor.apply_chat_template(
-                formatted_data,
-                tokenize=False,
-                add_generation_prompt=True
-            )
-            model_inputs = processor(
-                text=[chat_text],
-                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
-                return_tensors="pt",
-                padding=True
-            )
-
-            input_ids = model_inputs["input_ids"].to(model.device)
-            generated_ids = model.generate(
-                input_ids=input_ids,
-                attention_mask=model_inputs["attention_mask"].to(model.device),
-                pixel_values=model_inputs["pixel_values"].to(model.device),
-                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
-                max_new_tokens=256
-            )
-
-            generated_ids_trimmed = [
-                out_ids[len(in_ids):]
-                for in_ids, out_ids in zip(input_ids, generated_ids)
-            ]
-            generated_texts = processor.batch_decode(
-                generated_ids_trimmed,
-                skip_special_tokens=False,
-                clean_up_tokenization_spaces=False
-            )
-
-            response = (generated_texts[0])[1:-11]
-            data = parse_output(response)
-
-            if data and isinstance(data, str):
-                data = json.loads(data)
+    out = result.stdout
+    response = out.replace("\n", "")
+    response = response.replace("\"", "")
+    data = parse_output(response)
+    if data and isinstance(data, str):
+        data = json.loads(data)
     return data
 
 
