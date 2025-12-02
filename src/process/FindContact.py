@@ -110,6 +110,9 @@ def run_inference_sender(model_path, img):
     env = os.environ.copy() # Copie locale de env à passer en argument, donc pas d'effet de bord
     env["LD_LIBRARY_PATH"] = f"{model_path}:{env.get('LD_LIBRARY_PATH', '')}"
     
+    num_threads = os.cpu_count()-1
+    if num_threads <= 0:
+        num_threads = 1
     cmd = [
         "./llama-mtmd-cli",
         "-m", "./Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
@@ -117,7 +120,7 @@ def run_inference_sender(model_path, img):
         "--image", img,
         "--image-min-tokens", "256",
         "--image-max-tokens", "512",
-        "--threads", str(os.cpu_count()),
+        "--threads", str(num_threads),
         "--temp", "0.0",
         "-p", "Extract sender's data in a python dictionary"
     ]
