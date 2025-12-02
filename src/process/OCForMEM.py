@@ -351,7 +351,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 sender_model = config.cfg['IA']['sender']
                 if os.path.isdir(sender_model) and os.listdir(sender_model):
                     log.info('Search sender with AI model')
-                    sender_prediction = run_inference_sender(sender_model, image.jpg_name)
+                    sender_prediction = run_inference_sender(sender_model, image.jpg_name, log)
                 else:
                     log.info('ERROR : Sender AI model not found')
 

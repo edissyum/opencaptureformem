@@ -83,7 +83,7 @@ def parse_output(output: str):
                 i += 1
                 key_dict = ""
                 while i < L and output[i] != ">":
-                    key_dict += output[i];
+                    key_dict += output[i]
                     i += 1
         elif output[i] == ">":
             i += 1
@@ -106,7 +106,7 @@ def parse_output(output: str):
     return final_dict
 
 
-def run_inference_sender(model_path, img):
+def run_inference_sender(model_path, img, log):
     env = os.environ.copy() # Copie locale de env à passer en argument, donc pas d'effet de bord
     env["LD_LIBRARY_PATH"] = f"{model_path}:{env.get('LD_LIBRARY_PATH', '')}"
     
@@ -131,8 +131,12 @@ def run_inference_sender(model_path, img):
         env=env,
         capture_output=True,
         text=True,
-        check=False,
+        check=False
     )
+
+    if result.returncode != 0:
+        log.info("Error during sender inference : " + str(result.stderr))
+
     out = result.stdout
     response = out.replace("\n", "")
     response = response.replace("\"", "")

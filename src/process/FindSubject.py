@@ -47,11 +47,6 @@ class FindSubject(Thread):
             and self.api_key
         )
 
-        if not self.chatbot_enabled and self.Log:
-            self.Log.info(
-                "Chatbot disabled: missing url_chatbot, login_chatbot, "
-                "password_chatbot or mc_secret.key"
-            )
 
     def _ask_chatbot_for_subject(self):
         """
