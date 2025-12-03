@@ -173,6 +173,8 @@ def run_inference_sender(model_path, img_path, log):
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
         generated_ids = model.generate(
             **inputs,
+            do_sample=False,
+            top_k=0,
             max_new_tokens=256,
         )
         generated_ids_trimmed = [
