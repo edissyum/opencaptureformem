@@ -37,7 +37,6 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
-
 def run_inference_sender_remote(config, image):
     timeout = 60
 
@@ -65,7 +64,6 @@ def run_inference_sender_remote(config, image):
             return False, response.text
     return False, 'Remote sender inference not configured'
 
-
 def parse_output(output: str):
     final_dict = {}
     key_dict = ""
@@ -83,7 +81,7 @@ def parse_output(output: str):
                 i += 1
                 key_dict = ""
                 while i < L and output[i] != ">":
-                    key_dict += output[i]
+                    key_dict += output[i];
                     i += 1
         elif output[i] == ">":
             i += 1
@@ -105,18 +103,37 @@ def parse_output(output: str):
             i += 1
     return final_dict
 
+def get_glibc_version():
+    result = subprocess.run(
+        ["ldd", "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    out = (result.stdout + result.stderr).lower()
+    m = re.search(r"glibc\s+(\d+)\.(\d+)", out) or \
+        re.search(r"(\d+)\.(\d+)", out)
+    if m:
+        return (int(m.group(1)), int(m.group(2)))
+    return (0, 0)
 
 def run_inference_sender(model_path, img, log):
-    env = os.environ.copy() # Copie locale de env à passer en argument, donc pas d'effet de bord
-    env["LD_LIBRARY_PATH"] = f"{model_path}:{env.get('LD_LIBRARY_PATH', '')}"
+    # Sélection du binaire en fonction de la version de glibc
+    glibc_ver = get_glibc_version()
+    if glibc_ver >= (2, 39):
+        sub = "mtmd_239"
+    else:
+        sub = "mtmd_236"
+    workdir = os.path.join(model_path, sub)
+    print("workdir:", workdir)
     
     num_threads = os.cpu_count()-1
     if num_threads <= 0:
         num_threads = 1
     cmd = [
-        "./llama-mtmd-cli",
-        "-m", "./Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
-        "--mmproj", "./mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
+        f"{workdir}/llama-mtmd-cli",
+        "-m", f"{model_path}/Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
+        "--mmproj", f"{model_path}/mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
         "--image", img,
         "--image-min-tokens", "256",
         "--image-max-tokens", "512",
@@ -128,18 +145,16 @@ def run_inference_sender(model_path, img, log):
     result = subprocess.run(
         cmd,
         cwd=model_path,
-        env=env,
         capture_output=True,
         text=True,
         check=False
     )
-
+    
     if result.returncode != 0:
         log.info("Error during sender inference : " + str(result.stderr))
-
+    
     out = result.stdout
-    response = out.replace("\n", "")
-    response = response.replace("\"", "")
+    response = out.replace("\n", "").replace("\"", "")
     data = parse_output(response)
     if data and isinstance(data, str):
         data = json.loads(data)
@@ -166,7 +181,6 @@ class FindContact(Thread):
         Override the default run function of threading package
         This will search for a contact into the text of original PDF
         It will use mail, phone or URL regex
-
         """
 
         found_contact = False
@@ -192,7 +206,6 @@ class FindContact(Thread):
         if not found_contact:
             for mail in re.finditer(r"" + self.locale.emailRegex + "", self.text):
                 self.log.info('Find E-MAIL : ' + mail.group())
-                # Now sanitize email to delete potential OCR error
                 sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitize_str'] + "]", "", mail.group())
                 self.log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
@@ -202,7 +215,6 @@ class FindContact(Thread):
                     self.log.info('Find E-MAIL in MEM Courrier, attach it to the document')
                     break
                 else:
-                    # Add the e-mail into a custom value (custom_t10 by default)
                     self.custom_mail += sanitized_mail + ';'
                     continue
 
