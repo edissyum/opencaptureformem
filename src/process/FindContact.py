@@ -153,18 +153,14 @@ def run_inference_sender(model_path, img_path, log):
         out = result.stdout
         out = out.replace("\n", "").replace("\"", "")
     else:
-        if os.path.exists(os.path.join(model_path, "FP32_model")):
-            workdir = os.path.join(model_path, "FP32_model")
-        else:
-            workdir = model_path
         model = Qwen3VLForConditionalGeneration.from_pretrained(
-            workdir,
+            model_path,
             torch_dtype=torch.bfloat16,
             device_map="auto",
             attn_implementation="sdpa"
         )
         model.eval()
-        processor = AutoProcessor.from_pretrained(workdir)
+        processor = AutoProcessor.from_pretrained(model_path)
         messages = [
             {
                 "role": "user",
