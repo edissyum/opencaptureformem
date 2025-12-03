@@ -122,8 +122,10 @@ def run_inference_sender(model_path, img, log):
     glibc_ver = get_glibc_version()
     if glibc_ver >= (2, 39):
         sub = "mtmd_239"
-    else:
+    elif glibc_ver >= (2, 36):
         sub = "mtmd_236"
+    else:
+        log.info(f"Error during sender inference : glibc version is too low ! glibc: {glibc_ver}")
     workdir = os.path.join(model_path, sub)
     print("workdir:", workdir)
     
