@@ -19,10 +19,12 @@
 import os
 import re
 import json
+import torch
 import requests
 import subprocess
 from thefuzz import fuzz
 from threading import Thread
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
 
 MAPPING = {
     'POSTAL_CODE': 'addressPostcode',
@@ -117,50 +119,92 @@ def get_glibc_version():
         return (int(m.group(1)), int(m.group(2)))
     return (0, 0)
 
-def run_inference_sender(model_path, img, log):
+def run_inference_sender(model_path, img_path, log):
     # Sélection du binaire en fonction de la version de glibc
     glibc_ver = get_glibc_version()
-    if glibc_ver >= (2, 39):
-        sub = "mtmd_239"
-    elif glibc_ver >= (2, 36):
-        sub = "mtmd_236"
-    else:
-        log.info(f"Error during sender inference : glibc version is too low ! glibc: {glibc_ver}")
-    workdir = os.path.join(model_path, sub)
-    
-    num_threads = os.cpu_count()-1
-    if num_threads <= 0:
-        num_threads = 1
-    cmd = [
-        f"{workdir}/llama-mtmd-cli",
-        "-m", f"{model_path}/Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
-        "--mmproj", f"{model_path}/mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
-        "--image", img,
-        "--image-min-tokens", "256",
-        "--image-max-tokens", "512",
-        "--threads", str(num_threads),
-        "--temp", "0.0",
-        "-p", "Extract sender's data in a python dictionary"
-    ]
+    if glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
+        workdir = os.path.join(model_path, "mtmd_239")
+        num_threads = os.cpu_count()-1
+        if num_threads <= 0:
+            num_threads = 1
+        cmd = [
+            f"{workdir}/llama-mtmd-cli",
+            "-m", f"{workdir}/Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
+            "--mmproj", f"{workdir}/mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
+            "--image", img_path,
+            "--image-min-tokens", "256",
+            "--image-max-tokens", "512",
+            "--threads", str(num_threads),
+            "--temp", "0.0",
+            "-p", "Extract sender's data in a python dictionary"
+        ]
 
-    result = subprocess.run(
-        cmd,
-        cwd=model_path,
-        capture_output=True,
-        text=True,
-        check=False
-    )
-    
-    if result.returncode != 0:
-        log.info("Error during sender inference : " + str(result.stderr))
-    
-    out = result.stdout
-    response = out.replace("\n", "").replace("\"", "")
-    data = parse_output(response)
+        result = subprocess.run(
+            cmd,
+            cwd=model_path,
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        
+        if result.returncode != 0:
+            log.info("Error during sender inference : " + str(result.stderr))
+        
+        out = result.stdout
+        out = out.replace("\n", "").replace("\"", "")
+    else:
+        workdir = os.path.join(model_path, "FP32_model")
+        model = Qwen3VLForConditionalGeneration.from_pretrained(
+            workdir,
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+            attn_implementation="sdpa"
+        )
+        model.eval()
+        processor = AutoProcessor.from_pretrained(workdir)
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "url": img_path,
+                    },
+                    {
+                        "type": "text",
+                        "text": "Extract sender's data in a python dictionary",
+                    },
+                ],
+            }
+        ]
+        inputs = processor.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            return_dict=True,
+        )
+        inputs.pop("token_type_ids", None)
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+        generated_ids = model.generate(
+            **inputs,
+            max_new_tokens=256,
+        )
+        generated_ids_trimmed = [
+            out_ids[len(in_ids):]
+            for in_ids, out_ids in zip(inputs["input_ids"], generated_ids)
+        ]
+        generated_texts = processor.batch_decode(
+            generated_ids_trimmed,
+            skip_special_tokens=False,          # on garde les tokens spéciaux pour ton parseur
+            clean_up_tokenization_spaces=False,
+        )
+        out = generated_texts[0][1:-11]
+        
+    data = parse_output(out)
     if data and isinstance(data, str):
         data = json.loads(data)
     return data
-
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
