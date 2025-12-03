@@ -81,7 +81,7 @@ def parse_output(output: str):
                 i += 1
                 key_dict = ""
                 while i < L and output[i] != ">":
-                    key_dict += output[i];
+                    key_dict += output[i]
                     i += 1
         elif output[i] == ">":
             i += 1
@@ -208,6 +208,7 @@ class FindContact(Thread):
         if not found_contact:
             for mail in re.finditer(r"" + self.locale.emailRegex + "", self.text):
                 self.log.info('Find E-MAIL : ' + mail.group())
+                # Now sanitize email to delete potential OCR error
                 sanitized_mail = re.sub(r"[" + self.config.cfg['GLOBAL']['sanitize_str'] + "]", "", mail.group())
                 self.log.info('Sanitized E-MAIL : ' + sanitized_mail)
 
@@ -217,6 +218,7 @@ class FindContact(Thread):
                     self.log.info('Find E-MAIL in MEM Courrier, attach it to the document')
                     break
                 else:
+                    # Add the e-mail into a custom value (custom_t10 by default)
                     self.custom_mail += sanitized_mail + ';'
                     continue
 
