@@ -153,7 +153,10 @@ def run_inference_sender(model_path, img_path, log):
         out = result.stdout
         out = out.replace("\n", "").replace("\"", "")
     else:
-        workdir = os.path.join(model_path, "FP32_model")
+        if os.path.exists(os.path.join(model_path, "FP32_model")):
+            workdir = os.path.join(model_path, "FP32_model")
+        else:
+            workdir = model_path
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             workdir,
             torch_dtype=torch.bfloat16,
