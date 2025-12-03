@@ -127,7 +127,6 @@ def run_inference_sender(model_path, img, log):
     else:
         log.info(f"Error during sender inference : glibc version is too low ! glibc: {glibc_ver}")
     workdir = os.path.join(model_path, sub)
-    print("workdir:", workdir)
     
     num_threads = os.cpu_count()-1
     if num_threads <= 0:
