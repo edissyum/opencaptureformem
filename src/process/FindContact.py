@@ -120,7 +120,7 @@ def get_glibc_version():
     return (0, 0)
 
 def run_inference_sender(model_path, img_path, log):
-    # Sélection du binaire en fonction de la version de glibc
+    # Selecting the binary based on the glibc version
     glibc_ver = get_glibc_version()
     if glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
         workdir = os.path.join(model_path, "mtmd_239")
@@ -161,21 +161,7 @@ def run_inference_sender(model_path, img_path, log):
         )
         model.eval()
         processor = AutoProcessor.from_pretrained(model_path)
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image",
-                        "url": img_path,
-                    },
-                    {
-                        "type": "text",
-                        "text": "Extract sender's data in a python dictionary",
-                    },
-                ],
-            }
-        ]
+        messages = [{"role": "user", "content": [{"type": "image", "url": img_path,}, {"type": "text","text": "Extract sender's data in a python dictionary"}]}]
         inputs = processor.apply_chat_template(
             messages,
             tokenize=True,
@@ -195,7 +181,7 @@ def run_inference_sender(model_path, img_path, log):
         ]
         generated_texts = processor.batch_decode(
             generated_ids_trimmed,
-            skip_special_tokens=False,          # on garde les tokens spéciaux pour ton parseur
+            skip_special_tokens=False,
             clean_up_tokenization_spaces=False,
         )
         out = generated_texts[0][1:-11]
