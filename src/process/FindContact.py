@@ -155,7 +155,7 @@ def run_inference_sender(model_path, img_path, log):
     else:
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_path,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float32,
             device_map="auto",
             attn_implementation="sdpa"
         )
