@@ -143,7 +143,7 @@ def run_inference_sender(model_path, img_path, log):
     if not has_avx2():
         log.info("AVX2 flag not detected on this CPU. Extraction AI will NOT be executed on this machine.")
         return {}
-    elif glibc_ver >= (2, 41) and os.path.exists(os.path.join(model_path, "mtmd_239")):
+    elif glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
         workdir = os.path.join(model_path, "mtmd_239")
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
@@ -216,7 +216,6 @@ def run_inference_sender(model_path, img_path, log):
     if data and isinstance(data, str):
         data = json.loads(data)
     return data
-
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
