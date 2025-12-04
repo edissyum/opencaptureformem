@@ -24,7 +24,9 @@ import requests
 import subprocess
 from thefuzz import fuzz
 from threading import Thread
-from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
+
+import transformers
+import qwen_vl_utils
 
 MAPPING = {
     'POSTAL_CODE': 'addressPostcode',
@@ -66,6 +68,7 @@ def run_inference_sender_remote(config, image):
             return False, response.text
     return False, 'Remote sender inference not configured'
 
+
 def parse_output(output: str):
     final_dict = {}
     key_dict = ""
@@ -105,6 +108,7 @@ def parse_output(output: str):
             i += 1
     return final_dict
 
+
 def get_glibc_version():
     result = subprocess.run(
         ["ldd", "--version"],
@@ -116,15 +120,28 @@ def get_glibc_version():
     m = re.search(r"glibc\s+(\d+)\.(\d+)", out) or \
         re.search(r"(\d+)\.(\d+)", out)
     if m:
-        return (int(m.group(1)), int(m.group(2)))
-    return (0, 0)
+        return int(m.group(1)), int(m.group(2))
+    return 0, 0
+
+def has_CPU_flags():
+    """
+    Return True if the CPU has the flag AVX2 and FMA, otherwise False.
+    """
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            data = f.read().lower()
+    except FileNotFoundError:
+        return False
+    if "avx2" in data and "fma" in data:
+        return True
+    else:
+        return False
 
 def run_inference_sender(model_path, img_path, log):
-    # Selecting the binary based on the glibc version
-    glibc_ver = get_glibc_version()
-    if glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
+    # Select the binary based on the glibc version and CPU flags
+    if has_CPU_flags() and get_glibc_version() >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
         workdir = os.path.join(model_path, "mtmd_239")
-        num_threads = os.cpu_count()-1
+        num_threads = os.cpu_count() - 1
         if num_threads <= 0:
             num_threads = 1
         cmd = [
@@ -146,46 +163,48 @@ def run_inference_sender(model_path, img_path, log):
             text=True,
             check=False
         )
-        
+
         if result.returncode != 0:
             log.info("Error during sender inference : " + str(result.stderr))
-        
+
         out = result.stdout
         out = out.replace("\n", "").replace("\"", "")
-    else:
-        model = Qwen3VLForConditionalGeneration.from_pretrained(
-            model_path,
-            torch_dtype=torch.float32,
-            device_map="auto",
-            attn_implementation="sdpa"
-        )
+    else: # Qwen2
+        model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(model_path, dtype=torch.float32, device_map=None)
         model.eval()
-        processor = AutoProcessor.from_pretrained(model_path)
-        messages = [{"role": "user", "content": [{"type": "image", "url": img_path,}, {"type": "text","text": "Extract sender's data in a python dictionary"}]}]
-        inputs = processor.apply_chat_template(
-            messages,
-            tokenize=True,
-            add_generation_prompt=True,
-            return_tensors="pt",
-            return_dict=True,
-        )
-        inputs.pop("token_type_ids", None)
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
-        generated_ids = model.generate(
-            **inputs,
-            max_new_tokens=256,
-        )
-        generated_ids_trimmed = [
-            out_ids[len(in_ids):]
-            for in_ids, out_ids in zip(inputs["input_ids"], generated_ids)
-        ]
-        generated_texts = processor.batch_decode(
-            generated_ids_trimmed,
-            skip_special_tokens=False,
-            clean_up_tokenization_spaces=False,
-        )
-        out = generated_texts[0][1:-11]
+        processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28, max_pixels=512 * 28 * 28, use_fast=True)
         
+        with torch.inference_mode():
+            formatted_data = [{"role": "user", "content": [{"type": "image", "image": img_path}, {"type": "text", "text": "Extract sender's data in a python dictionary"}]}]
+
+            chat_text = processor.apply_chat_template(
+                formatted_data,
+                tokenize=False,
+                add_generation_prompt=True)
+            model_inputs = processor(
+                text=[chat_text],
+                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
+                return_tensors="pt",
+                padding=True)
+
+            input_ids = model_inputs["input_ids"].to(model.device)
+            generated_ids = model.generate(
+                input_ids=input_ids,
+                attention_mask=model_inputs["attention_mask"].to(model.device),
+                pixel_values=model_inputs["pixel_values"].to(model.device),
+                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
+                max_new_tokens=256)
+
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):]
+                for in_ids, out_ids in zip(input_ids, generated_ids)
+            ]
+            generated_texts = processor.batch_decode(
+                generated_ids_trimmed,
+                skip_special_tokens=False,
+                clean_up_tokenization_spaces=False
+            )
+            out = (generated_texts[0])[1:-11]
     data = parse_output(out)
     if data and isinstance(data, str):
         data = json.loads(data)
