@@ -41,7 +41,6 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
-
 def run_inference_sender_remote(config, image):
     timeout = 60
 
@@ -124,26 +123,23 @@ def get_glibc_version():
         return int(m.group(1)), int(m.group(2))
     return 0, 0
 
-
-def has_avx2():
+def has_CPU_flags():
     """
-    Return True if the CPU has the flag AVX2, otherwise False.
+    Return True if the CPU has the flag AVX2 and FMA, otherwise False.
     """
     try:
         with open("/proc/cpuinfo", "r") as f:
             data = f.read().lower()
     except FileNotFoundError:
         return False
-    return "avx2" in data
-
+    if "avx2" in data and "fma" in data:
+        return True
+    else:
+        return False
 
 def run_inference_sender(model_path, img_path, log):
-    # Selecting the binary based on the glibc version and CPU flags
-    glibc_ver = get_glibc_version()
-    if not has_avx2():
-        log.info("AVX2 flag not detected on this CPU. Extraction AI will NOT be executed on this machine.")
-        return {}
-    elif glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
+    # Select the binary based on the glibc version and CPU flags
+    if has_CPU_flags() and get_glibc_version() >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
         workdir = os.path.join(model_path, "mtmd_239")
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
@@ -184,14 +180,12 @@ def run_inference_sender(model_path, img_path, log):
             chat_text = processor.apply_chat_template(
                 formatted_data,
                 tokenize=False,
-                add_generation_prompt=True
-            )
+                add_generation_prompt=True)
             model_inputs = processor(
                 text=[chat_text],
                 images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
                 return_tensors="pt",
-                padding=True
-            )
+                padding=True)
 
             input_ids = model_inputs["input_ids"].to(model.device)
             generated_ids = model.generate(
@@ -199,8 +193,7 @@ def run_inference_sender(model_path, img_path, log):
                 attention_mask=model_inputs["attention_mask"].to(model.device),
                 pixel_values=model_inputs["pixel_values"].to(model.device),
                 image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
-                max_new_tokens=256
-            )
+                max_new_tokens=256)
 
             generated_ids_trimmed = [
                 out_ids[len(in_ids):]
