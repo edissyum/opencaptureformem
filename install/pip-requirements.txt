@@ -15,6 +15,7 @@ exchangelib==5.5.1
 pytesseract==0.3.13
 configparser==7.2.0
 accelerate==1.11.0
+qwen-vl-utils==0.0.14
 transformers==4.57.1
 opencv-python==4.12.0.88
 --extra-index-url https://download.pytorch.org/whl/cpu
