@@ -39,6 +39,7 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
+
 def run_inference_sender_remote(config, image):
     timeout = 60
 
@@ -65,6 +66,7 @@ def run_inference_sender_remote(config, image):
         else:
             return False, response.text
     return False, 'Remote sender inference not configured'
+
 
 def parse_output(output: str):
     final_dict = {}
@@ -105,6 +107,7 @@ def parse_output(output: str):
             i += 1
     return final_dict
 
+
 def get_glibc_version():
     result = subprocess.run(
         ["ldd", "--version"],
@@ -116,15 +119,31 @@ def get_glibc_version():
     m = re.search(r"glibc\s+(\d+)\.(\d+)", out) or \
         re.search(r"(\d+)\.(\d+)", out)
     if m:
-        return (int(m.group(1)), int(m.group(2)))
-    return (0, 0)
+        return int(m.group(1)), int(m.group(2))
+    return 0, 0
+
+
+def has_avx2():
+    """
+    Return True if the CPU has the flag AVX2, otherwise False.
+    """
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            data = f.read().lower()
+    except FileNotFoundError:
+        return False
+    return "avx2" in data
+
 
 def run_inference_sender(model_path, img_path, log):
     # Selecting the binary based on the glibc version
     glibc_ver = get_glibc_version()
-    if glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
+    if not has_avx2():
+        log.info("AVX2 flag not detected on this CPU. Extraction AI will NOT be executed on this machine.")
+        return {}
+    elif glibc_ver >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
         workdir = os.path.join(model_path, "mtmd_239")
-        num_threads = os.cpu_count()-1
+        num_threads = os.cpu_count() - 1
         if num_threads <= 0:
             num_threads = 1
         cmd = [
@@ -146,22 +165,33 @@ def run_inference_sender(model_path, img_path, log):
             text=True,
             check=False
         )
-        
+
         if result.returncode != 0:
             log.info("Error during sender inference : " + str(result.stderr))
-        
+
         out = result.stdout
         out = out.replace("\n", "").replace("\"", "")
     else:
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_path,
-            torch_dtype=torch.float32,
+            dtype=torch.float32,          # torch_dtype est déprécié
             device_map="auto",
             attn_implementation="sdpa"
         )
         model.eval()
-        processor = AutoProcessor.from_pretrained(model_path)
-        messages = [{"role": "user", "content": [{"type": "image", "url": img_path,}, {"type": "text","text": "Extract sender's data in a python dictionary"}]}]
+
+        processor = AutoProcessor.from_pretrained(model_path,
+            min_pixels=256 * 32 * 32,
+            max_pixels=512 * 32 * 32,
+            use_fast=True
+        )
+        messages = [{
+            "role": "user",
+            "content": [
+                {"type": "image", "url": img_path},
+                {"type": "text", "text": "Extract sender's data in a python dictionary"}
+            ]
+        }]
         inputs = processor.apply_chat_template(
             messages,
             tokenize=True,
@@ -171,12 +201,13 @@ def run_inference_sender(model_path, img_path, log):
         )
         inputs.pop("token_type_ids", None)
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
         generated_ids = model.generate(
             **inputs,
             do_sample=False,
-            top_k=0,
             max_new_tokens=256,
         )
+
         generated_ids_trimmed = [
             out_ids[len(in_ids):]
             for in_ids, out_ids in zip(inputs["input_ids"], generated_ids)
@@ -187,11 +218,12 @@ def run_inference_sender(model_path, img_path, log):
             clean_up_tokenization_spaces=False,
         )
         out = generated_texts[0][1:-11]
-        
+
     data = parse_output(out)
     if data and isinstance(data, str):
         data = json.loads(data)
     return data
+
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
