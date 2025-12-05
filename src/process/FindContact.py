@@ -41,6 +41,7 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
+
 def run_inference_sender_remote(config, image):
     timeout = 60
 
@@ -123,7 +124,8 @@ def get_glibc_version():
         return int(m.group(1)), int(m.group(2))
     return 0, 0
 
-def has_CPU_flags():
+
+def has_cpu_flags():
     """
     Return True if the CPU has the flag AVX2 and FMA, otherwise False.
     """
@@ -137,9 +139,10 @@ def has_CPU_flags():
     else:
         return False
 
+
 def run_inference_sender(model_path, img_path, log):
     # Select the binary based on the glibc version and CPU flags
-    if has_CPU_flags() and get_glibc_version() >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
+    if has_cpu_flags() and get_glibc_version() >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
         workdir = os.path.join(model_path, "mtmd_239")
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
@@ -209,6 +212,7 @@ def run_inference_sender(model_path, img_path, log):
     if data and isinstance(data, str):
         data = json.loads(data)
     return data
+
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
