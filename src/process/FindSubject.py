@@ -35,10 +35,11 @@ class FindSubject(Thread):
         self.subject_found_with_ai = False
 
         ia_cfg = config.cfg.get('IA', {})
-        self.url_chatbot = ia_cfg.get('url_chatbot')
-        self.login_chatbot = ia_cfg.get('login_chatbot')
-        self.password_chatbot = ia_cfg.get('password_chatbot')
-        self.api_key = ia_cfg.get('api_key_chatbot')
+        self.url_chatbot = ia_cfg.get('chatbot_url')
+        self.login_chatbot = ia_cfg.get('chatbot_login')
+        self.password_chatbot = ia_cfg.get('chatbot_password')
+        self.api_key = ia_cfg.get('chatbot_api_key')
+        self.timeout = ia_cfg.get('chatbot_timeout', 120)
 
         # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
         self.chatbot_enabled = bool(
@@ -67,7 +68,7 @@ class FindSubject(Thread):
             auth = requests.auth.HTTPBasicAuth(self.login_chatbot, self.password_chatbot)
 
             payload = {
-                "query": "Donne moi l'objet (titre court sans date) de ce courrier  sous la forme \"Objet: X\"",
+                "query": "Donne moi l'objet (titre court sans date) de ce courrier sous la forme \"Objet: X\"",
                 "letter_context": [self.text],
                 "no_rag": True,
                 "no_context": True,
@@ -78,7 +79,7 @@ class FindSubject(Thread):
                 self.url_chatbot,
                 headers=headers,
                 json=payload,
-                timeout=120,
+                timeout=self.timeout,
                 auth=auth,
             )
 
