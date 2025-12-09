@@ -32,6 +32,7 @@ class FindSubject(Thread):
         self.subject = None
         self.Locale = locale
         self.config = config
+        self.subject_found_with_ai = False
 
         ia_cfg = config.cfg.get('IA', {})
         self.url_chatbot = ia_cfg.get('url_chatbot')
@@ -46,7 +47,6 @@ class FindSubject(Thread):
             and self.password_chatbot
             and self.api_key
         )
-
 
     def _ask_chatbot_for_subject(self):
         """
@@ -83,8 +83,8 @@ class FindSubject(Thread):
             )
 
         except RequestException as e:
-            #if self.Log:
-                #self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
+            if self.Log:
+                self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
             return None
         except Exception as e:
             # Pour être sûr de ne jamais faire planter le thread
@@ -141,8 +141,9 @@ class FindSubject(Thread):
             else:
                 cleaned = raw_subject.strip()
 
+            if cleaned:
+                self.subject_found_with_ai = True
             return cleaned or None
-
         except Exception as e:
             if self.Log:
                 self.Log.error(f"Chatbot subject parsing failed: {e}")
@@ -191,7 +192,10 @@ class FindSubject(Thread):
         if self.subject:
             self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
             self.search_subject_second_line()
-            self.Log.info("Find the following subject : " + self.subject)
+
+            message = "Find the following subject with AI : " \
+                if self.subject_found_with_ai else "Find the following subject with REGEX : "
+            self.Log.info(message + self.subject)
 
     def search_subject_second_line(self):
         not_allowed_symbol = [':', '.']

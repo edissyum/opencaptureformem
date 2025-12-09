@@ -52,15 +52,18 @@ def run_inference_sender_remote(config, image):
         img_data = img_file.read()
 
     if config.get('sender_remote_url') and config.get('sender_remote_token'):
-        response = requests.post(
-            config.get('sender_remote_url'),
-            headers={
-                'Authorization': 'Bearer ' + config.get('sender_remote_token'),
-                'Content-Type': 'image/jpeg'
-            },
-            data=img_data,
-            timeout=timeout
-        )
+        try:
+            response = requests.post(
+                config.get('sender_remote_url'),
+                headers={
+                    'Authorization': 'Bearer ' + config.get('sender_remote_token'),
+                    'Content-Type': 'image/jpeg'
+                },
+                data=img_data,
+                timeout=timeout
+            )
+        except (Exception, ) as e:
+            return False, str(e)
 
         if response.status_code == 200:
             data = response.json()
