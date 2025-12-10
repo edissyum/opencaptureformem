@@ -151,7 +151,8 @@ class FindSubject(Thread):
     def run(self):
         """
         1) Essayer le chatbot (si activé)
-        2) Si échec ou sujet vide, fallback sur la détection OCR regex existante
+        1) Try REGEX
+        2) If REGEX failed or empty subject try Chatbot
         """
         self.subject = None
         # 1) Tentative OCR
