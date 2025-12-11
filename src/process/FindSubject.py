@@ -39,7 +39,7 @@ class FindSubject(Thread):
         self.login_chatbot = ia_cfg.get('chatbot_login')
         self.password_chatbot = ia_cfg.get('chatbot_password')
         self.api_key = ia_cfg.get('chatbot_api_key')
-        self.timeout = ia_cfg.get('chatbot_timeout', 120)
+        self.timeout = int(ia_cfg.get('chatbot_timeout', 120))
 
         # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
         self.chatbot_enabled = bool(
@@ -152,51 +152,49 @@ class FindSubject(Thread):
 
     def run(self):
         """
-        1) Essayer le chatbot (si activé)
-        2) Si échec ou sujet vide, fallback sur la détection OCR regex existante
+        1) Try REGEX
+        2) If REGEX failed or empty subject try Chatbot
         """
-        # 1) Tentative via chatbot seulement s'il est activé
         self.subject = None
-        if self.chatbot_enabled:
+        # 1) Tentative OCR
+        subject_array = []
+        for _subject in re.finditer(r"" + self.Locale.regexSubject, self.text, flags=re.IGNORECASE):
+            if len(_subject.group()) > 3:
+                # Using the [:-2] to delete the ".*" of the regex
+                # Useful to keep only the subject and delete the left part
+                # (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
+                subject_array.append(_subject.group())
+
+        # If there is more than one subject found, prefer the "Object" one instead of "Ref"
+        if len(subject_array) > 1:
+            subject = loop_find_subject(subject_array, self.Locale.subjectOnly)
+            if subject:
+                self.subject = re.sub(r"^" + self.Locale.subjectOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
+            else:
+                subject = loop_find_subject(subject_array, self.Locale.refOnly)
+                if subject:
+                    self.subject = re.sub(r"^" + self.Locale.refOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
+        elif len(subject_array) == 1:
+            self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2], '', subject_array[0], flags=re.IGNORECASE).strip()
+        else:
+            self.subject = None
+        
+        if self.subject:
+            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
+            self.search_subject_second_line()
+            self.Log.info("Find the following subject with REGEX : " + self.subject)
+        
+        # 2) Tentative via chatbot seulement s'il est activé
+        if self.chatbot_enabled and not self.subject:
             try:
                 self.subject = self._ask_chatbot_for_subject()
+                if self.subject:
+                  self.Log.info("Find the following subject with AI : " + self.subject)
             except Exception as e:
                 # Sécurité : ne jamais laisser une exception sortir du thread
                 if self.Log:
                     self.Log.error(f"Chatbot subject detection crashed: {e}")
                 self.subject = None
-
-        # 2) Fallback OCR si pas de sujet retourné par le chatbot
-        if not self.subject:
-            subject_array = []
-            for _subject in re.finditer(r"" + self.Locale.regexSubject, self.text, flags=re.IGNORECASE):
-                if len(_subject.group()) > 3:
-                    # Using the [:-2] to delete the ".*" of the regex
-                    # Useful to keep only the subject and delete the left part
-                    # (e.g : remove "Objet : " from "Objet : Candidature pour un emploi - Démo Salindres")
-                    subject_array.append(_subject.group())
-
-            # If there is more than one subject found, prefer the "Object" one instead of "Ref"
-            if len(subject_array) > 1:
-                subject = loop_find_subject(subject_array, self.Locale.subjectOnly)
-                if subject:
-                    self.subject = re.sub(r"^" + self.Locale.subjectOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
-                else:
-                    subject = loop_find_subject(subject_array, self.Locale.refOnly)
-                    if subject:
-                        self.subject = re.sub(r"^" + self.Locale.refOnly[:-2], '', subject, flags=re.IGNORECASE).strip()
-            elif len(subject_array) == 1:
-                self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2], '', subject_array[0], flags=re.IGNORECASE).strip()
-            else:
-                self.subject = ''
-
-        if self.subject:
-            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
-            self.search_subject_second_line()
-
-            message = "Find the following subject with AI : " \
-                if self.subject_found_with_ai else "Find the following subject with REGEX : "
-            self.Log.info(message + self.subject)
 
     def search_subject_second_line(self):
         not_allowed_symbol = [':', '.']

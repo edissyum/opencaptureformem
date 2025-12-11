@@ -25,8 +25,7 @@ import subprocess
 from thefuzz import fuzz
 from threading import Thread
 
-import transformers
-import qwen_vl_utils
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
 
 MAPPING = {
     'POSTAL_CODE': 'addressPostcode',
@@ -130,7 +129,7 @@ def get_glibc_version():
 
 def has_cpu_flags():
     """
-    Return True if the CPU has the flag AVX2 and FMA, otherwise False.
+    Return True if the CPU has the flag AVX2 and FMA.
     """
     try:
         with open("/proc/cpuinfo", "r") as f:
@@ -144,9 +143,18 @@ def has_cpu_flags():
 
 
 def run_inference_sender(model_path, img_path, log):
+    # Check all sub-folders for .gguf files
+    workdir = None
+    for root, dirs, files in os.walk(model_path):
+        for filename in files:
+            if filename.lower().endswith(".gguf"):
+                workdir = root
+                break
+        if workdir is not None:
+            break
     # Select the binary based on the glibc version and CPU flags
-    if has_cpu_flags() and get_glibc_version() >= (2, 39) and os.path.exists(os.path.join(model_path, "mtmd_239")):
-        workdir = os.path.join(model_path, "mtmd_239")
+    if workdir is not None and has_CPU_flags() and get_glibc_version() >= (2, 39):
+        workdir = model_path
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
             num_threads = 1
@@ -169,48 +177,58 @@ def run_inference_sender(model_path, img_path, log):
             text=True,
             check=False
         )
-
         if result.returncode != 0:
             log.info("Error during sender inference : " + str(result.stderr))
-
         out = result.stdout
         out = out.replace("\n", "").replace("\"", "")
-    else: # Qwen2
-        model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(model_path, dtype=torch.float32, device_map=None)
+    else: # Qwen3
+        model = Qwen3VLForConditionalGeneration.from_pretrained(
+            model_path,
+            dtype=torch.float32,
+            device_map="auto"
+        )
         model.eval()
-        processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28, max_pixels=512 * 28 * 28, use_fast=True)
+
+        processor = AutoProcessor.from_pretrained(model_path,
+            min_pixels=256 * 32 * 32,
+            max_pixels=512 * 32 * 32,
+            use_fast=True
+        )
+        messages = [{
+            "role": "user",
+            "content": [
+                {"type": "image", "url": img_path},
+                {"type": "text", "text": "Extract sender's data in a python dictionary"}
+            ]
+        }]
+        inputs = processor.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            return_dict=True,
+        )
+        inputs.pop("token_type_ids", None)
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
         
         with torch.inference_mode():
-            formatted_data = [{"role": "user", "content": [{"type": "image", "image": img_path}, {"type": "text", "text": "Extract sender's data in a python dictionary"}]}]
-
-            chat_text = processor.apply_chat_template(
-                formatted_data,
-                tokenize=False,
-                add_generation_prompt=True)
-            model_inputs = processor(
-                text=[chat_text],
-                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
-                return_tensors="pt",
-                padding=True)
-
-            input_ids = model_inputs["input_ids"].to(model.device)
             generated_ids = model.generate(
-                input_ids=input_ids,
-                attention_mask=model_inputs["attention_mask"].to(model.device),
-                pixel_values=model_inputs["pixel_values"].to(model.device),
-                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
-                max_new_tokens=256)
+                **inputs,
+                do_sample=False,
+                max_new_tokens=256,
+            )
 
             generated_ids_trimmed = [
                 out_ids[len(in_ids):]
-                for in_ids, out_ids in zip(input_ids, generated_ids)
+                for in_ids, out_ids in zip(inputs["input_ids"], generated_ids)
             ]
             generated_texts = processor.batch_decode(
                 generated_ids_trimmed,
                 skip_special_tokens=False,
-                clean_up_tokenization_spaces=False
+                clean_up_tokenization_spaces=False,
             )
-            out = (generated_texts[0])[1:-11]
+            out = generated_texts[0][1:-11]
+
     data = parse_output(out)
     if data and isinstance(data, str):
         data = json.loads(data)
