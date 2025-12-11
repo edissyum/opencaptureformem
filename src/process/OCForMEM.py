@@ -65,15 +65,18 @@ def run_inference_destination_remote(config, image):
         img_data = img_file.read()
 
     if config.get('doctype_entity_remote_url') and config.get('doctype_entity_remote_token'):
-        response = requests.post(
-            config.get('doctype_entity_remote_url'),
-            headers={
-                'Authorization': 'Bearer ' + config.get('doctype_entity_remote_token'),
-                'Content-Type': 'multipart/form-data'
-            },
-            data=img_data,
-            timeout=timeout
-        )
+        try:
+            response = requests.post(
+                config.get('doctype_entity_remote_url'),
+                headers={
+                    'Authorization': 'Bearer ' + config.get('doctype_entity_remote_token'),
+                    'Content-Type': 'multipart/form-data'
+                },
+                data=img_data,
+                timeout=timeout
+            )
+        except (Exception, ) as e:
+            return False, str(e)
 
         if response.status_code == 200:
             data = response.json()

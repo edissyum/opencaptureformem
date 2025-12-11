@@ -289,6 +289,7 @@ stopasgroup=true
 killasgroup=true
 stopwaitsecs=10
 stderr_logfile=$defaultPath/data/log/Supervisor/OC_%(process_num)02d_error.log
+stdout_logfile=$defaultPath/data/log/Supervisor/OC_%(process_num)02d.log
 EOF
   "
     chmod 755 /etc/supervisor/conf.d/opencapture.conf

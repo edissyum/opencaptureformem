@@ -65,10 +65,11 @@ sender           = ${GLOBAL:project_path}/data/ia/sender/
 doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
 
 ; Chatbot used to search subject in document
-url_chatbot      = 
-login_chatbot    = 
-password_chatbot = 
-api_key_chatbot  = 
+chatbot_url      =
+chatbot_login    =
+chatbot_password =
+chatbot_api_key  =
+chatbot_timeout  = 120
 
 [OCForMEM]
 ; Don’t forget to add /rest at the end of the URL (Link to WS)

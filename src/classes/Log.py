@@ -16,6 +16,7 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
+import sys
 import logging
 import logging.handlers
 from inspect import getframeinfo, stack
@@ -44,10 +45,22 @@ class Log:
         self.LOGGER = logging.getLogger('Open-Capture')
         if self.LOGGER.hasHandlers():
             self.LOGGER.handlers.clear()  # Clear the handlers to avoid double logs
-        log_file = RotatingFileHandlerUmask(path, mode='a', maxBytes=5 * 1024 * 1024, backupCount=2)
-        formatter = logging.Formatter('[%(threadName)-14s] [%(file)-22sline %(line_n)-4s] %(asctime)s %(levelname)s %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
-        log_file.setFormatter(formatter)
-        self.LOGGER.addHandler(log_file)
+
+        formatter = logging.Formatter(
+            '[%(threadName)-14s] [%(file)-22sline %(line_n)-4s] '
+            '%(asctime)s %(levelname)s %(message)s',
+            datefmt='%d-%m-%Y %H:%M:%S'
+        )
+        file_handler = RotatingFileHandlerUmask(
+            path, mode='a', maxBytes=5 * 1024 * 1024, backupCount=2
+        )
+        file_handler.setFormatter(formatter)
+
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(formatter)
+
+        self.LOGGER.addHandler(file_handler)
+        self.LOGGER.addHandler(stream_handler)
 
         self.LOGGER.filters.clear()
         self._filter = CallerFilter()

@@ -40,6 +40,7 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
+
 def run_inference_sender_remote(config, image):
     timeout = 60
 
@@ -50,15 +51,18 @@ def run_inference_sender_remote(config, image):
         img_data = img_file.read()
 
     if config.get('sender_remote_url') and config.get('sender_remote_token'):
-        response = requests.post(
-            config.get('sender_remote_url'),
-            headers={
-                'Authorization': 'Bearer ' + config.get('sender_remote_token'),
-                'Content-Type': 'image/jpeg'
-            },
-            data=img_data,
-            timeout=timeout
-        )
+        try:
+            response = requests.post(
+                config.get('sender_remote_url'),
+                headers={
+                    'Authorization': 'Bearer ' + config.get('sender_remote_token'),
+                    'Content-Type': 'image/jpeg'
+                },
+                data=img_data,
+                timeout=timeout
+            )
+        except (Exception, ) as e:
+            return False, str(e)
 
         if response.status_code == 200:
             data = response.json()
@@ -122,7 +126,8 @@ def get_glibc_version():
         return int(m.group(1)), int(m.group(2))
     return 0, 0
 
-def has_CPU_flags():
+
+def has_cpu_flags():
     """
     Return True if the CPU has the flag AVX2 and FMA.
     """
@@ -135,6 +140,7 @@ def has_CPU_flags():
         return True
     else:
         return False
+
 
 def run_inference_sender(model_path, img_path, log):
     # Check all sub-folders for .gguf files
@@ -227,6 +233,7 @@ def run_inference_sender(model_path, img_path, log):
     if data and isinstance(data, str):
         data = json.loads(data)
     return data
+
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
