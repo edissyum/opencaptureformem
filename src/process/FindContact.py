@@ -136,10 +136,10 @@ def has_cpu_flags():
             data = f.read().lower()
     except FileNotFoundError:
         return False
+
     if "avx2" in data and "fma" in data:
         return True
-    else:
-        return False
+    return False
 
 
 def run_inference_sender(model_path, img_path, log):
@@ -152,9 +152,9 @@ def run_inference_sender(model_path, img_path, log):
                 break
         if workdir is not None:
             break
+
     # Select the binary based on the glibc version and CPU flags
-    if workdir is not None and has_CPU_flags() and get_glibc_version() >= (2, 39):
-        workdir = model_path
+    if workdir is not None and has_cpu_flags() and get_glibc_version() >= (2, 39):
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
             num_threads = 1
@@ -172,7 +172,7 @@ def run_inference_sender(model_path, img_path, log):
 
         result = subprocess.run(
             cmd,
-            cwd=model_path,
+            cwd=workdir,
             capture_output=True,
             text=True,
             check=False
@@ -181,7 +181,7 @@ def run_inference_sender(model_path, img_path, log):
             log.info("Error during sender inference : " + str(result.stderr))
         out = result.stdout
         out = out.replace("\n", "").replace("\"", "")
-    else: # Qwen3
+    else:  # Qwen3
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_path,
             dtype=torch.float32,
