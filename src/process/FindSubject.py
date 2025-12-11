@@ -177,6 +177,11 @@ class FindSubject(Thread):
         else:
             self.subject = None
         
+        if self.subject:
+            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
+            self.search_subject_second_line()
+            self.Log.info("Find the following subject : " + self.subject)
+        
         # 2) Tentative via chatbot seulement s'il est activé
         if self.chatbot_enabled and not self.subject:
             try:
@@ -186,11 +191,6 @@ class FindSubject(Thread):
                 if self.Log:
                     self.Log.error(f"Chatbot subject detection crashed: {e}")
                 self.subject = None
-
-        if self.subject:
-            self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
-            self.search_subject_second_line()
-            self.Log.info("Find the following subject : " + self.subject)
 
     def search_subject_second_line(self):
         not_allowed_symbol = [':', '.']
