@@ -25,8 +25,7 @@ import subprocess
 from thefuzz import fuzz
 from threading import Thread
 
-import transformers
-import qwen_vl_utils
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
 
 MAPPING = {
     'POSTAL_CODE': 'addressPostcode',
@@ -40,8 +39,6 @@ MAPPING = {
     'COMPANY': 'company',
     'FIRSTNAME': 'firstname'
 }
-
-torch.backends.mkldnn.enabled = False
 
 def run_inference_sender_remote(config, image):
     timeout = 60
@@ -150,7 +147,7 @@ def run_inference_sender(model_path, img_path, log):
         if workdir is not None:
             break
     # Select the binary based on the glibc version and CPU flags
-    if workdir is not None and has_CPU_flags() and get_glibc_version() >= (2, 39)):
+    if workdir is not None and has_CPU_flags() and get_glibc_version() >= (2, 39):
         workdir = model_path
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
@@ -181,7 +178,7 @@ def run_inference_sender(model_path, img_path, log):
     else: # Qwen3
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_path,
-            dtype=torch.bfloat16,
+            dtype=torch.float32,
             device_map="auto"
         )
         model.eval()
