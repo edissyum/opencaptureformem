@@ -229,7 +229,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if 'isinternalnote' not in args or not args['isinternalnote']:
         if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
             log.error('Document type not found, exit...')
-            sys.exit(os.EX_CONFIG)
+            return False, None
 
     # If destination still not good, try with default destination
     if not isinstance(destination, int) or not destination:
@@ -289,7 +289,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     elif os.path.splitext(file)[1].lower() == '.html':
         res = image.html_to_txt(file)
         if res is False:
-            sys.exit(os.EX_IOERR)
+            return False, None
         ocr.text = res
         is_ocr = True
     elif os.path.splitext(file)[1].lower() == '.txt':
