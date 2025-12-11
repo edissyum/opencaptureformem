@@ -189,9 +189,8 @@ class FindSubject(Thread):
             try:
                 self.subject = self._ask_chatbot_for_subject()
                 if self.subject:
-                  self.Log.info("Find the following subject with AI : " + self.subject)
+                    self.Log.info("Find the following subject with AI : " + self.subject)
             except Exception as e:
-                # Sécurité : ne jamais laisser une exception sortir du thread
                 if self.Log:
                     self.Log.error(f"Chatbot subject detection crashed: {e}")
                 self.subject = None
