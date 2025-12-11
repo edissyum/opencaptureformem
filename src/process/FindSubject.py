@@ -150,7 +150,6 @@ class FindSubject(Thread):
 
     def run(self):
         """
-        1) Essayer le chatbot (si activé)
         1) Try REGEX
         2) If REGEX failed or empty subject try Chatbot
         """
