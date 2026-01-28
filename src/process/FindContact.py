@@ -142,7 +142,7 @@ def has_cpu_flags():
     return False
 
 
-def run_inference_sender(model_path, img_path, log):
+def run_inference_sender(model_path, img_path, log, dtype_str):
     # Check all sub-folders for .gguf files
     workdir = None
     for root, dirs, files in os.walk(model_path):
@@ -152,6 +152,16 @@ def run_inference_sender(model_path, img_path, log):
                 break
         if workdir is not None:
             break
+
+    dtype_map = {
+        "float32": torch.float32,
+        "bfloat16": torch.bfloat16,
+    }
+    try:
+        dtype = dtype_map[dtype_str]
+    except KeyError:
+        log.error(f"Unsupported dtype: {dtype_str}")
+        return None
 
     # Select the binary based on the glibc version and CPU flags
     if workdir is not None and has_cpu_flags() and get_glibc_version() >= (2, 39):
@@ -184,7 +194,7 @@ def run_inference_sender(model_path, img_path, log):
     else:  # Qwen3
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_path,
-            dtype=torch.float32,
+            dtype=dtype,
             device_map="auto"
         )
         model.eval()

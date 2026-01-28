@@ -50,6 +50,8 @@ sender_mode             = local
 sender_remote_url       =
 sender_remote_token     =
 sender_remote_timeout   = 300
+; float32 ou bfloat16
+sender_dtype            = float32
 
 ; local or remote
 doctype_entity_mode           = local
