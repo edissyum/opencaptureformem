@@ -196,31 +196,61 @@ def process_mail(mail_id, custom_id, process_name, note, login):
         ret, file = mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process_name], batch_path, Log)
         _from = ret['mail']['emailFrom']
         document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
+        
+        if not import_only_attachments:
+            launch({
+                'cpt': '1',
+                'file': file,
+                'from': _from,
+                'isMail': True,
+                'msg_uid': str(msg['id']),
+                'msg': {'date': document_date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg['subject'], 'uid': msg['id']},
+                'process': process_name,
+                'data': ret['mail'],
+                'config': config_path,
+                'script': process_name,
+                'isForm': False,
+                'config_mail': config_mail_path,
+                'batch_path': batch_path,
+                'nb_of_mail': '1',
+                'notes': [note],
+                'attachments': ret['attachments'],
+                'extensions_allowed': extensions_allowed,
+                'log': batch_path + '/' + date_batch + '.log',
+                'priority_mail_subject': priority_mail_subject,
+                'priority_mail_date': priority_mail_date,
+                'priority_mail_from': priority_mail_from,
+                'error_path': path_without_time + '/_ERROR/' + process_name + '/' + year + month + day
+            })
+        else:
+            Log.info('Start to process only attachments')
+            if len(ret['attachments']) > 0:
+                Log.info('Found ' + str(len(ret['attachments'])) + ' attachments')
+                cpt = 1
+                for attachment in ret['attachments']:
+                    if attachment['format'].lower() == 'pdf':
+                        launch({
+                            'cpt': str(cpt),
+                            'script': process_name,
+                            'isMail': 'attachments',
+                            'data': ret['mail'],
+                            'from': _from,
+                            'process': process_name,
+                            'config': config_path,
+                            'config_mail': config_mail_path,
+                            'file': attachment['file'],
+                            'format': attachment['format'],
+                            'priority_mail_date': priority_mail_date,
+                            'priority_mail_from': priority_mail_from,
+                            'priority_mail_subject': priority_mail_subject,
+                            'log': batch_path + '/' + date_batch + '.log'
+                        })
+                    else:
+                        Log.error('Attachment n°' + str(cpt) + ' is not a pdf file')
+                    cpt += 1
+            else:
+                Log.info('No attachments found')  
 
-        launch({
-            'cpt': '1',
-            'file': file,
-            'from': _from,
-            'isMail': True,
-            'msg_uid': str(msg['id']),
-            'msg': {'date': document_date.strftime('%d/%m/%Y %H:%M:%S'), 'subject': msg['subject'], 'uid': msg['id']},
-            'process': process_name,
-            'data': ret['mail'],
-            'config': config_path,
-            'script': process_name,
-            'isForm': False,
-            'config_mail': config_mail_path,
-            'batch_path': batch_path,
-            'nb_of_mail': '1',
-            'notes': [note],
-            'attachments': ret['attachments'],
-            'extensions_allowed': extensions_allowed,
-            'log': batch_path + '/' + date_batch + '.log',
-            'priority_mail_subject': priority_mail_subject,
-            'priority_mail_date': priority_mail_date,
-            'priority_mail_from': priority_mail_from,
-            'error_path': path_without_time + '/_ERROR/' + process_name + '/' + year + month + day
-        })
     except Exception as _e:
         return {"error": str(_e)}, 500
 
