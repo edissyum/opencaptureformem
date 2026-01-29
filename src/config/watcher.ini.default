@@ -20,7 +20,7 @@ command=§§OC_PATH§§/scripts/launch_IN.sh $filename
 [mem_reconciliation]
 watch=/var/share/sortant/
 recursive=true
-events=closeUpdate
+events=close
 include_extensions=pdf,PDF
 command=§§OC_PATH§§/scripts/launch_reconciliation.sh $filename
 

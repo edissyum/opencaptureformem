@@ -141,6 +141,7 @@ def compress_pdf(args, config, process, file, log):
             log.info('Compress PDF : ' + config['compress_type'])
             compressed_file_path = '/tmp/min_' + os.path.basename(file)
 
+            # None, default (very low), printer (low), prepress (medium), ebook (high), screen (very high)
             gs_command = (f"gs#-sDEVICE=pdfwrite#-dCompatibilityLevel=1.4#-dPDFSETTINGS=/{config['compress_type']}"
                           f"#-dNOPAUSE#-dQUIET#-o#{compressed_file_path}#{file}")
             gs_args = gs_command.split('#')
@@ -229,7 +230,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if 'isinternalnote' not in args or not args['isinternalnote']:
         if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
             log.error('Document type not found, exit...')
-            sys.exit(os.EX_CONFIG)
+            return False, None
 
     # If destination still not good, try with default destination
     if not isinstance(destination, int) or not destination:
@@ -289,7 +290,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     elif os.path.splitext(file)[1].lower() == '.html':
         res = image.html_to_txt(file)
         if res is False:
-            sys.exit(os.EX_IOERR)
+            return False, None
         ocr.text = res
         is_ocr = True
     elif os.path.splitext(file)[1].lower() == '.txt':
@@ -354,7 +355,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 sender_model = config.cfg['IA']['sender']
                 if os.path.isdir(sender_model) and os.listdir(sender_model):
                     log.info('Search sender with AI model')
-                    sender_prediction = run_inference_sender(sender_model, image.jpg_name, log)
+                    sender_prediction = run_inference_sender(sender_model, image.jpg_name, log, config.cfg['IA']['sender_dtype'])
                 else:
                     log.info('ERROR : Sender AI model not found')
 
