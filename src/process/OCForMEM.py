@@ -14,25 +14,26 @@
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev: Serena tetart <serena.tetart@edissyum.com>
 
 import os
 import re
 import sys
-import json
 import torch
 import pickle
 import shutil
 import warnings
+import requests
 import subprocess
 import transformers
-import qwen_vl_utils
+
 from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
 from .FindSubject import FindSubject
-from .FindContact import FindContact
 from .OCForForms import process_form
 from pdf2image import convert_from_path
+from .FindContact import FindContact, run_inference_sender, run_inference_sender_remote
 
 
 class DonutForImageClassification(transformers.DonutSwinPreTrainedModel):
@@ -52,6 +53,37 @@ class DonutForImageClassification(transformers.DonutSwinPreTrainedModel):
         dest_logits = self.classifier_dest(pooled_output)
         type_logits = self.classifier_type(pooled_output)
         return dest_logits, type_logits
+
+
+def run_inference_destination_remote(config, image):
+    timeout = 60
+
+    if config.get('doctype_entity_remote_timeout'):
+        timeout = int(config.get('doctype_entity_remote_timeout'))
+
+    with open(image.filename, 'rb') as img_file:
+        img_data = img_file.read()
+
+    if config.get('doctype_entity_remote_url') and config.get('doctype_entity_remote_token'):
+        try:
+            response = requests.post(
+                config.get('doctype_entity_remote_url'),
+                headers={
+                    'Authorization': 'Bearer ' + config.get('doctype_entity_remote_token'),
+                    'Content-Type': 'multipart/form-data'
+                },
+                data=img_data,
+                timeout=timeout
+            )
+        except (Exception, ) as e:
+            return False, str(e)
+
+        if response.status_code == 200:
+            data = response.json()
+            return True, data
+        else:
+            return False, response.text
+    return False, 'Remote destination inference not configured'
 
 
 def run_inference_destination(trained_model, img):
@@ -90,70 +122,6 @@ def run_inference_destination(trained_model, img):
             prediction['doctype'] = type_pred
     return prediction
 
-
-def run_inference_sender(model_path, img):
-    model = transformers.Qwen2VLForConditionalGeneration.from_pretrained(
-        model_path, dtype=torch.float32, device_map=None
-    )
-    model = torch.compile(model)
-    model.eval()
-
-    processor = transformers.AutoProcessor.from_pretrained(model_path, min_pixels=512 * 28 * 28,
-                                                           max_pixels=512 * 28 * 28, use_fast=True)
-
-    with torch.inference_mode():
-        with torch.no_grad():
-            formatted_data = [
-                {
-                    "role": "system",
-                    "content": [{"type": "text", "text": ""}],
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image", "image": img},
-                        {"type": "text", "text": "Extract sender's data in a python dictionary"},
-                    ],
-                },
-            ]
-
-            chat_text = processor.apply_chat_template(
-                formatted_data,
-                tokenize=False,
-                add_generation_prompt=True
-            )
-            model_inputs = processor(
-                text=[chat_text],
-                images=[qwen_vl_utils.process_vision_info(formatted_data)[0]],
-                return_tensors="pt",
-                padding=True
-            )
-
-            input_ids = model_inputs["input_ids"].to(model.device)
-            generated_ids = model.generate(
-                input_ids=input_ids,
-                attention_mask=model_inputs["attention_mask"].to(model.device),
-                pixel_values=model_inputs["pixel_values"].to(model.device),
-                image_grid_thw=model_inputs["image_grid_thw"].to(model.device),
-                max_new_tokens=256
-            )
-
-            generated_ids_trimmed = [
-                out_ids[len(in_ids):]
-                for in_ids, out_ids in zip(input_ids, generated_ids)
-            ]
-            generated_texts = processor.batch_decode(
-                generated_ids_trimmed,
-                skip_special_tokens=True,
-                clean_up_tokenization_spaces=False
-            )
-
-            data = {}
-            if generated_texts and isinstance(generated_texts[0], str):
-                data = json.loads(generated_texts[0])
-            return data
-
-
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
@@ -173,6 +141,7 @@ def compress_pdf(args, config, process, file, log):
             log.info('Compress PDF : ' + config['compress_type'])
             compressed_file_path = '/tmp/min_' + os.path.basename(file)
 
+            # None, default (very low), printer (low), prepress (medium), ebook (high), screen (very high)
             gs_command = (f"gs#-sDEVICE=pdfwrite#-dCompatibilityLevel=1.4#-dPDFSETTINGS=/{config['compress_type']}"
                           f"#-dNOPAUSE#-dQUIET#-o#{compressed_file_path}#{file}")
             gs_args = gs_command.split('#')
@@ -261,7 +230,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     if 'isinternalnote' not in args or not args['isinternalnote']:
         if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
             log.error('Document type not found, exit...')
-            sys.exit(os.EX_CONFIG)
+            return False, None
 
     # If destination still not good, try with default destination
     if not isinstance(destination, int) or not destination:
@@ -321,7 +290,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     elif os.path.splitext(file)[1].lower() == '.html':
         res = image.html_to_txt(file)
         if res is False:
-            sys.exit(os.EX_IOERR)
+            return False, None
         ocr.text = res
         is_ocr = True
     elif os.path.splitext(file)[1].lower() == '.txt':
@@ -347,32 +316,52 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         if ('doctype_entity_ai' in process_config and process_config['doctype_entity_ai'].lower() == 'true'
                 and 'doctype_entity' in config.cfg['IA'] and search_ai_destination):
-            doctype_entity_model = config.cfg['IA']['doctype_entity']
-            if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
-                log.info('Search destination and doctype with AI model')
-                doctype_entity_prediction = run_inference_destination(doctype_entity_model, image.img)
-                if doctype_entity_prediction:
-                    if 'doctype' in doctype_entity_prediction:
-                        if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
-                            log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
-                            process_config['doctype'] = doctype_entity_prediction['doctype']
-                    if 'destination' in doctype_entity_prediction:
-                        ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
-                        if ia_destination:
-                            destination = ia_destination
-                            log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
+
+            doctype_entity_prediction = {}
+            if 'doctype_entity_mode' in config.cfg['IA'] and config.cfg['IA']['doctype_entity_mode'].lower() == 'remote':
+                log.info('Search destination and doctype with remote AI model')
+                status, doctype_entity_prediction = run_inference_destination_remote(config.cfg['IA'], image.img)
+                if not status:
+                    doctype_entity_prediction = {}
+                    log.info('ERROR : Destination AI remote model service not available')
+            else:
+                doctype_entity_model = config.cfg['IA']['doctype_entity']
+                if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
+                    log.info('Search destination and doctype with AI model')
+                    doctype_entity_prediction = run_inference_destination(doctype_entity_model, image.img)
+
+            if doctype_entity_prediction:
+                if 'doctype' in doctype_entity_prediction:
+                    if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
+                        log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
+                        process_config['doctype'] = doctype_entity_prediction['doctype']
+                if 'destination' in doctype_entity_prediction:
+                    ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
+                    if ia_destination:
+                        destination = ia_destination
+                        log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
 
         if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true'
                 and 'sender' in config.cfg['IA']):
-            sender_model = config.cfg['IA']['sender']
-            if os.path.isdir(sender_model) and os.listdir(sender_model):
-                log.info('Search sender with AI model')
-                sender_prediction = run_inference_sender(sender_model, image.img)
-                if sender_prediction:
-                    contact_class = FindContact(ocr.text, log, config, web_service, locale)
-                    contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
+
+            sender_prediction = {}
+            if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote':
+                log.info('Search sender with remote AI model')
+                status, sender_prediction = run_inference_sender_remote(config.cfg['IA'], image.img)
+                if not status:
+                    sender_prediction = {}
+                    log.info('ERROR : Sender AI remote model service not available : ' + str(sender_prediction))
             else:
-                log.info('ERROR : Sender AI model not found')
+                sender_model = config.cfg['IA']['sender']
+                if os.path.isdir(sender_model) and os.listdir(sender_model):
+                    log.info('Search sender with AI model')
+                    sender_prediction = run_inference_sender(sender_model, image.jpg_name, log, config.cfg['IA']['sender_dtype'])
+                else:
+                    log.info('ERROR : Sender AI model not found')
+
+            if sender_prediction:
+                contact_class = FindContact(ocr.text, log, config, web_service, locale)
+                contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
 
     if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
         # Find subject of document
@@ -380,7 +369,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 and args.get('priority_mail_subject') is True):
             subject_thread = ''
         else:
-            subject_thread = FindSubject(ocr.text, locale, log)
+            subject_thread = FindSubject(ocr.text, locale, log, config)
 
         if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments'] and 'chrono_regex' not in config_mail.cfg[_process]:
             chrono_thread = ''
@@ -611,7 +600,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 args['data']['file'] = ocr.searchable_pdf
             ws_res = web_service.insert_letterbox_from_mail(args['data'], config_mail.cfg[_process])
 
-        if ws_res:
+        if ws_res[0]:
             log.info('Insert email OK : ' + str(ws_res))
             if chrono_number:
                 if chrono_res_id:
@@ -621,7 +610,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             shutil.move(file, config.cfg['GLOBAL']['error_path'] + os.path.basename(file))
         except shutil.Error as _e:
             log.error('Moving file ' + file + ' error : ' + str(_e))
-        return False, ws_res
+        return ws_res
     elif 'is_attachment' in config.cfg[_process] and config.cfg[_process]['is_attachment'] != '':
         if 'isinternalnote' in args and args['isinternalnote']:
             res_id_master = web_service.retrieve_res_id_master_by_chrono(args['chrono'])

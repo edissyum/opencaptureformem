@@ -14,24 +14,236 @@
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev: Serena tetart <serena.tetart@edissyum.com>
 
+import os
 import re
 import json
+import torch
+import requests
+import subprocess
 from thefuzz import fuzz
 from threading import Thread
 
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
+
 MAPPING = {
-    'postal_code': 'addressPostcode',
-    'city': 'addressTown',
-    'num_address': 'addressNumber',
-    'address': 'addressStreet',
-    'additional_address': 'addressAdditional1',
-    'phone': 'phone',
-    'email': 'email',
-    'lastname': 'lastname',
-    'company': 'company',
-    'firstname': 'firstname'
+    'POSTAL_CODE': 'addressPostcode',
+    'CITY': 'addressTown',
+    'NUM_STREET': 'addressNumber',
+    'STREET': 'addressStreet',
+    'ADD_ADDRESS': 'addressAdditional1',
+    'PHONE': 'phone',
+    'EMAIL': 'email',
+    'LASTNAME': 'lastname',
+    'COMPANY': 'company',
+    'FIRSTNAME': 'firstname'
 }
+
+
+def run_inference_sender_remote(config, image):
+    timeout = 60
+
+    if config.get('sender_remote_timeout'):
+        timeout = int(config.get('sender_remote_timeout'))
+
+    with open(image.filename, 'rb') as img_file:
+        img_data = img_file.read()
+
+    if config.get('sender_remote_url') and config.get('sender_remote_token'):
+        try:
+            response = requests.post(
+                config.get('sender_remote_url'),
+                headers={
+                    'Authorization': 'Bearer ' + config.get('sender_remote_token'),
+                    'Content-Type': 'image/jpeg'
+                },
+                data=img_data,
+                timeout=timeout
+            )
+        except (Exception, ) as e:
+            return False, str(e)
+
+        if response.status_code == 200:
+            data = response.json()
+            return True, data
+        else:
+            return False, response.text
+    return False, 'Remote sender inference not configured'
+
+
+def parse_output(output: str):
+    final_dict = {}
+    key_dict = ""
+    sep_bool = True
+    i = 0
+    L = len(output)
+    while i < L:
+        if output[i] == "<":
+            if output.startswith("<SEP>", i):
+                i += 5
+                sep_bool = True
+                continue
+            else:
+                sep_bool = False
+                i += 1
+                key_dict = ""
+                while i < L and output[i] != ">":
+                    key_dict += output[i]
+                    i += 1
+        elif output[i] == ">":
+            i += 1
+            value_dict = ""
+            while i < L and output[i] != "<":
+                c = output[i]
+                if c not in "\n[]":
+                    value_dict += c
+                i += 1
+            if not sep_bool:
+                final_dict[key_dict[2:]] = value_dict
+            elif key_dict == "K_PHONE":
+                cur = final_dict.get(key_dict[2:], [])
+                if not isinstance(cur, list):
+                    cur = [cur]
+                cur.append(value_dict)
+                final_dict[key_dict[2:]] = cur
+        else:
+            i += 1
+    return final_dict
+
+
+def get_glibc_version():
+    result = subprocess.run(
+        ["ldd", "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    out = (result.stdout + result.stderr).lower()
+    m = re.search(r"glibc\s+(\d+)\.(\d+)", out) or \
+        re.search(r"(\d+)\.(\d+)", out)
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    return 0, 0
+
+
+def has_cpu_flags():
+    """
+    Return True if the CPU has the flag AVX2 and FMA.
+    """
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            data = f.read().lower()
+    except FileNotFoundError:
+        return False
+
+    if "avx2" in data and "fma" in data:
+        return True
+    return False
+
+
+def run_inference_sender(model_path, img_path, log, dtype_str):
+    # Check all sub-folders for .gguf files
+    workdir = None
+    for root, dirs, files in os.walk(model_path):
+        for filename in files:
+            if filename.lower().endswith(".gguf"):
+                workdir = root
+                break
+        if workdir is not None:
+            break
+
+    dtype_map = {
+        "float32": torch.float32,
+        "bfloat16": torch.bfloat16,
+    }
+    try:
+        dtype = dtype_map[dtype_str]
+    except KeyError:
+        log.error(f"Unsupported dtype: {dtype_str}")
+        return None
+
+    # Select the binary based on the glibc version and CPU flags
+    if workdir is not None and has_cpu_flags() and get_glibc_version() >= (2, 39):
+        num_threads = os.cpu_count() - 1
+        if num_threads <= 0:
+            num_threads = 1
+        cmd = [
+            f"{workdir}/llama-mtmd-cli",
+            "-m", f"{workdir}/Qwen3-VL-2B-Instruct-FT-Q4_K_M.gguf",
+            "--mmproj", f"{workdir}/mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
+            "--image", img_path,
+            "--image-min-tokens", "256",
+            "--image-max-tokens", "512",
+            "--threads", str(num_threads),
+            "--temp", "0.0",
+            "-p", "Extract sender's data in a python dictionary"
+        ]
+
+        result = subprocess.run(
+            cmd,
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if result.returncode != 0:
+            log.info("Error during sender inference : " + str(result.stderr))
+        out = result.stdout
+        out = out.replace("\n", "").replace("\"", "")
+    else:  # Qwen3
+        model = Qwen3VLForConditionalGeneration.from_pretrained(
+            model_path,
+            dtype=dtype,
+            device_map="auto"
+        )
+        model.eval()
+
+        processor = AutoProcessor.from_pretrained(model_path,
+            min_pixels=256 * 32 * 32,
+            max_pixels=512 * 32 * 32,
+            use_fast=True
+        )
+        messages = [{
+            "role": "user",
+            "content": [
+                {"type": "image", "url": img_path},
+                {"type": "text", "text": "Extract sender's data in a python dictionary"}
+            ]
+        }]
+        inputs = processor.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            return_dict=True,
+        )
+        inputs.pop("token_type_ids", None)
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+        
+        with torch.inference_mode():
+            generated_ids = model.generate(
+                **inputs,
+                do_sample=False,
+                max_new_tokens=256,
+            )
+
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):]
+                for in_ids, out_ids in zip(inputs["input_ids"], generated_ids)
+            ]
+            generated_texts = processor.batch_decode(
+                generated_ids_trimmed,
+                skip_special_tokens=False,
+                clean_up_tokenization_spaces=False,
+            )
+            out = generated_texts[0][1:-11]
+
+    data = parse_output(out)
+    if data and isinstance(data, str):
+        data = json.loads(data)
+    return data
+
 
 class FindContact(Thread):
     def __init__(self, text, log, config, web_service, locale):
@@ -53,7 +265,6 @@ class FindContact(Thread):
         Override the default run function of threading package
         This will search for a contact into the text of original PDF
         It will use mail, phone or URL regex
-
         """
 
         found_contact = False
@@ -114,29 +325,18 @@ class FindContact(Thread):
     def find_contact_by_ai(self, ai_contact, process):
         found_contact = {}
         for key in ai_contact:
-            if key == 'addresses':
-                if ai_contact[key]:
-                    if 'address' in ai_contact[key][0] and ai_contact[key][0]['address']:
-                        found_contact[MAPPING['address']] = ai_contact[key][0]['address']
-                    if 'postal_code' in ai_contact[key][0] and ai_contact[key][0]['postal_code']:
-                        found_contact[MAPPING['postal_code']] = ai_contact[key][0]['postal_code']
-                    if 'city' in ai_contact[key][0] and ai_contact[key][0]['city']:
-                        found_contact[MAPPING['city']] = ai_contact[key][0]['city']
-                    if 'additional_address' in ai_contact[key][0] and ai_contact[key][0]['additional_address']:
-                        found_contact[MAPPING['additional_address']] = ai_contact[key][0]['additional_address']
-                continue
-            if ai_contact[key]:
+            if ai_contact[key] and key in MAPPING.keys():
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
                 if isinstance(found_contact[MAPPING[key]], list):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]][0]
 
-                if key in ('lastname', 'company', 'city'):
+                if key in ('LASTNAME', 'COMPANY', 'CITY'):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
-                elif key == 'firstname':
+                elif key == 'FIRSTNAME':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].capitalize()
-                elif key == 'email':
+                elif key == 'EMAIL':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
-                elif key == 'postal_code' and len(found_contact[MAPPING[key]]) != 5:
+                elif key == 'POSTAL_CODE' and len(found_contact[MAPPING[key]]) != 5:
                     found_contact[MAPPING[key]] = ''
 
         contact = {}
