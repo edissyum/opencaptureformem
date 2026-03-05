@@ -381,25 +381,30 @@ class Mail:
             data['mail']['from'] = from_val
 
         # Add custom if specified
-        if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log):
+        list_of_custom = self.ws.retrieve_custom_fields()
+        if not list_of_custom[0]:
+            log.error('Unable to retrieve custom fields list, exit...')
+            return list_of_custom
+
+        if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log, list_of_custom):
             data['mail']['customFields'].update({
                 cfg['custom_mail_from']: from_val
             })
 
         if cfg.get('custom_mail_to') not in [None, ''] and to_str != '' and self.check_custom_field(
-                cfg['custom_mail_to'], log):
+                cfg['custom_mail_to'], log, list_of_custom):
             data['mail']['customFields'].update({
                 cfg['custom_mail_to']: to_str[:-1]
             })
 
         if cfg.get('custom_mail_cc') not in [None, ''] and cc_str != '' and self.check_custom_field(
-                cfg['custom_mail_cc'], log):
+                cfg['custom_mail_cc'], log, list_of_custom):
             data['mail']['customFields'].update({
                 cfg['custom_mail_cc']: cc_str[:-1]
             })
 
         if cfg.get('custom_mail_reply_to') not in [None, ''] and reply_to != '' and self.check_custom_field(
-                cfg['custom_mail_reply_to'], log):
+                cfg['custom_mail_reply_to'], log, list_of_custom):
             data['mail']['customFields'].update({
                 cfg['custom_mail_reply_to']: reply_to[:-1]
             })
@@ -685,8 +690,7 @@ class Mail:
                     })
         return args
 
-    def check_custom_field(self, field, log):
-        list_of_custom = self.ws.retrieve_custom_fields()
+    def check_custom_field(self, field, log, list_of_custom):
         for custom in list_of_custom['customFields']:
             if int(field) == int(custom['id']):
                 return True
@@ -725,7 +729,7 @@ def move_batch_to_error(batch_path, error_path, smtp, process, msg, res):
                         '    - Chemin vers le batch en erreur : _ERROR/' + process + '/' + os.path.basename(
                     error_path) + '/' + os.path.basename(batch_path) + ' \n' +
                         '    - Sujet du mail : ' + msg['subject'] + '\n' +
-                        '    - Date du mail : ' + msg['date'] + '\n' +
+                        '    - Date du mail : ' + str(msg['date']) + '\n' +
                         '    - UID du mail : ' + msg['uid'] + '\n' +
                         '\n\n'
                         '    - Informations sur l\'erreur : ' + error + '\n',
