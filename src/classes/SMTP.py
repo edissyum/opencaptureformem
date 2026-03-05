@@ -16,13 +16,13 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import os
-import pathlib
 import sys
-
+import pathlib
 import smtplib
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
+from email.utils import make_msgid
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 class SMTP:
@@ -97,9 +97,16 @@ class SMTP:
             diff_minutes = (diff.days * 1440 + diff.seconds / 60)
 
         msg = MIMEMultipart()
+
+        if 'Message-ID' not in msg:
+            msg['Message-ID'] = make_msgid()
+
         msg['To'] = self.dest_mail
         if self.from_mail:
             msg['From'] = self.from_mail
+        else:
+            msg['From'] = 'MailCollect@opencapture.com'
+
         msg['Subject'] = '[MailCollect] Erreur lors de la capture IMAP'
         message = 'Une erreur est arrivée lors ' + step + ' : \n' + message
         if self.delay != 0:
@@ -111,7 +118,7 @@ class SMTP:
             if diff_minutes is not False and self.delay != 0 and diff_minutes < self.delay:
                 pass
             else:
-                self.conn.sendmail(from_addr='MailCollect@opencapture.com', to_addrs=self.dest_mail, msg=msg.as_string())
+                self.conn.sendmail(from_addr=msg['From'], to_addrs=self.dest_mail, msg=msg.as_string())
                 f = open(file, 'w')
                 f.write(datetime.now().strftime('%d/%m/%Y %H:%M'))
                 f.close()
