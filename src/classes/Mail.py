@@ -381,10 +381,10 @@ class Mail:
             data['mail']['from'] = from_val
 
         # Add custom if specified
-        list_of_custom = self.ws.retrieve_custom_fields()
-        if not list_of_custom[0]:
+        res, list_of_custom = self.ws.retrieve_custom_fields()
+        if not res:
             log.error('Unable to retrieve custom fields list, exit...')
-            return list_of_custom
+            return False, list_of_custom
 
         if cfg.get('custom_mail_from') not in [None, ''] and self.check_custom_field(cfg['custom_mail_from'], log, list_of_custom):
             data['mail']['customFields'].update({

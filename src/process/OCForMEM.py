@@ -214,20 +214,20 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         search_ai_destination = True
 
     # Check if the destination is valid
-    destinations_list = web_service.retrieve_entities()
-    if not destinations_list[0]:
+    res, destinations_list = web_service.retrieve_entities()
+    if not res:
         log.error('Unable to retrieve destinations list, exit...')
-        return destinations_list
+        return False, destinations_list
 
     destination = check_destination(destinations_list, destination)
     if destination and args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         args['data']['destination'] = destination
 
     # Check if the doctype is valid
-    doctypes_list = web_service.retrieve_doctypes()
-    if not doctypes_list[0]:
+    res, doctypes_list = web_service.retrieve_doctypes()
+    if not doctypes_list:
         log.error('Unable to retrieve doctypes list, exit...')
-        return doctypes_list
+        return False, doctypes_list
 
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         tmp_doctype = config_mail.cfg[_process]['doctype']
