@@ -79,6 +79,7 @@ folder_destination       = _MEM_ARCHIVES
 action_after_process      = move
 
 ; True or False
+; import_only_attachments must be True to use this option
 e_reconciliation         = False
 
 chrono_regex             = 20(1|2|3)[0-9]{1}A/\d{5}
