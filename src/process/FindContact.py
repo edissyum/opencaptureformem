@@ -50,16 +50,17 @@ def run_inference_sender_remote(config, image):
     with open(image.filename, 'rb') as img_file:
         img_data = img_file.read()
 
-    if config.get('sender_remote_url') and config.get('sender_remote_token'):
+    if config.get('sender_remote_url') and config.get('sender_remote_login') and config.get('sender_remote_password'):
         try:
+            auth = requests.auth.HTTPBasicAuth(config.get('sender_remote_login'), config.get('sender_remote_password'))
             response = requests.post(
                 config.get('sender_remote_url'),
                 headers={
-                    'Authorization': 'Bearer ' + config.get('sender_remote_token'),
                     'Content-Type': 'image/jpeg'
                 },
                 data=img_data,
-                timeout=timeout
+                timeout=timeout,
+                auth=auth,
             )
         except (Exception, ) as e:
             return False, str(e)
@@ -139,7 +140,8 @@ def has_cpu_flags():
 
     if "avx2" in data and "fma" in data:
         return True
-    return False
+    else:
+        return False
 
 
 def run_inference_sender(model_path, img_path, log, dtype_str):
@@ -165,6 +167,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
 
     # Select the binary based on the glibc version and CPU flags
     if workdir is not None and has_cpu_flags() and get_glibc_version() >= (2, 39):
+        workdir = model_path
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
             num_threads = 1
