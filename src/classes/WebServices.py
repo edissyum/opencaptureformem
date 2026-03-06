@@ -155,8 +155,7 @@ class WebServices:
             return False
         return True
 
-    def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail,
-                         file_format, custom_fields):
+    def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail, file_format, custom_fields, summary_AI, tone_AI):
         """
         Insert document into MEM Courrier Database
 
@@ -212,7 +211,9 @@ class WebServices:
             'arrivaldate': str(datetime.now()),
             'customFields': {},
             'diffusionList': _process['diffusion_list'] if 'diffusion_list' in _process else [],
-            'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
+            'processLimitDate': str(self.calcul_process_limit_date(_process['doctype'])),
+            'summary_ai': summary_AI,
+            'tone_ai': tone_AI
         }
 
         if external_contact_id:

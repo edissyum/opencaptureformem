@@ -30,9 +30,10 @@ class FindSubject(Thread):
         self.Log = log
         self.text = text
         self.subject = None
+        self.summary_AI = None
+        self.tone_AI = None
         self.Locale = locale
         self.config = config
-        self.subject_found_with_ai = False
 
         ia_cfg = config.cfg.get('IA', {})
         self.url_chatbot = ia_cfg.get('chatbot_url')
@@ -48,12 +49,78 @@ class FindSubject(Thread):
             and self.password_chatbot
             and self.api_key
         )
-
-    def _ask_chatbot_for_subject(self):
+        
+    def _strip_request_id_header(self, raw_stream: str) -> str:
         """
-        Tente de trouver le sujet via le chatbot (API REST en streaming texte).
-        Retourne le sujet SANS le préfixe 'Objet:' si succès, sinon None.
-        NE JAMAIS lever d'exception vers l'extérieur.
+        Supprime la première ligne JSON {"request_id": "..."} si elle existe.
+        """
+        if not raw_stream:
+            return ""
+
+        lines = raw_stream.splitlines()
+        body_lines = []
+        first_non_empty_seen = False
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            if not first_non_empty_seen:
+                first_non_empty_seen = True
+                try:
+                    obj = json.loads(line)
+                    if isinstance(obj, dict) and "request_id" in obj:
+                        # ligne de métadonnées -> on la zappe
+                        continue
+                    body_lines.append(line)
+                except ValueError:
+                    body_lines.append(line)
+            else:
+                body_lines.append(line)
+
+        return "\n".join(body_lines).strip()
+
+    def _parse_llm_fields(self, text: str) -> dict:
+        """
+        Parse Objet/summary_AI/tone_AI depuis l'output du LLM.
+        """
+        if not text:
+            return {"subject": None, "summary_AI": None, "tone_AI": None}
+
+        # Normalisation légère
+        cleaned = text.strip()
+
+        # Regex multi-lignes, capture jusqu'au prochain label ou fin
+        # Labels acceptés: Objet, summary_AI, Résumé, tone_AI
+        pattern = re.compile(
+            r"(?im)^\s*(objet|resume|résumé|tonalite|tonalité)\s*:\s*(.*?)(?=^\s*(?:objet|resume|résumé|tonalite|tonalité)\s*:|\Z)",
+            flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
+        )
+
+        fields = {"subject": None, "summary_AI": None, "tone_AI": None}
+        for key, value in pattern.findall(cleaned):
+            k = key.strip().lower()
+            v = value.strip()
+
+            if k == "objet":
+                fields["subject"] = v
+            elif k in ("resume", "résumé"):
+                fields["summary_AI"] = v
+            elif k in ("tonalite", "tonalité"):
+                fields["tone_AI"] = v
+
+        # Fallback: si pas de "Objet:" mais du texte existe, on le met en subject (comportement historique)
+        if not fields["subject"] and cleaned:
+            # Essaye quand même un "Objet:" sur une ligne unique (au cas où)
+            m = re.search(r"(?im)Objet\s*:\s*(.+)", cleaned)
+            fields["subject"] = m.group(1).strip() if m else cleaned.strip()
+
+        return fields
+
+    def _ask_chatbot_for_infos(self):
+        """
+        Tente de trouver Objet/summary_AI/tone_AI via le chatbot (API REST en streaming texte).
+        Retourne un dict: {"subject": ..., "summary_AI": ..., "tone_AI": ...} ou None si échec.
         """
         if not self.chatbot_enabled:
             return None
@@ -82,7 +149,6 @@ class FindSubject(Thread):
                 self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
             return None
         except Exception as e:
-            # Pour être sûr de ne jamais faire planter le thread
             if self.Log:
                 self.Log.error(f"Chatbot subject detection failed (unexpected error): {e}")
             return None
@@ -100,45 +166,14 @@ class FindSubject(Thread):
                 self.Log.error("Chatbot subject detection failed: empty response")
             return None
 
-        # On split par lignes pour enlever la première ligne JSON {"request_id": "..."}
         try:
-            lines = raw_stream.splitlines()
-            body_lines = []
-            first_non_empty_seen = False
-
-            for line in lines:
-                if not line.strip():
-                    continue
-
-                if not first_non_empty_seen:
-                    first_non_empty_seen = True
-                    try:
-                        obj = json.loads(line)
-                        if isinstance(obj, dict) and "request_id" in obj:
-                            # ligne de métadonnées -> on la zappe
-                            continue
-                        else:
-                            body_lines.append(line)
-                    except ValueError:
-                        body_lines.append(line)
-                else:
-                    body_lines.append(line)
-
-            raw_subject = "\n".join(body_lines).strip()
-            if not raw_subject:
+            body = self._strip_request_id_header(raw_stream)
+            if not body:
                 if self.Log:
                     self.Log.error("Chatbot subject detection failed: no usable text in response")
                 return None
-
-            match = re.search(r"Objet\s*:\s*(.+)", raw_subject, flags=re.IGNORECASE)
-            if match:
-                cleaned = match.group(1).strip()
-            else:
-                cleaned = raw_subject.strip()
-
-            if cleaned:
-                self.subject_found_with_ai = True
-            return cleaned or None
+            fields = self._parse_llm_fields(body)
+            return fields
         except Exception as e:
             if self.Log:
                 self.Log.error(f"Chatbot subject parsing failed: {e}")
@@ -147,19 +182,31 @@ class FindSubject(Thread):
     def run(self):
         """
         1) Try Chatbot
-        2) If Chatbot failed or empty subject try REGEX
+        2) If Chatbot failed or empty subject try REGEX (OCR)
         """
         self.subject = None
+        self.summary_AI = None
+        self.tone_AI = None
         # 1) Tentative via chatbot seulement s'il est activé
         if self.chatbot_enabled and not self.subject:
             try:
-                self.subject = self._ask_chatbot_for_subject()
+                infos = self._ask_chatbot_for_infos()
+                if infos:
+                    self.subject = infos.get("subject") or None
+                    self.summary_AI = infos.get("summary_AI") or None
+                    self.tone_AI = infos.get("tone_AI") or None
                 if self.subject:
                     self.Log.info("Find the following subject with AI : " + self.subject)
+                if self.summary_AI:
+                    self.Log.info("Find the following summary_AI with AI : " + self.summary_AI)
+                if self.tone_AI:
+                    self.Log.info("Find the following tone_AI with AI : " + self.tone_AI)
             except Exception as e:
                 if self.Log:
                     self.Log.error(f"Chatbot subject detection crashed: {e}")
                 self.subject = None
+                self.summary_AI = None
+                self.tone_AI = None
         
         # 2) Tentative OCR
         if not self.subject:
