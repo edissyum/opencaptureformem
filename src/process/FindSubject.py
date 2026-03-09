@@ -38,15 +38,13 @@ class FindSubject(Thread):
         self.url_chatbot = ia_cfg.get('chatbot_url')
         self.login_chatbot = ia_cfg.get('chatbot_login')
         self.password_chatbot = ia_cfg.get('chatbot_password')
-        self.api_key = ia_cfg.get('chatbot_api_key')
         self.timeout = int(ia_cfg.get('chatbot_timeout', 120))
 
-        # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
+        # Chatbot activé seulement si TOUT est présent : url + login + password
         self.chatbot_enabled = bool(
             self.url_chatbot
             and self.login_chatbot
             and self.password_chatbot
-            and self.api_key
         )
 
     def _ask_chatbot_for_subject(self):
@@ -61,8 +59,7 @@ class FindSubject(Thread):
         try:
             headers = {
                 "accept": "text/plain",
-                "Content-Type": "application/json",
-                "X-Api-Key": self.api_key,
+                "Content-Type": "application/json"
             }
 
             auth = requests.auth.HTTPBasicAuth(self.login_chatbot, self.password_chatbot)
