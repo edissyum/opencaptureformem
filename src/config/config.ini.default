@@ -55,7 +55,8 @@ secret_key            =
 ; local or remote
 sender_mode             = local
 sender_remote_url       =
-sender_remote_token     =
+sender_remote_login     =
+sender_remote_password  =
 sender_remote_timeout   = 300
 ; float32 ou bfloat16
 sender_dtype            = float32
@@ -63,7 +64,8 @@ sender_dtype            = float32
 ; local or remote
 doctype_entity_mode           = local
 doctype_entity_remote_url     =
-doctype_entity_remote_token   =
+doctype_remote_login          =
+doctype_remote_password       =
 doctype_entity_remote_timeout = 300
 
 ; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
@@ -77,7 +79,6 @@ doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
 chatbot_url      =
 chatbot_login    =
 chatbot_password =
-chatbot_api_key  =
 chatbot_timeout  = 120
 
 [OCForMEM]
