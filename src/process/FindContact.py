@@ -42,35 +42,46 @@ MAPPING = {
 
 
 def run_inference_sender_remote(config, image):
-    timeout = 60
+    timeout = int(config.get("sender_remote_timeout", 300))
 
-    if config.get('sender_remote_timeout'):
-        timeout = int(config.get('sender_remote_timeout'))
-
-    with open(image.filename, 'rb') as img_file:
+    with open(image.filename, "rb") as img_file:
         img_data = img_file.read()
 
-    if config.get('sender_remote_url') and config.get('sender_remote_login') and config.get('sender_remote_password'):
-        try:
-            auth = requests.auth.HTTPBasicAuth(config.get('sender_remote_login'), config.get('sender_remote_password'))
-            response = requests.post(
-                config.get('sender_remote_url'),
-                headers={
-                    'Content-Type': 'image/jpeg'
-                },
-                data=img_data,
-                timeout=timeout,
-                auth=auth,
-            )
-        except (Exception, ) as e:
-            return False, str(e)
+    url = config.get("sender_remote_url")
+    if not url:
+        return False, "Remote sender inference not configured"
 
-        if response.status_code == 200:
-            data = response.json()
-            return True, data
-        else:
-            return False, response.text
-    return False, 'Remote sender inference not configured'
+    auth = None
+    if config.get("sender_remote_login") and config.get("sender_remote_password"):
+        auth = requests.auth.HTTPBasicAuth(
+            config.get("sender_remote_login"),
+            config.get("sender_remote_password"),
+        )
+    
+    client_cert = f"{config.get('cert_path')}client.crt"
+    client_key = f"{config.get('cert_path')}client.key"
+    ca_cert = f"{config.get('cert_path')}ca.crt"
+
+    try:
+        response = requests.post(
+            url,
+            headers={"Content-Type": "image/jpeg"},
+            data=img_data,
+            timeout=timeout,
+            auth=auth,
+            cert=(
+                client_cert,
+                client_key,
+            ),
+            verify=ca_cert,
+        )
+    except Exception as e:
+        return False, str(e)
+
+    if response.status_code == 200:
+        return True, response.json()
+
+    return False, response.text
 
 
 def parse_output(output: str):

@@ -61,6 +61,9 @@ doctype_remote_login          =
 doctype_remote_password       =
 doctype_entity_remote_timeout = 300
 
+; HTTPS
+cert_path                     = ${GLOBAL:project_path}/src/config/secret_keys/
+
 ; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
 

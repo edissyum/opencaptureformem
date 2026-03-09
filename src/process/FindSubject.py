@@ -39,15 +39,17 @@ class FindSubject(Thread):
         self.url_chatbot = ia_cfg.get('chatbot_url')
         self.login_chatbot = ia_cfg.get('chatbot_login')
         self.password_chatbot = ia_cfg.get('chatbot_password')
-        self.api_key = ia_cfg.get('chatbot_api_key')
         self.timeout = int(ia_cfg.get('chatbot_timeout', 120))
+        
+        self.client_cert = f"{ia_cfg.get('cert_path')}client.crt"
+        self.client_key = f"{ia_cfg.get('cert_path')}client.key"
+        self.ca_cert = f"{ia_cfg.get('cert_path')}ca.crt"
 
-        # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
+        # Chatbot activé seulement si TOUT est présent : url + login + password
         self.chatbot_enabled = bool(
             self.url_chatbot
             and self.login_chatbot
             and self.password_chatbot
-            and self.api_key
         )
         
     def _strip_request_id_header(self, raw_stream: str) -> str:
@@ -129,19 +131,23 @@ class FindSubject(Thread):
             headers = {
                 "accept": "text/plain",
                 "Content-Type": "application/json",
-                "X-Api-Key": self.api_key,
             }
 
             auth = requests.auth.HTTPBasicAuth(self.login_chatbot, self.password_chatbot)
 
             payload = { "letter_context": self.text }
-
+            
             response = requests.post(
                 self.url_chatbot,
                 headers=headers,
                 json=payload,
                 timeout=self.timeout,
                 auth=auth,
+                cert=(
+                    self.client_cert,
+                    self.client_key,
+                ),
+                verify=self.ca_cert,
             )
 
         except RequestException as e:
