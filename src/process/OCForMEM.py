@@ -349,15 +349,13 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         destination = ia_destination
                         log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
 
-        if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true'
-                and 'sender' in config.cfg['IA']):
+        if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true' and 'sender' in config.cfg['IA']):
 
             sender_prediction = {}
             if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote':
                 log.info('Search sender with remote AI model')
                 status, sender_prediction = run_inference_sender_remote(config.cfg['IA'], image.img)
                 if not status:
-                    sender_prediction = {}
                     log.info('ERROR : Sender AI remote model service not available : ' + str(sender_prediction))
             else:
                 sender_model = config.cfg['IA']['sender']
@@ -434,8 +432,12 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
 
         if subject_thread:
             subject = subject_thread.subject
+            summary_AI = subject_thread.summary_AI
+            tone_AI = subject_thread.tone_AI
         else:
             subject = ''
+            summary_AI = ''
+            tone_AI = ''
 
         if contact_thread:
             contact = contact_thread.contact
@@ -443,6 +445,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     else:
         date = ''
         subject = ''
+        summary_AI = ''
+        tone_AI = ''
         chrono_number = ''
         custom_mail = ''
 
@@ -548,6 +552,10 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             args['data']['documentDate'] = date
         if subject != '':
             args['data']['subject'] = subject
+        if summary_AI != '':
+            args['data']['summary_AI'] = summary_AI
+        if tone_AI != '':
+            args['data']['tone_AI'] = tone_AI
         if contact:
             args['data']['senders'] = [{'id': contact['id'], 'type': 'contact'}]
         else:
@@ -638,8 +646,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if 'custom_fields' not in args:
             args['custom_fields'] = None
 
-        ws_res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
-                                           config.cfg[_process], custom_mail, file_format, args['custom_fields'])
+        ws_res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail, file_format, args['custom_fields'], summary_AI, tone_AI)
 
     if ws_res and ws_res[0] is not False:
         if 'isinternalnote' not in args or not args['isinternalnote']:
