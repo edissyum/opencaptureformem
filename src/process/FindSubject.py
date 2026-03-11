@@ -23,6 +23,8 @@ from threading import Thread
 import requests
 from requests.exceptions import RequestException
 
+from .mTLS import sign_csr
+
 
 class FindSubject(Thread):
     def __init__(self, text, locale, log, config):
@@ -40,6 +42,10 @@ class FindSubject(Thread):
         self.login_chatbot = ia_cfg.get('chatbot_login')
         self.password_chatbot = ia_cfg.get('chatbot_password')
         self.timeout = int(ia_cfg.get('chatbot_timeout', 120))
+        
+        self.client_cert = f"{ia_cfg.get('cert_path')}client.crt"
+        self.client_key = f"{ia_cfg.get('cert_path')}client.key"
+        self.ca_cert = f"{ia_cfg.get('cert_path')}ca.crt"
 
         # Chatbot activé seulement si TOUT est présent : url + login + password
         self.chatbot_enabled = bool(
@@ -130,6 +136,10 @@ class FindSubject(Thread):
             }
 
             auth = requests.auth.HTTPBasicAuth(self.login_chatbot, self.password_chatbot)
+            
+            mTLS_ok, mTLS_error = sign_csr(self.config.cfg.get('IA', {}), self.url_chatbot)
+            if(not mTLS_ok):
+                return False, mTLS_error
 
             payload = { "letter_context": self.text }
 
@@ -139,6 +149,11 @@ class FindSubject(Thread):
                 json=payload,
                 timeout=self.timeout,
                 auth=auth,
+                cert=(
+                    self.client_cert,
+                    self.client_key,
+                ),
+                verify=self.ca_cert,
             )
 
         except RequestException as e:
