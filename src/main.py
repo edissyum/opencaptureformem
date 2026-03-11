@@ -155,7 +155,7 @@ def process_file(image, path, config, log, args, separator, ocr, locale, web_ser
     return None
 
 
-@OCForMEM.task()
+#@OCForMEM.task()
 def launch(args):
     start = time.time()
     # Init all the necessary classes
