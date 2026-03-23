@@ -43,7 +43,8 @@ class WebServices:
         Check if remote host is UP
         """
         try:
-            requests.get(self.base_url, timeout=self.timeout, verify=self.cert)
+            # Use HEAD, lighter than get, and not following redirection by default (allow_redirects=False)
+            requests.head(self.base_url, timeout=self.timeout, verify=self.cert)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('Error connecting to the host. Exiting program..')
             self.log.error('More information : ' + str(e))
