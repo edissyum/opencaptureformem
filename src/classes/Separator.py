@@ -230,12 +230,17 @@ class Separator:
         barcodes = []
         cpt = 0
         for page in pages:
-            page.save('/tmp/page' + str(cpt) + '.jpg', 'JPEG')
+            page.save(self.tmp_dir + '/page' + str(cpt) + '.jpg', 'JPEG')
             detected_barcode = decode(page)
+
             if detected_barcode:
                 for barcode in detected_barcode:
                     if barcode.type == 'QRCODE':
                         barcodes.append({'text': barcode.data.decode('utf-8'), 'attrib': {'num': cpt}})
+
+            if os.path.isfile(self.tmp_dir + '/page' + str(cpt) + '.jpg'):
+                os.remove(self.tmp_dir + '/page' + str(cpt) + '.jpg')
+
             cpt += 1
 
         if barcodes:

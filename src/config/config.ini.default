@@ -28,7 +28,7 @@ separation_type   = QR_CODE
 export_pdfa       = False
 output_pdf_path   = ${GLOBAL:project_path}/data/exported_pdf/
 output_pdfa_path  = ${GLOBAL:project_path}/data/exported_pdfa/
-tmp_path          = /tmp/
+tmp_path          = ${GLOBAL:project_path}/data/tmp/
 ; _ or - for example
 divider           = _
 ; Enable blank page removal
