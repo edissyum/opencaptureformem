@@ -231,12 +231,23 @@ class Separator:
         cpt = 0
         for page in pages:
             page.save(self.tmp_dir + '/page' + str(cpt) + '.jpg', 'JPEG')
-            detected_barcode = decode(page)
 
-            if detected_barcode:
-                for barcode in detected_barcode:
-                    if barcode.type == 'QRCODE':
-                        barcodes.append({'text': barcode.data.decode('utf-8'), 'attrib': {'num': cpt}})
+            if self.Config.cfg['SEPARATOR_QR']['separator_library'] == 'qreader':
+                from qreader import QReader
+                qreader = QReader()
+                image = cv2.cvtColor(cv2.imread(self.tmp_dir + '/page' + str(cpt) + '.jpg'), cv2.COLOR_BGR2RGB)
+                detected_barcode = qreader.detect_and_decode(image=image)
+                if detected_barcode:
+                    for barcode in detected_barcode:
+                        if barcode:
+                            barcodes.append({'text': barcode, 'attrib': {'num': cpt}})
+            else:
+                detected_barcode = decode(page)
+
+                if detected_barcode:
+                    for barcode in detected_barcode:
+                        if barcode.type == 'QRCODE':
+                            barcodes.append({'text': barcode.data.decode('utf-8'), 'attrib': {'num': cpt}})
 
             if os.path.isfile(self.tmp_dir + '/page' + str(cpt) + '.jpg'):
                 os.remove(self.tmp_dir + '/page' + str(cpt) + '.jpg')

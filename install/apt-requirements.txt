@@ -6,6 +6,7 @@ python3
 libxml2
 apache2
 pngquant
+libzbar0
 zbar-tools
 pkg-config
 imagemagick

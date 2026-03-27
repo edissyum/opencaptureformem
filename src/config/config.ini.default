@@ -24,13 +24,20 @@ locale_date_path  = ${GLOBAL:project_path}/src/locale/
 [SEPARATOR_QR]
 ; C128 or QR_CODE
 separation_type   = QR_CODE
+
+; You can choose between pyzbar and qreader
+; pyzbar is faster but less accurate, qreader is slower but more accurate
+separator_library    = pyzbar
+
 ; True or False
 export_pdfa       = False
 output_pdf_path   = ${GLOBAL:project_path}/data/exported_pdf/
 output_pdfa_path  = ${GLOBAL:project_path}/data/exported_pdfa/
 tmp_path          = ${GLOBAL:project_path}/data/tmp/
+
 ; _ or - for example
 divider           = _
+
 ; Enable blank page removal
 remove_blank_page = True
 ; Lower minConvexity if you have a false blank page. Increase if you have an unwanted blank page
