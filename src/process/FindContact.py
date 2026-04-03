@@ -338,6 +338,8 @@ class FindContact(Thread):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
                 elif key == 'POSTAL_CODE' and len(found_contact[MAPPING[key]]) != 5:
                     found_contact[MAPPING[key]] = ''
+                elif key == 'STREET':
+                    found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
 
         contact = {}
         contact_mail = {}
