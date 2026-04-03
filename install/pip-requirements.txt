@@ -7,7 +7,7 @@ pyzbar==0.1.9
 holidays==0.93
 kuyruk==10.2.1
 thefuzz==0.22.1
-requests==2.33.0
+requests==2.33.1
 tnefparse==1.4.0
 pdf2image==1.17.0
 fs-watcher==1.0.11
@@ -16,7 +16,7 @@ exchangelib==5.6.0
 accelerate==1.13.0
 pytesseract==0.3.13
 configparser==7.2.0
-transformers==5.4.0
+transformers==5.5.0
 opencv-python==4.13.0.92
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.11.0
