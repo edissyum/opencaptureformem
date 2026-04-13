@@ -4,7 +4,9 @@
 src/**/__pycache__/
 *.py[cod]
 data/log/OCForMEM.log
-
+*.crt
+*.key
+*.csr
 
 scripts/*.sh
 !scripts/*.sh.default

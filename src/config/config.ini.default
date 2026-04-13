@@ -51,22 +51,37 @@ token_expiration_time = 1
 secret_key            =
 
 [IA]
-; Ratio to consider the sender found by AI is the same as the one in MEM Courrier (0 to 100)
 ; local or remote
 sender_mode             = local
-sender_remote_url       =
+sender_remote_url       = 
 sender_remote_login     =
-sender_remote_password  =
 sender_remote_timeout   = 300
 ; float32 ou bfloat16
 sender_dtype            = float32
+; Client's certificate repository (per AI)
+sender_cert_path = ${GLOBAL:project_path}/src/config/secret_keys/
+; OLD CONFIG (ignore if up-to-date)
+sender_remote_password = 
+sender_remote_token = 
 
 ; local or remote
 doctype_entity_mode           = local
-doctype_entity_remote_url     =
+doctype_entity_remote_url     = 
 doctype_remote_login          =
-doctype_remote_password       =
 doctype_entity_remote_timeout = 300
+doctype_cert_path = ${GLOBAL:project_path}/src/config/secret_keys/
+; OLD CONFIG (ignore if up-to-date)
+doctype_remote_password = 
+doctype_remote_token = 
+
+; Chatbot used to search subject in document
+chatbot_url             = 
+chatbot_remote_login    =
+chatbot_timeout         = 120
+chatbot_cert_path       = ${GLOBAL:project_path}/src/config/secret_keys/
+; OLD CONFIG (ignore if up-to-date)
+chatbot_remote_password = 
+chatbot_remote_token = 
 
 ; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
@@ -74,12 +89,6 @@ sender_min_ratio = 80
 ; Path to the local IA models
 sender           = ${GLOBAL:project_path}/data/ia/sender/
 doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
-
-; Chatbot used to search subject in document
-chatbot_url      =
-chatbot_login    =
-chatbot_password =
-chatbot_timeout  = 120
 
 [OCForMEM]
 ; Don’t forget to add /rest at the end of the URL (Link to WS)
