@@ -61,17 +61,17 @@ sender_remote_timeout   = 300
 sender_dtype            = float32
 
 ; local or remote
-doctype_entity_mode           = local
-doctype_entity_remote_url     =
-doctype_entity_remote_token   =
-doctype_entity_remote_timeout = 300
+doctype_mode           = local
+doctype_remote_url     =
+doctype_remote_token   =
+doctype_remote_timeout = 300
 
 ; Ratio to consider the sender found by IA is the same as the one in MEM Courrier (0 to 100)
 sender_min_ratio = 80
 
 ; Path to the local IA models
 sender           = ${GLOBAL:project_path}/data/ia/sender/
-doctype_entity   = ${GLOBAL:project_path}/data/ia/doctype_entity/
+doctype   = ${GLOBAL:project_path}/data/ia/doctype_entity/
 
 ; Chatbot used to search subject in document
 chatbot_url      =
@@ -130,7 +130,7 @@ retrieve_metadata = True
 compress_type     = None
 
 ; Artificial Intelligence (AI) settings
-doctype_entity_ai = False
+doctype_ai = False
 sender_ai         = False
 ; Custom fields to add to the contact created by AI (eg: {"1": "No"})
 sender_custom_fields = {}
@@ -167,7 +167,7 @@ retrieve_metadata = True
 compress_type     = None
 
 ; Artificial Intelligence (AI) settings
-doctype_entity_ai = False
+doctype_ai = False
 sender_ai         = False
 ; Custom fields to add to the contact created by AI (eg: {"1": "No"})
 sender_custom_fields = {}
