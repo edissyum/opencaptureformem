@@ -352,12 +352,12 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true' and 'sender' in config.cfg['IA']):
 
             sender_prediction = {}
-            if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote':
+            if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote' and image.img != None:
                 log.info('Search sender with remote AI model')
                 status, sender_prediction = run_inference_sender_remote(config.cfg['IA'], image.img)
                 if not status:
                     log.info('ERROR : Sender AI remote model service not available : ' + str(sender_prediction))
-            else:
+            elif image.img != None:
                 sender_model = config.cfg['IA']['sender']
                 if os.path.isdir(sender_model) and os.listdir(sender_model):
                     log.info('Search sender with AI model')
