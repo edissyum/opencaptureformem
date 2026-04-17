@@ -234,7 +234,7 @@ class Separator:
 
             if self.Config.cfg['SEPARATOR_QR']['separator_library'] == 'qreader':
                 from qreader import QReader
-                qreader = QReader()
+                qreader = QReader(weights_folder=self.Config.cfg['SEPARATOR_QR']['weights_folder'])
                 image = cv2.cvtColor(cv2.imread(self.tmp_dir + '/page' + str(cpt) + '.jpg'), cv2.COLOR_BGR2RGB)
                 detected_barcode = qreader.detect_and_decode(image=image)
                 if detected_barcode:

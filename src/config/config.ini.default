@@ -27,7 +27,9 @@ separation_type   = QR_CODE
 
 ; You can choose between pyzbar and qreader
 ; pyzbar is faster but less accurate, qreader is slower but more accurate
-separator_library    = pyzbar
+; qreader require web access at first launch to work, pyzbar can work fully offline
+separator_library = pyzbar
+weights_folder    = ${GLOBAL:project_path}/data/weights/
 
 ; True or False
 export_pdfa       = False
