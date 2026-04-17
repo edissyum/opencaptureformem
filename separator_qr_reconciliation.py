@@ -36,7 +36,7 @@ config = configClass.Config()
 config.load_file(args['config'])
 log = logClass.Log(config.cfg['GLOBAL']['log_file'])
 tmp_folder = tempfile.mkdtemp(dir=config.cfg['GLOBAL']['tmp_path'])
-separator = separatorClass.Separator(log, config, tmp_folder, f'OCForMEM_{args['process']}')
+separator = separatorClass.Separator(log, config, tmp_folder, f"OCForMEM_{args['process']}")
 separator.enabled = True
 separator.run(args['file'])
 
