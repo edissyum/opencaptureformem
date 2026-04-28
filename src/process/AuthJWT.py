@@ -13,13 +13,13 @@ JWT_CACHE_FILE = "serenia_jwt_cache.json"
 JWT_EXPIRY_SAFETY_MARGIN = 30
 
 
-def get_base_url_or_fail(config):
-    base_url = config.get("sender_remote_url")
+def get_base_url_or_fail(config, ai_type):
+    base_url = config.get(f"{ai_type}_remote_url")
     if not base_url or not isinstance(base_url, str):
-        raise RuntimeError("sender_remote_url missing or invalid")
+        raise RuntimeError(f"{ai_type}_remote_url missing or invalid")
     parsed = urlparse(base_url)
     if not parsed.scheme or not parsed.netloc:
-        raise RuntimeError("sender_remote_url missing or invalid")
+        raise RuntimeError(f"{ai_type}_remote_url missing or invalid")
     return f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
 
 
@@ -152,7 +152,7 @@ def build_auth_token_signed_headers(config, ai_type, raw_body):
 
 
 def request_new_jwt_token(config, ai_type):
-    base_url = get_base_url_or_fail(config)
+    base_url = get_base_url_or_fail(config, ai_type)
     username = config.get(ai_type+"_remote_login")
     if not username or not isinstance(username, str) or not username.strip():
         raise RuntimeError("remote_login missing or invalid")
