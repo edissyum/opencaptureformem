@@ -27,6 +27,8 @@ import requests
 import subprocess
 import transformers
 
+from rapidfuzz import fuzz
+
 from .FindDate import FindDate
 from pyzbar.pyzbar import decode
 from .FindChrono import FindChrono
@@ -34,93 +36,7 @@ from .FindSubject import FindSubject
 from .OCForForms import process_form
 from pdf2image import convert_from_path
 from .FindContact import FindContact, run_inference_sender, run_inference_sender_remote
-
-
-class DonutForImageClassification(transformers.DonutSwinPreTrainedModel):
-    def __init__(self, config, num_labels_dest, num_labels_type):
-        super().__init__(config)
-        self.num_labels_dest = num_labels_dest
-        self.num_labels_type = num_labels_type
-        self.swin = transformers.DonutSwinModel(config)
-        self.dropout = torch.nn.Dropout(0.5)
-        self.classifier_dest = torch.nn.Linear(self.swin.num_features, num_labels_dest)
-        self.classifier_type = torch.nn.Linear(self.swin.num_features, num_labels_type)
-
-    def forward(self, pixel_values: torch.Tensor) -> torch.Tensor:
-        outputs = self.swin(pixel_values)
-        pooled_output = outputs[1]
-        pooled_output = self.dropout(pooled_output)
-        dest_logits = self.classifier_dest(pooled_output)
-        type_logits = self.classifier_type(pooled_output)
-        return dest_logits, type_logits
-
-
-def run_inference_destination_remote(config, image):
-    timeout = 60
-
-    if config.get('doctype_entity_remote_timeout'):
-        timeout = int(config.get('doctype_entity_remote_timeout'))
-
-    with open(image.filename, 'rb') as img_file:
-        img_data = img_file.read()
-
-    if config.get('doctype_entity_remote_url') and config.get('doctype_entity_remote_token'):
-        try:
-            response = requests.post(
-                config.get('doctype_entity_remote_url'),
-                headers={
-                    'Authorization': 'Bearer ' + config.get('doctype_entity_remote_token'),
-                    'Content-Type': 'multipart/form-data'
-                },
-                data=img_data,
-                timeout=timeout
-            )
-        except (Exception, ) as e:
-            return False, str(e)
-
-        if response.status_code == 200:
-            data = response.json()
-            return True, data
-        else:
-            return False, response.text
-    return False, 'Remote destination inference not configured'
-
-
-def run_inference_destination(trained_model, img):
-    prediction = {}
-    warnings.filterwarnings('ignore')
-    transformers.logging.set_verbosity_error()
-
-    with open(f'{trained_model}/dest_mapping.pkl', 'rb') as f:
-        dest_mapping = pickle.load(f)
-        dest_mapping = {v: k for k, v in dest_mapping.items()}
-
-    with open(f'{trained_model}/type_mapping.pkl', 'rb') as f:
-        type_mapping = pickle.load(f)
-        type_mapping = {v: k for k, v in type_mapping.items()}
-
-    processor = transformers.DonutProcessor.from_pretrained(trained_model, local_files_only=True)
-    model = DonutForImageClassification.from_pretrained(trained_model, num_labels_dest=len(dest_mapping),
-                                                        num_labels_type=len(type_mapping))
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.load_state_dict(torch.load(f"{trained_model}/model_epoch.pth", map_location=torch.device(device)))
-    model.to(device)
-    model.eval()
-
-    with torch.no_grad():
-        pixel_values = processor(img, random_padding="test", return_tensors="pt").pixel_values.squeeze()
-        pixel_values = torch.tensor(pixel_values).unsqueeze(0)
-        dest_logits, type_logits = model(pixel_values=pixel_values)
-        _, dest_index = torch.max(dest_logits, dim=1)
-        _, type_index = torch.max(type_logits, dim=1)
-        dest_pred = dest_mapping[dest_index[0].item()]
-        type_pred = type_mapping[type_index[0].item()]
-        if dest_pred:
-            prediction['destination'] = dest_pred
-        if type_pred:
-            prediction['doctype'] = type_pred
-    return prediction
+from .FindDestination import run_inference_destination, run_inference_destination_remote
 
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
@@ -168,11 +84,48 @@ def check_destination(destinations, destination):
     return False
 
 
-def check_doctype(doctypes, doctype):
-    if isinstance(doctype, int) or doctype.isnumeric():
-        for doct in doctypes['structure']:
-            if 'type_id' in doct and int(doctype) == int(doct['type_id']):
-                return True
+def check_doctype(doctypes, doctype, log=None):
+    if doctype in [None, '']:
+        return False
+
+    doctype_str = str(doctype).strip()
+    if not doctype_str:
+        return False
+
+    candidates = []
+
+    for doct in doctypes.get('structure', []):
+        if 'type_id' not in doct or doct['type_id'] in [None, '']:
+            continue
+
+        type_id = str(doct['type_id']).strip()
+
+        if doctype_str.isnumeric():
+            if int(doctype_str) == int(type_id):
+                return type_id
+
+        for key in ('description', 'label', 'type_label', 'doctype'):
+            if key not in doct or doct[key] in [None, '']:
+                continue
+
+            db_label = str(doct[key]).strip()
+
+            if doctype_str.lower() == db_label.lower():
+                return type_id
+
+            score = fuzz.ratio(doctype_str.lower(), db_label.lower())
+            candidates.append((score, type_id, db_label))
+
+    if candidates:
+        best_score, best_type_id, best_label = max(candidates, key=lambda x: x[0])
+        if best_score >= 80:
+            if log:
+                log.info(
+                    f'Doctype fuzzy matched: "{doctype_str}" -> "{best_label}" '
+                    f'(score={best_score:.2f}, type_id={best_type_id})'
+                )
+            return best_type_id
+
     return False
 
 
@@ -236,9 +189,16 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
             tmp_doctype = config.cfg[_process]['doctype']
 
     if 'isinternalnote' not in args or not args['isinternalnote']:
-        if not check_doctype(doctypes_list, tmp_doctype) and 'reconciliation' not in _process:
+        resolved_tmp_doctype = check_doctype(doctypes_list, tmp_doctype)
+        if not resolved_tmp_doctype and 'reconciliation' not in _process:
             log.error('Document type not found, exit...')
             return False, None
+
+        if resolved_tmp_doctype:
+            if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
+                config_mail.cfg[_process]['doctype'] = str(resolved_tmp_doctype)
+            else:
+                config.cfg[_process]['doctype'] = str(resolved_tmp_doctype)
 
     # If destination still not good, try with default destination
     if not isinstance(destination, int) or not destination:
@@ -322,44 +282,49 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         else:
             process_config = config.cfg[_process]
 
-        if ('doctype_entity_ai' in process_config and process_config['doctype_entity_ai'].lower() == 'true'
-                and 'doctype_entity' in config.cfg['IA'] and search_ai_destination):
+        if ('doctype_ai' in process_config and process_config['doctype_ai'].lower() == 'true'
+                and 'doctype' in config.cfg['IA'] and search_ai_destination):
 
-            doctype_entity_prediction = {}
-            if 'doctype_entity_mode' in config.cfg['IA'] and config.cfg['IA']['doctype_entity_mode'].lower() == 'remote':
+            doctype_prediction = {}
+            if 'doctype_mode' in config.cfg['IA'] and config.cfg['IA']['doctype_mode'].lower() == 'remote':
                 log.info('Search destination and doctype with remote AI model')
-                status, doctype_entity_prediction = run_inference_destination_remote(config.cfg['IA'], image.img)
+                status, doctype_prediction = run_inference_destination_remote(config.cfg['IA'], image.img)
                 if not status:
-                    doctype_entity_prediction = {}
+                    doctype_prediction = {}
                     log.info('ERROR : Destination AI remote model service not available')
             else:
-                doctype_entity_model = config.cfg['IA']['doctype_entity']
-                if os.path.isdir(doctype_entity_model) and os.listdir(doctype_entity_model):
+                doctype_model = config.cfg['IA']['doctype']
+                if os.path.isdir(doctype_model) and os.listdir(doctype_model):
                     log.info('Search destination and doctype with AI model')
-                    doctype_entity_prediction = run_inference_destination(doctype_entity_model, image.img)
+                    doctype_prediction = run_inference_destination(doctype_model, image.img)
 
-            if doctype_entity_prediction:
-                if 'doctype' in doctype_entity_prediction:
-                    if check_doctype(doctypes_list, doctype_entity_prediction['doctype']):
-                        log.info('Document type found using AI : ' + doctype_entity_prediction['doctype'])
-                        process_config['doctype'] = doctype_entity_prediction['doctype']
-                if 'destination' in doctype_entity_prediction:
-                    ia_destination = check_destination(destinations_list, doctype_entity_prediction['destination'])
+            if doctype_prediction:
+                if 'doctype' in doctype_prediction:
+                    resolved_doctype = check_doctype(doctypes_list, doctype_prediction['doctype'])
+                    if resolved_doctype:
+                        log.info(
+                            'Document type found using AI : '
+                            + str(doctype_prediction['doctype'])
+                            + ' -> '
+                            + str(resolved_doctype)
+                        )
+                        process_config['doctype'] = str(resolved_doctype)
+
+                if 'destination' in doctype_prediction:
+                    ia_destination = check_destination(destinations_list, doctype_prediction['destination'])
                     if ia_destination:
                         destination = ia_destination
-                        log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
+                        log.info('Destination found using AI : ' + doctype_prediction['destination'].upper())
 
-        if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true'
-                and 'sender' in config.cfg['IA']):
+        if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true' and 'sender' in config.cfg['IA']):
 
             sender_prediction = {}
-            if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote':
+            if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote' and image.img != None:
                 log.info('Search sender with remote AI model')
                 status, sender_prediction = run_inference_sender_remote(config.cfg['IA'], image.img)
                 if not status:
-                    sender_prediction = {}
                     log.info('ERROR : Sender AI remote model service not available : ' + str(sender_prediction))
-            else:
+            elif image.img != None:
                 sender_model = config.cfg['IA']['sender']
                 if os.path.isdir(sender_model) and os.listdir(sender_model):
                     log.info('Search sender with AI model')
@@ -638,8 +603,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         if 'custom_fields' not in args:
             args['custom_fields'] = None
 
-        ws_res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination,
-                                           config.cfg[_process], custom_mail, file_format, args['custom_fields'])
+        ws_res = web_service.insert_with_args(file_to_send, config, contact, subject, date, destination, config.cfg[_process], custom_mail, file_format, args['custom_fields'])
 
     if ws_res and ws_res[0] is not False:
         if 'isinternalnote' not in args or not args['isinternalnote']:

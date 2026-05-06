@@ -36,9 +36,9 @@ class FindSubject(Thread):
 
         ia_cfg = config.cfg.get('IA', {})
         self.url_chatbot = ia_cfg.get('chatbot_url')
-        self.login_chatbot = ia_cfg.get('chatbot_login')
-        self.password_chatbot = ia_cfg.get('chatbot_password')
-        self.api_key = ia_cfg.get('chatbot_api_key')
+        self.login_chatbot = ia_cfg.get('chatbot_remote_login')
+        self.password_chatbot = ia_cfg.get('chatbot_remote_password')
+        self.api_key = ia_cfg.get('chatbot_remote_token')
         self.timeout = int(ia_cfg.get('chatbot_timeout', 120))
 
         # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
@@ -82,7 +82,6 @@ class FindSubject(Thread):
                 self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
             return None
         except Exception as e:
-            # Pour être sûr de ne jamais faire planter le thread
             if self.Log:
                 self.Log.error(f"Chatbot subject detection failed (unexpected error): {e}")
             return None
