@@ -25,6 +25,13 @@ import subprocess
 from thefuzz import fuzz
 from threading import Thread
 
+from .AuthJWT import (
+    build_jwt_headers,
+    clear_jwt_cache,
+    get_ca_crt_path,
+    get_runtime_files_state,
+)
+
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
 
 MAPPING = {
@@ -40,38 +47,78 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
-
 def run_inference_sender_remote(config, image):
-    timeout = 60
+    timeout = int(config.get("sender_remote_timeout", 300))
 
-    if config.get('sender_remote_timeout'):
-        timeout = int(config.get('sender_remote_timeout'))
-
-    with open(image.filename, 'rb') as img_file:
+    with open(image.filename, "rb") as img_file:
         img_data = img_file.read()
 
-    if config.get('sender_remote_url') and config.get('sender_remote_login') and config.get('sender_remote_password'):
+    url = config.get("sender_remote_url")
+    if not url:
+        return False, "Remote sender inference not configured"
+        
+    if config.get('sender_remote_token') and config.get('sender_remote_password'):
+        # OLD login method using password/API-KEY
         try:
             auth = requests.auth.HTTPBasicAuth(config.get('sender_remote_login'), config.get('sender_remote_password'))
             response = requests.post(
                 config.get('sender_remote_url'),
                 headers={
+                    'Authorization': 'Bearer ' + config.get('sender_remote_token'),
                     'Content-Type': 'image/jpeg'
                 },
                 data=img_data,
                 timeout=timeout
-                auth=auth
             )
         except (Exception, ) as e:
             return False, str(e)
-
+            
         if response.status_code == 200:
             data = response.json()
             return True, data
         else:
             return False, response.text
     else:
-        return False, 'Remote sender inference not configured'
+        # HTTPS login method
+        files_ok, files_error = get_runtime_files_state(config, "sender")
+        if not files_ok:
+            return False, files_error
+
+        ca_cert = get_ca_crt_path(config, "sender")
+
+        try:
+            headers = build_jwt_headers(config, "sender", content_type="image/jpeg")
+
+            response = requests.post(
+                url,
+                headers=headers,
+                data=img_data,
+                timeout=timeout,
+                verify=ca_cert,
+            )
+
+            if response.status_code == 401:
+                clear_jwt_cache(config, "sender"
+                )
+                headers = build_jwt_headers(config, "sender", content_type="image/jpeg", force_refresh=True)
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    data=img_data,
+                    timeout=timeout,
+                    verify=ca_cert,
+                )
+
+        except Exception as e:
+            return False, str(e)
+
+        if response.status_code == 200:
+            try:
+                return True, response.json()
+            except Exception:
+                return False, "Réponse JSON invalide du serveur distant"
+
+    return False, response.text
 
 
 def parse_output(output: str):
@@ -141,7 +188,8 @@ def has_cpu_flags():
 
     if "avx2" in data and "fma" in data:
         return True
-    return False
+    else:
+        return False
 
 
 def run_inference_sender(model_path, img_path, log, dtype_str):
