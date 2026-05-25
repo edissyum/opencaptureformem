@@ -4,7 +4,7 @@
 src/**/__pycache__/
 *.py[cod]
 data/log/OCForMEM.log
-
+*.crt
 
 scripts/*.sh
 !scripts/*.sh.default
@@ -26,3 +26,4 @@ data/ia/doctype_entity/*
 data/MailCollect/*
 data/pdf/*
 data/tmp/*
+data/ia/
