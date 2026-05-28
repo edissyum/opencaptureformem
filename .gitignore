@@ -28,3 +28,5 @@ data/ia/doctype_entity/*
 data/MailCollect/*
 data/pdf/*
 data/tmp/*
+
+data/ia/*
