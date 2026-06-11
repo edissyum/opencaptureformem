@@ -231,7 +231,7 @@ class Separator:
         cpt = 0
         for page in pages:
             page.save(self.tmp_dir + '/page' + str(cpt) + '.jpg', 'JPEG')
-
+            self.Log.info('Use following library to read QR Code : ' + self.Config.cfg['SEPARATOR_QR']['separator_library'])
             if self.Config.cfg['SEPARATOR_QR']['separator_library'] == 'qreader':
                 from qreader import QReader
                 qreader = QReader(weights_folder=self.Config.cfg['SEPARATOR_QR']['weights_folder'])
