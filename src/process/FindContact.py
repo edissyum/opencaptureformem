@@ -370,7 +370,7 @@ class FindContact(Thread):
         global_ratio = global_ratio / cpt
 
         if global_ratio >= self.min_ratio:
-            self.log.info('Global ratio above ' + str(self.min_ratio) + '%, keep the original contact')
+            self.log.info(f'Global ratio ({global_ratio}%) above {self.min_ratio}%, keep the original contact')
         return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact, process):
