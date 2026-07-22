@@ -41,8 +41,8 @@ PID=/tmp/securite-$script-$$.pid
 filepath=$1
 folder=$(dirname "$filepath")
 filename=$(basename "$filepath")
-destination=$(basename "$(dirname "$filepath")")
 ext=$(file -b --mime-type "$filepath")
+destination=$(basename "$(dirname "$filepath")")
 
 fixedFilename=$(echo "$filename" | sed -e 's/[^A-Za-z0-9._-]/_/g');
 fixedFilePath=$folder/$fixedFilename
