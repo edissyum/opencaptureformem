@@ -225,7 +225,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
             "--mmproj", f"{workdir}/mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
             "--image", img_path,
             "--image-min-tokens", "256",
-            "--image-max-tokens", "512",
+            "--image-max-tokens", "1024",
             "--threads", str(num_threads),
             "--temp", "0.0",
             "-p", "Extract sender's data in a python dictionary"
@@ -252,8 +252,8 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
 
         processor = AutoProcessor.from_pretrained(model_path,
             min_pixels=256 * 32 * 32,
-            max_pixels=512 * 32 * 32,
-            use_fast=True
+            max_pixels=1024 * 32 * 32,
+            backend="torchvision"
         )
         messages = [{
             "role": "user",
@@ -288,7 +288,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
                 skip_special_tokens=False,
                 clean_up_tokenization_spaces=False,
             )
-            out = generated_texts[0][1:-11]
+            out = generated_texts[0]
 
     data = parse_output(out)
     if data and isinstance(data, str):
