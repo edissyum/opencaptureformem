@@ -149,13 +149,13 @@ def parse_output(output: str):
                     value_dict += c
                 i += 1
             if not sep_bool:
-                final_dict[key_dict[2:]] = value_dict
+                final_dict[key_dict[2:].upper()] = value_dict
             elif key_dict == "K_PHONE":
-                cur = final_dict.get(key_dict[2:], [])
+                cur = final_dict.get(key_dict[2:].upper(), [])
                 if not isinstance(cur, list):
                     cur = [cur]
                 cur.append(value_dict)
-                final_dict[key_dict[2:]] = cur
+                final_dict[key_dict[2:].upper()] = cur
         else:
             i += 1
     return final_dict
