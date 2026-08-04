@@ -47,6 +47,7 @@ MAPPING = {
     'FIRSTNAME': 'firstname'
 }
 
+
 def run_inference_sender_remote(config, image):
     timeout = int(config.get("sender_remote_timeout", 300))
 
