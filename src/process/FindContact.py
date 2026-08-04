@@ -253,8 +253,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
 
         processor = AutoProcessor.from_pretrained(model_path,
             min_pixels=256 * 32 * 32,
-            max_pixels=1024 * 32 * 32,
-            backend="torchvision"
+            max_pixels=1024 * 32 * 32
         )
         messages = [{
             "role": "user",
