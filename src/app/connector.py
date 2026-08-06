@@ -238,6 +238,7 @@ def process_mail(mail_id, custom_id, process_name, note, login):
                             'process': process_name,
                             'config': config_path,
                             'config_mail': config_mail_path,
+                            'notes': [note],
                             'file': attachment['file'],
                             'format': attachment['format'],
                             'priority_mail_date': priority_mail_date,

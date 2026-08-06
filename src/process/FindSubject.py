@@ -23,6 +23,13 @@ from threading import Thread
 import requests
 from requests.exceptions import RequestException
 
+from .AuthJWT import (
+    build_jwt_headers,
+    clear_jwt_cache,
+    get_ca_crt_path,
+    get_runtime_files_state,
+)
+
 
 class FindSubject(Thread):
     def __init__(self, text, locale, log, config):
@@ -30,62 +37,167 @@ class FindSubject(Thread):
         self.Log = log
         self.text = text
         self.subject = None
+        self.summary_AI = None
+        self.tone_AI = None
         self.Locale = locale
         self.config = config
-        self.subject_found_with_ai = False
 
         ia_cfg = config.cfg.get('IA', {})
-        self.url_chatbot = ia_cfg.get('chatbot_url')
-        self.login_chatbot = ia_cfg.get('chatbot_login')
-        self.password_chatbot = ia_cfg.get('chatbot_password')
-        self.api_key = ia_cfg.get('chatbot_api_key')
+        self.url_chatbot = ia_cfg.get('chatbot_remote_url')
         self.timeout = int(ia_cfg.get('chatbot_timeout', 120))
 
-        # Chatbot activé seulement si TOUT est présent : url + login + password + api_key
-        self.chatbot_enabled = bool(
-            self.url_chatbot
-            and self.login_chatbot
-            and self.password_chatbot
-            and self.api_key
+        self.login_chatbot = ia_cfg.get('chatbot_remote_login')
+        self.password_chatbot = ia_cfg.get('chatbot_remote_password')
+        self.api_key = ia_cfg.get('chatbot_remote_token')
+        
+        self.chatbot_enabled = bool(ia_cfg.get('chatbot_remote_url'))
+
+    def _strip_request_id_header(self, raw_stream: str) -> str:
+        """
+        Supprime la première ligne JSON {"request_id": "..."} si elle existe.
+        """
+        if not raw_stream:
+            return ""
+
+        lines = raw_stream.splitlines()
+        body_lines = []
+        first_non_empty_seen = False
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            if not first_non_empty_seen:
+                first_non_empty_seen = True
+                try:
+                    obj = json.loads(line)
+                    if isinstance(obj, dict) and "request_id" in obj:
+                        continue
+                    body_lines.append(line)
+                except ValueError:
+                    body_lines.append(line)
+            else:
+                body_lines.append(line)
+
+        return "\n".join(body_lines).strip()
+
+    def _parse_llm_fields(self, text: str) -> dict:
+        """
+        Parse Objet/summary_AI/tone_AI depuis l'output du LLM.
+        """
+        if not text:
+            return {"subject": None, "summary_AI": None, "tone_AI": None}
+
+        cleaned = text.strip()
+
+        pattern = re.compile(
+            r"(?im)^\s*(objet|resume|résumé|tonalite|tonalité)\s*:\s*(.*?)(?=^\s*(?:objet|resume|résumé|tonalite|tonalité)\s*:|\Z)",
+            flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
         )
 
-    def _ask_chatbot_for_subject(self):
+        fields = {"subject": None, "summary_AI": None, "tone_AI": None}
+        for key, value in pattern.findall(cleaned):
+            k = key.strip().lower()
+            v = value.strip()
+
+            if k == "objet":
+                fields["subject"] = v
+            elif k in ("resume", "résumé"):
+                fields["summary_AI"] = v
+            elif k in ("tonalite", "tonalité"):
+                fields["tone_AI"] = v
+
+        if not fields["subject"] and cleaned:
+            m = re.search(r"(?im)Objet\s*:\s*(.+)", cleaned)
+            fields["subject"] = m.group(1).strip() if m else cleaned.strip()
+
+        return fields
+
+    def _ask_chatbot_for_infos(self):
         """
-        Tente de trouver le sujet via le chatbot (API REST en streaming texte).
-        Retourne le sujet SANS le préfixe 'Objet:' si succès, sinon None.
-        NE JAMAIS lever d'exception vers l'extérieur.
+        Tente de trouver Objet/summary_AI/tone_AI via le chatbot.
+        Retourne un dict: {"subject": ..., "summary_AI": ..., "tone_AI": ...} ou None si échec.
         """
         if not self.chatbot_enabled:
             return None
 
-        try:
-            headers = {
-                "accept": "text/plain",
-                "Content-Type": "application/json",
-                "X-Api-Key": self.api_key,
-            }
+        ia_cfg = self.config.cfg.get('IA', {})
+        
+        if ia_cfg.get('chatbot_remote_token') and ia_cfg.get('chatbot_remote_password'):
+            # OLD login method using password/API-KEY
+            try:
+                headers = {
+                    "accept": "text/plain",
+                    "Content-Type": "application/json",
+                    "X-Api-Key": self.api_key,
+                }
 
-            auth = requests.auth.HTTPBasicAuth(self.login_chatbot, self.password_chatbot)
+                auth = requests.auth.HTTPBasicAuth(self.login_chatbot, self.password_chatbot)
 
-            payload = { "letter_context": self.text }
+                payload = { "letter_context": self.text }
 
-            response = requests.post(
-                self.url_chatbot,
-                headers=headers,
-                json=payload,
-                timeout=self.timeout,
-                auth=auth,
-            )
+                response = requests.post(
+                    self.url_chatbot,
+                    headers=headers,
+                    json=payload,
+                    timeout=self.timeout,
+                    auth=auth,
+                )
 
-        except RequestException as e:
-            if self.Log:
-                self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
-            return None
-        except Exception as e:
-            # Pour être sûr de ne jamais faire planter le thread
-            if self.Log:
-                self.Log.error(f"Chatbot subject detection failed (unexpected error): {e}")
-            return None
+            except RequestException as e:
+                if self.Log:
+                    self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
+                return None
+            except Exception as e:
+                if self.Log:
+                    self.Log.error(f"Chatbot subject detection failed (unexpected error): {e}")
+                return None
+
+        else:
+            # HTTPS login method
+            files_ok, files_error = get_runtime_files_state(ia_cfg, "chatbot")
+            if not files_ok:
+                if self.Log:
+                    self.Log.error(f"Chatbot subject detection failed: {files_error}")
+                return None
+
+            ca_cert = get_ca_crt_path(ia_cfg, "chatbot")
+
+            try:
+                headers = build_jwt_headers(ia_cfg, "chatbot", content_type="application/json")
+                headers["Accept"] = "text/plain"
+
+                payload = {"letter_context": self.text}
+
+                response = requests.post(
+                    self.url_chatbot,
+                    headers=headers,
+                    json=payload,
+                    timeout=self.timeout,
+                    verify=ca_cert,
+                )
+
+                if response.status_code == 401:
+                    clear_jwt_cache(ia_cfg, "sender")
+                    headers = build_jwt_headers(ia_cfg, "chatbot", content_type="application/json", force_refresh=True)
+                    headers["Accept"] = "text/plain"
+
+                    response = requests.post(
+                        self.url_chatbot,
+                        headers=headers,
+                        json=payload,
+                        timeout=self.timeout,
+                        verify=ca_cert,
+                    )
+
+            except RequestException as e:
+                if self.Log:
+                    self.Log.error(f"Chatbot subject detection failed (connection error): {e}")
+                return None
+            except Exception as e:
+                if self.Log:
+                    self.Log.error(f"Chatbot subject detection failed (unexpected error): {e}")
+                return None
 
         if response.status_code != 200:
             if self.Log:
@@ -100,45 +212,14 @@ class FindSubject(Thread):
                 self.Log.error("Chatbot subject detection failed: empty response")
             return None
 
-        # On split par lignes pour enlever la première ligne JSON {"request_id": "..."}
         try:
-            lines = raw_stream.splitlines()
-            body_lines = []
-            first_non_empty_seen = False
-
-            for line in lines:
-                if not line.strip():
-                    continue
-
-                if not first_non_empty_seen:
-                    first_non_empty_seen = True
-                    try:
-                        obj = json.loads(line)
-                        if isinstance(obj, dict) and "request_id" in obj:
-                            # ligne de métadonnées -> on la zappe
-                            continue
-                        else:
-                            body_lines.append(line)
-                    except ValueError:
-                        body_lines.append(line)
-                else:
-                    body_lines.append(line)
-
-            raw_subject = "\n".join(body_lines).strip()
-            if not raw_subject:
+            body = self._strip_request_id_header(raw_stream)
+            if not body:
                 if self.Log:
                     self.Log.error("Chatbot subject detection failed: no usable text in response")
                 return None
-
-            match = re.search(r"Objet\s*:\s*(.+)", raw_subject, flags=re.IGNORECASE)
-            if match:
-                cleaned = match.group(1).strip()
-            else:
-                cleaned = raw_subject.strip()
-
-            if cleaned:
-                self.subject_found_with_ai = True
-            return cleaned or None
+            fields = self._parse_llm_fields(body)
+            return fields
         except Exception as e:
             if self.Log:
                 self.Log.error(f"Chatbot subject parsing failed: {e}")
@@ -147,21 +228,32 @@ class FindSubject(Thread):
     def run(self):
         """
         1) Try Chatbot
-        2) If Chatbot failed or empty subject try REGEX
+        2) If Chatbot failed or empty subject try REGEX (OCR)
         """
         self.subject = None
-        # 1) Tentative via chatbot seulement s'il est activé
-        if self.chatbot_enabled and not self.subject:
+        self.summary_AI = None
+        self.tone_AI = None
+
+        if self.chatbot_enabled and not self.subject and self.text != None:
             try:
-                self.subject = self._ask_chatbot_for_subject()
+                infos = self._ask_chatbot_for_infos()
+                if infos:
+                    self.subject = infos.get("subject") or None
+                    self.summary_AI = infos.get("summary_AI") or None
+                    self.tone_AI = infos.get("tone_AI") or None
                 if self.subject:
                     self.Log.info("Find the following subject with AI : " + self.subject)
+                if self.summary_AI:
+                    self.Log.info("Find the following summary_AI with AI : " + self.summary_AI)
+                if self.tone_AI:
+                    self.Log.info("Find the following tone_AI with AI : " + self.tone_AI)
             except Exception as e:
                 if self.Log:
                     self.Log.error(f"Chatbot subject detection crashed: {e}")
                 self.subject = None
-        
-        # 2) Tentative OCR
+                self.summary_AI = None
+                self.tone_AI = None
+
         if not self.subject:
             subject_array = []
             for _subject in re.finditer(r"" + self.Locale.regexSubject, self.text, flags=re.IGNORECASE):
@@ -184,7 +276,7 @@ class FindSubject(Thread):
                 self.subject = re.sub(r"^" + self.Locale.regexSubject[:-2], '', subject_array[0], flags=re.IGNORECASE).strip()
             else:
                 self.subject = None
-        
+
             if self.subject:
                 self.subject = re.sub(r"(RE|TR|FW)\s*:", '', self.subject, flags=re.IGNORECASE).strip()
                 self.search_subject_second_line()
@@ -204,13 +296,13 @@ class FindSubject(Thread):
                     next_line = text[cpt + 1]
                     if next_line:
                         for letter in next_line:
-                            if letter in not_allowed_symbol:  # Check if the line doesn't contain some specific char
+                            if letter in not_allowed_symbol: # Check if the line doesn't contain some specific char
                                 find = True
                                 break
                         if find:
                             continue
                         first_char = next_line[0]
-                        if first_char.lower() == first_char:  # Check if first letter of line is not an upper one
+                        if first_char.lower() == first_char: # Check if first letter of line is not an upper one
                             self.subject += ' ' + next_line
                             break
                 char_cpt = 0

@@ -43,7 +43,8 @@ class WebServices:
         Check if remote host is UP
         """
         try:
-            requests.get(self.base_url, timeout=self.timeout, verify=self.cert)
+            # Use HEAD, lighter than get, and not following redirection by default (allow_redirects=False)
+            requests.head(self.base_url, timeout=self.timeout, verify=self.cert)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('Error connecting to the host. Exiting program..')
             self.log.error('More information : ' + str(e))
@@ -155,8 +156,7 @@ class WebServices:
             return False
         return True
 
-    def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail,
-                         file_format, custom_fields):
+    def insert_with_args(self, file_content, config, contact, subject, date, destination, _process, custom_mail, file_format, custom_fields, summary_AI, tone_AI):
         """
         Insert document into MEM Courrier Database
 
@@ -212,7 +212,9 @@ class WebServices:
             'arrivaldate': str(datetime.now()),
             'customFields': {},
             'diffusionList': _process['diffusion_list'] if 'diffusion_list' in _process else [],
-            'processLimitDate': str(self.calcul_process_limit_date(_process['doctype']))
+            'processLimitDate': str(self.calcul_process_limit_date(_process['doctype'])),
+            'summary_ai': summary_AI,
+            'tone_ai': tone_AI
         }
 
         if external_contact_id:
@@ -522,7 +524,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') RetrieveMEMEntitiesError : ' + str(res.text))
                 return False, str(res.text)
-            return json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('RetrieveMEMEntitiesError : ' + str(e))
             return False, str(e)
@@ -536,7 +538,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') RetrieveMEMDoctypesError : ' + str(res.text))
                 return False, str(res.text)
-            return json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('RetrieveMEMDoctypesError : ' + str(e))
             return False, str(e)
@@ -592,7 +594,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') RetrieveMEMCustomFieldsError : ' + str(res.text))
                 return False, str(res.text)
-            return json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('RetrieveMEMCustomFieldsError : ' + str(e))
             return False, str(e)

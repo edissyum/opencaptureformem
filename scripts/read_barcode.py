@@ -16,11 +16,21 @@
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 
 import sys
+import json
 import argparse
-from configparser import ConfigParser, ExtendedInterpolation
-
 from PIL import Image
 from pyzbar.pyzbar import decode
+from configparser import ConfigParser, ExtendedInterpolation
+
+
+def extract_chrono(raw_data):
+    try:
+        _data = json.loads(raw_data)
+        if _data.get("chrono"):
+            return _data["chrono"].replace('MEM_', '')
+    except json.JSONDecodeError:
+        pass
+    return raw_data
 
 
 if __name__ == '__main__':
@@ -42,13 +52,22 @@ if __name__ == '__main__':
         for info in parser[section]:
             config[section][info] = parser[section][info]
 
-    if 'reconciliation_type' not in config['OCForMEM']:
-        reconciliation_type = 'QRCODE'
-    else:
-        reconciliation_type = config['OCForMEM']['reconciliation_type']
+    reconciliation_type = config['OCForMEM'].get('reconciliation_type', 'QRCODE')
+    separation_library = config['SEPARATOR_QR'].get('separator_library', 'pyzbar')
 
-    detected_barcode = decode(Image.open(args['file']))
-    for barcode in detected_barcode:
-        if barcode.type == reconciliation_type:
-            print(barcode.data.decode("utf-8"))
+    if separation_library == 'qreader' and reconciliation_type == 'QRCODE':
+        import cv2
+        from qreader import QReader
+
+        qreader = QReader(weights_folder=config['SEPARATOR_QR']['weights_folder'])
+        image = cv2.cvtColor(cv2.imread(args['file']), cv2.COLOR_BGR2RGB)
+        detected_barcode = qreader.detect_and_decode(image=image)
+        for barcode in detected_barcode:
+            print(extract_chrono(barcode))
             break
+    else:
+        detected_barcode = decode(Image.open(args['file']))
+        for barcode in detected_barcode:
+            if barcode.type == reconciliation_type:
+                print(extract_chrono(barcode.data.decode("utf-8")))
+                break

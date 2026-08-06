@@ -120,20 +120,32 @@ def process_form(args, config, config_mail, log, web_service, process_name, file
                 with open(args['file'], 'r', encoding='UTF-8') as file_content:
                     text_parsed = BeautifulSoup(file_content, 'html.parser')
 
-                lines = []
+                text = []
+
+                def clean_line(line_to_clean):
+                    _line = line_to_clean.replace('\xa0', ' ')
+                    _line = _line.replace('<b>', '').replace('</b>', '')
+                    return _line.strip()
 
                 cpt = 0
                 for row in text_parsed.find_all('tr'):
                     line = ''
-                    for el in row.find_all('td'):
-                        if el.text.strip() not in line:
-                            line += el.text.strip() + ' '
-                    lines.append(line.strip())
+                    for td in row.find_all('td'):
+                        if td.text.strip() not in line:
+                            line += td.text.strip() + ' '
+                    if line.strip():
+                        text.append(clean_line(line))
                     cpt += 1
 
-                text = text_parsed.findAll(['p'])
-                if lines:
-                    text = text + lines
+                for p in text_parsed.find_all('p'):
+                    for span in p.find_all('span'):
+                        span.unwrap()
+
+                    block_text = p.get_text(separator='\n', strip=True)
+                    for line in block_text.split('\n'):
+                        line = clean_line(line)
+                        if line:
+                            text.append(line)
 
                 results = {
                     contact_table: {}

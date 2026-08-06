@@ -79,6 +79,7 @@ folder_destination       = _MEM_ARCHIVES
 action_after_process      = move
 
 ; True or False
+; import_only_attachments must be True to use this option
 e_reconciliation         = False
 
 chrono_regex             = 20(1|2|3)[0-9]{1}A/\d{5}
@@ -96,10 +97,10 @@ destination             = COU
 
 ; True or False
 from_is_reply_to        = False
-custom_mail_from        = 8
-custom_mail_to          = 9
-custom_mail_cc          = 10
-custom_mail_reply_to    = 11
+custom_mail_from        = 7
+custom_mail_to          = 6
+custom_mail_cc          = 8
+custom_mail_reply_to    = 9
 ; Double quote on both side of the json. eg : {"1": "NO"}
 custom_fields           = {}
 

@@ -25,6 +25,13 @@ import subprocess
 from thefuzz import fuzz
 from threading import Thread
 
+from .AuthJWT import (
+    build_jwt_headers,
+    clear_jwt_cache,
+    get_ca_crt_path,
+    get_runtime_files_state,
+)
+
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
 
 MAPPING = {
@@ -42,16 +49,19 @@ MAPPING = {
 
 
 def run_inference_sender_remote(config, image):
-    timeout = 60
+    timeout = int(config.get("sender_remote_timeout", 300))
 
-    if config.get('sender_remote_timeout'):
-        timeout = int(config.get('sender_remote_timeout'))
-
-    with open(image.filename, 'rb') as img_file:
+    with open(image.filename, "rb") as img_file:
         img_data = img_file.read()
 
-    if config.get('sender_remote_url') and config.get('sender_remote_token'):
+    url = config.get("sender_remote_url")
+    if not url:
+        return False, "Remote sender inference not configured"
+        
+    if config.get('sender_remote_token') and config.get('sender_remote_password'):
+        # OLD login method using password/API-KEY
         try:
+            auth = requests.auth.HTTPBasicAuth(config.get('sender_remote_login'), config.get('sender_remote_password'))
             response = requests.post(
                 config.get('sender_remote_url'),
                 headers={
@@ -63,13 +73,53 @@ def run_inference_sender_remote(config, image):
             )
         except (Exception, ) as e:
             return False, str(e)
-
+            
         if response.status_code == 200:
             data = response.json()
             return True, data
         else:
             return False, response.text
-    return False, 'Remote sender inference not configured'
+    else:
+        # HTTPS login method
+        files_ok, files_error = get_runtime_files_state(config, "sender")
+        if not files_ok:
+            return False, files_error
+
+        ca_cert = get_ca_crt_path(config, "sender")
+
+        try:
+            headers = build_jwt_headers(config, "sender", content_type="image/jpeg")
+
+            response = requests.post(
+                url,
+                headers=headers,
+                data=img_data,
+                timeout=timeout,
+                verify=ca_cert,
+            )
+
+            if response.status_code == 401:
+                clear_jwt_cache(config, "sender"
+                )
+                headers = build_jwt_headers(config, "sender", content_type="image/jpeg", force_refresh=True)
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    data=img_data,
+                    timeout=timeout,
+                    verify=ca_cert,
+                )
+
+        except Exception as e:
+            return False, str(e)
+
+        if response.status_code == 200:
+            try:
+                return True, response.json()
+            except Exception:
+                return False, "Réponse JSON invalide du serveur distant"
+
+    return False, response.text
 
 
 def parse_output(output: str):
@@ -100,13 +150,13 @@ def parse_output(output: str):
                     value_dict += c
                 i += 1
             if not sep_bool:
-                final_dict[key_dict[2:]] = value_dict
+                final_dict[key_dict[2:].upper()] = value_dict
             elif key_dict == "K_PHONE":
-                cur = final_dict.get(key_dict[2:], [])
+                cur = final_dict.get(key_dict[2:].upper(), [])
                 if not isinstance(cur, list):
                     cur = [cur]
                 cur.append(value_dict)
-                final_dict[key_dict[2:]] = cur
+                final_dict[key_dict[2:].upper()] = cur
         else:
             i += 1
     return final_dict
@@ -139,7 +189,8 @@ def has_cpu_flags():
 
     if "avx2" in data and "fma" in data:
         return True
-    return False
+    else:
+        return False
 
 
 def run_inference_sender(model_path, img_path, log, dtype_str):
@@ -165,6 +216,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
 
     # Select the binary based on the glibc version and CPU flags
     if workdir is not None and has_cpu_flags() and get_glibc_version() >= (2, 39):
+        workdir = model_path
         num_threads = os.cpu_count() - 1
         if num_threads <= 0:
             num_threads = 1
@@ -174,7 +226,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
             "--mmproj", f"{workdir}/mmproj-Qwen3-VL-2B-Instruct-FT-f16.gguf",
             "--image", img_path,
             "--image-min-tokens", "256",
-            "--image-max-tokens", "512",
+            "--image-max-tokens", "1024",
             "--threads", str(num_threads),
             "--temp", "0.0",
             "-p", "Extract sender's data in a python dictionary"
@@ -201,8 +253,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
 
         processor = AutoProcessor.from_pretrained(model_path,
             min_pixels=256 * 32 * 32,
-            max_pixels=512 * 32 * 32,
-            use_fast=True
+            max_pixels=1024 * 32 * 32
         )
         messages = [{
             "role": "user",
@@ -237,7 +288,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
                 skip_special_tokens=False,
                 clean_up_tokenization_spaces=False,
             )
-            out = generated_texts[0][1:-11]
+            out = generated_texts[0]
 
     data = parse_output(out)
     if data and isinstance(data, str):
@@ -319,7 +370,7 @@ class FindContact(Thread):
         global_ratio = global_ratio / cpt
 
         if global_ratio >= self.min_ratio:
-            self.log.info('Global ratio above ' + str(self.min_ratio) + '%, keep the original contact')
+            self.log.info(f'Global ratio ({global_ratio}%) above {self.min_ratio}%, keep the original contact')
         return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact, process):
@@ -338,6 +389,8 @@ class FindContact(Thread):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].lower()
                 elif key == 'POSTAL_CODE' and len(found_contact[MAPPING[key]]) != 5:
                     found_contact[MAPPING[key]] = ''
+                elif key == 'STREET':
+                    found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
 
         contact = {}
         contact_mail = {}

@@ -234,6 +234,11 @@ if check:
             # Backup all the e-mail into batch path
             Mail.backup_email(msg, batch_path, force_utf8, add_mail_headers_in_body, Log)
             ret, file = Mail.construct_dict_before_send_to_mem(msg, config_mail.cfg[process], batch_path, Log)
+            if not ret:
+                error_path = path_without_time + '/_ERROR/' + process + '/' + year + month + day
+                mailClass.move_batch_to_error(batch_path, error_path, SMTP, process, msg, ret)
+                continue
+
             _from = ret['mail']['emailFrom']
             if Mail.auth_method == 'exchange':
                 document_date = msg.datetime_created
