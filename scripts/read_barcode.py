@@ -52,10 +52,10 @@ if __name__ == '__main__':
         for info in parser[section]:
             config[section][info] = parser[section][info]
 
-    separation_type = config['SEPARATOR_QR'].get('separation_type', 'QR_CODE')
+    reconciliation_type = config['OCForMEM'].get('reconciliation_type', 'QRCODE')
     separation_library = config['SEPARATOR_QR'].get('separator_library', 'pyzbar')
 
-    if separation_library == 'qreader' and separation_type == 'QR_CODE':
+    if separation_library == 'qreader' and reconciliation_type == 'QRCODE':
         import cv2
         from qreader import QReader
 
@@ -68,6 +68,6 @@ if __name__ == '__main__':
     else:
         detected_barcode = decode(Image.open(args['file']))
         for barcode in detected_barcode:
-            if barcode.type == separation_type:
+            if barcode.type == reconciliation_type:
                 print(extract_chrono(barcode.data.decode("utf-8")))
                 break

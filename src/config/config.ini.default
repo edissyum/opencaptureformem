@@ -106,6 +106,7 @@ time_delta          = 62
 uppercase_subject  = False
 ; Path to the .crt file
 cert_path           =
+; C128 or QRCODE
 reconciliation_type = QRCODE
 
 ; !!!! IMPORTANT !!!!
