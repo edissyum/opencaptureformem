@@ -101,6 +101,8 @@ class Separator:
             if self.Config.cfg['SEPARATOR_QR']['separation_type'] == 'C128':
                 self.get_xml_c128(file)
             else:
+                self.Log.info('Use following library to read QR Code : ' +
+                              self.Config.cfg['SEPARATOR_QR']['separator_library'])
                 self.get_xml_qr_code(file)
 
             self.parse_xml()
@@ -229,7 +231,6 @@ class Separator:
         pages = pdf2image.convert_from_path(file)
         barcodes = []
         cpt = 0
-        self.Log.info('Use following library to read QR Code : ' + self.Config.cfg['SEPARATOR_QR']['separator_library'])
         for page in pages:
             page.save(self.tmp_dir + '/page' + str(cpt) + '.jpg', 'JPEG')
             if self.Config.cfg['SEPARATOR_QR']['separator_library'] == 'qreader':
