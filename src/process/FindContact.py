@@ -362,11 +362,10 @@ class FindContact(Thread):
 
         for key in ai_contact:
             if ai_contact[key]:
-                if key in contact:
-                    if contact[key]:
-                        match_contact[key] = fuzz.ratio(ai_contact[key].lower(), contact[key].lower())
-                        global_ratio += match_contact[key]
-                        cpt += 1
+                if key in contact and contact[key]:
+                    match_contact[key] = fuzz.ratio(ai_contact[key].lower(), contact[key].lower())
+                    global_ratio += match_contact[key]
+                    cpt += 1
         global_ratio = global_ratio / cpt
 
         if global_ratio >= self.min_ratio:
@@ -393,7 +392,6 @@ class FindContact(Thread):
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
 
         contact = {}
-        contact_mail = {}
         if (('email' not in found_contact or not found_contact['email']) and
                 ('phone' not in found_contact or not found_contact['phone'])):
             self.start()
@@ -444,11 +442,7 @@ class FindContact(Thread):
 
         found_contact['status'] = 'TMP'
         if not contact:
-            if contact_mail:
-                self.log.info('No contact found using phone, use contact found using email')
-                contact = contact_mail
-            else:
-                self.log.info('No contact found, create a temporary contact')
+            self.log.info('No contact found, create a temporary contact')
 
         if 'sender_custom_fields' in process and process['sender_custom_fields']:
             found_contact['customFields'] = json.loads(process['sender_custom_fields'])
