@@ -36,6 +36,16 @@ from pdf2image import convert_from_path
 from .FindContact import FindContact, run_inference_sender, run_inference_sender_remote
 from .FindDestinationDoctype import run_inference_doctype_entity, run_inference_doctype_entity_remote
 
+
+def strip_base64_noise(text):
+    """
+    Remove long base64-like blobs that can leak into an e-mail body text
+    (badly-formed inline attachment) to avoid false positives when searching
+    for a date/subject/contact into it
+    """
+    return re.sub(r'[A-Za-z0-9+/=]{100,}', ' ', text)
+
+
 def get_process_name(args, config):
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         _process = args['process']
@@ -213,16 +223,17 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
         res = image.html_to_txt(file)
         if res is False:
             return False, None
-        ocr.text = res
+        ocr.text = strip_base64_noise(res)
         is_ocr = True
     elif os.path.splitext(file)[1].lower() == '.txt':
-        ocr.text = open(file, 'r').read()
+        ocr.text = strip_base64_noise(open(file, 'r').read())
         is_ocr = True
     else:  # Open the picture
         image.open_img(file)
         is_ocr = False
 
-    if 'reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False' and ('isinternalnote' not in args or not args['isinternalnote']):
+    if ('reconciliation' not in _process and config.cfg['GLOBAL']['disable_lad'] == 'False'
+            and ('isinternalnote' not in args or not args['isinternalnote'])):
         # Get the OCR of the file as a string content
         if not args.get('isMail') and os.path.splitext(file)[1].lower() not in ('.html', '.txt'):
             ocr.text_builder(image.img)
