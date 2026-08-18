@@ -389,22 +389,20 @@ class FindContact(Thread):
         if isinstance(found_contact.get('phone'), list):
             found_contact['phone'] = found_contact['phone'][0]
 
-        res, improved_contact = self.web_service.retrieve_contact_improved(found_contact)
-        if res and improved_contact:
-            self.log.info(f"Contact found ({improved_contact['id']}) using improved search : "
-                          f"{improved_contact['matchType']}")
-            contact = self.web_service.retrieve_contact_by_id(improved_contact['id'])
+        res, contact = self.web_service.retrieve_contact_improved(found_contact)
+        if res and contact:
+            self.log.info(f"Contact found ({contact['id']}) using improved search : {contact['matchType']}")
 
             if contact['status'] == 'TMP':
                 self.log.info(f"Contact found is TMP, do no create duplicate contact")
                 return contact
 
-            if improved_contact['matchType'] in ('name_email', 'name_phone', 'company_email', 'company_phone'):
+            if contact['matchType'] in ('name_email', 'name_phone', 'company_email', 'company_phone'):
                 if self.compare_contact(contact, found_contact):
                     return contact
 
                 has_already_tmp_contact = False
-                if contact['externalId'] and contact['externalId'].get('ia_tmp_contact_id', None):
+                if contact['external_id'] and contact['external_id'].get('ia_tmp_contact_id', None):
                     has_already_tmp_contact = True
 
                 if has_already_tmp_contact:
