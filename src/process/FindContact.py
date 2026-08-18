@@ -351,9 +351,9 @@ class FindContact(Thread):
                     continue
 
     def compare_contact(self, contact, ai_contact):
-        match_contact = {}
-        global_ratio = 0
         cpt = 0
+        global_ratio = 0
+        match_contact = {}
 
         for key in ai_contact:
             if ai_contact[key]:
