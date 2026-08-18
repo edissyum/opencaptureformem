@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
-# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Nathan Cheval <nathan.cheval@edissyum.com>
 
 import re
 import json
@@ -69,8 +69,9 @@ class WebServices:
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 self.log.error('GetContactByMailError : ' + str(e))
                 return False, str(e)
-        else:
-            self.log.info('GetContactByMailInfo : No email found')
+
+        self.log.info('GetContactByMailInfo : No email found')
+        return False, 'No email found'
 
     def retrieve_contact_by_id(self, contact_id):
         """
@@ -110,6 +111,28 @@ class WebServices:
             self.log.error('GetContactByPhoneError : ' + str(e))
             return False, str(e)
 
+    def retrieve_contact_improved(self, contact):
+        """
+        Search a contact into MEM Courrier database using the improved multi-criteria
+        matching (name/company combined with email/phone, or address key)
+
+        :param contact: contact found with AI (email, phone, lastname, firstname, company, addressPostcode, addressTown,
+                                               addressNumber, addressStreet)
+        :return: Contact from MEM Courrier, or False if not found/error
+        """
+        try:
+            res = requests.post(self.base_url + '/getContactsImproved', auth=self.auth, data=json.dumps(contact),
+                                headers={'Connection': 'close', 'Content-Type': 'application/json'},
+                                timeout=self.timeout, verify=self.cert)
+
+            if res.status_code != 200:
+                self.log.error('(' + str(res.status_code) + ') GetImprovedError : ' + str(res.text))
+                return False, str(res.text)
+            return json.loads(res.text)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            self.log.error('GetContactImprovedError : ' + str(e))
+            return False, str(e)
+
     def retrieve_document_by_chrono(self, chrono_number):
         if chrono_number:
             try:
@@ -126,6 +149,7 @@ class WebServices:
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 self.log.error('getResourceByChrono : ' + str(e))
                 return False, str(e)
+        return False, ''
 
     def retrieve_res_id_master_by_chrono(self, chrono):
         data = {
