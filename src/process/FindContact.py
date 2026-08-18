@@ -364,7 +364,7 @@ class FindContact(Thread):
         global_ratio = global_ratio / cpt
 
         if global_ratio >= self.min_ratio:
-            self.log.info(f'Global ratio ({global_ratio}%) above {self.min_ratio}%, keep the original contact')
+            self.log.info(f"Global ratio ({global_ratio}%) above {self.min_ratio}%, keep the original contact")
         return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact, process):
@@ -412,7 +412,7 @@ class FindContact(Thread):
                                   f"contact associated. Do not create duplicate temporary contact")
                     return contact
                 else:
-                    self.log.info(f'Global ratio under {self.min_ratio}%, create temporary contact')
+                    self.log.info(f"Global ratio under {self.min_ratio}%, create temporary contact")
                     return self.merge_temporary_contact(contact, found_contact, process)
             else:
                 return contact
@@ -437,12 +437,12 @@ class FindContact(Thread):
                 contact = self.contact
 
             if contact:
-                self.log.info(f'Contact found ({contact['id']}) using email : {found_contact['email']}')
+                self.log.info(f"Contact found ({contact['id']}) using email : {found_contact['email']}")
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
                     return contact
-                self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
+                self.log.info(f"Global ratio under {self.min_ratio}%, search using phone")
 
         if 'phone' in found_contact and found_contact['phone']:
             if not self.contact:
@@ -455,12 +455,12 @@ class FindContact(Thread):
                 tmp_contact = contact
 
             if contact:
-                self.log.info(f'Contact found ({contact['id']} using phone : {found_contact['phone']}')
+                self.log.info(f"Contact found ({contact['id']} using phone : {found_contact['phone']}")
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
                     return contact
-                self.log.info(f'Global ratio under {self.min_ratio}%, insert temporary contact')
+                self.log.info(f"Global ratio under {self.min_ratio}%, insert temporary contact")
             else:
                 if tmp_contact:
                     contact = tmp_contact
