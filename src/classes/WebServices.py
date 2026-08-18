@@ -128,7 +128,7 @@ class WebServices:
             if res.status_code != 200:
                 self.log.error('(' + str(res.status_code) + ') GetImprovedError : ' + str(res.text))
                 return False, str(res.text)
-            return json.loads(res.text)
+            return True, json.loads(res.text)
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
             self.log.error('GetContactImprovedError : ' + str(e))
             return False, str(e)

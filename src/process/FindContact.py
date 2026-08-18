@@ -66,8 +66,8 @@ def run_inference_sender_remote(config, image):
             response = requests.post(
                 config.get('sender_remote_url'),
                 headers={
-                    'Authorization': 'Bearer ' + config.get('sender_remote_token'),
-                    'Content-Type': 'image/jpeg'
+                    'Content-Type': 'image/jpeg',
+                    'Authorization': 'Bearer ' + config.get('sender_remote_token')
                 },
                 data=img_data,
                 timeout=timeout
@@ -122,7 +122,7 @@ def run_inference_sender_remote(config, image):
 
 
 def parse_output(output: str):
-    final_dict = { }
+    final_dict = {}
     key_dict = ""
     sep_bool = True
     i = 0
@@ -296,7 +296,7 @@ class FindContact(Thread):
         Thread.__init__(self, name='contactThread')
         self.log = log
         self.text = text
-        self.contact = { }
+        self.contact = {}
         self.min_ratio = 80
         self.locale = locale
         self.config = config
@@ -351,7 +351,7 @@ class FindContact(Thread):
                     continue
 
     def compare_contact(self, contact, ai_contact):
-        match_contact = { }
+        match_contact = {}
         global_ratio = 0
         cpt = 0
 
@@ -368,7 +368,7 @@ class FindContact(Thread):
         return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact, process):
-        found_contact = { }
+        found_contact = {}
         for key in ai_contact:
             if ai_contact[key] and key in MAPPING.keys():
                 found_contact[MAPPING[key]] = ai_contact[key][:254]
@@ -389,8 +389,8 @@ class FindContact(Thread):
         if isinstance(found_contact.get('phone'), list):
             found_contact['phone'] = found_contact['phone'][0]
 
-        improved_contact = self.web_service.retrieve_contact_improved(found_contact)
-        if improved_contact:
+        res, improved_contact = self.web_service.retrieve_contact_improved(found_contact)
+        if res and improved_contact:
             self.log.info(f"Contact found ({improved_contact['id']}) using improved search : "
                           f"{improved_contact['matchType']}")
             contact = self.web_service.retrieve_contact_by_id(improved_contact['id'])
@@ -416,9 +416,10 @@ class FindContact(Thread):
                     return self.merge_temporary_contact(contact, found_contact, process)
             else:
                 return contact
-        self.log.info('No contact found using improved search, fallback on legacy search')
+        else:
+            self.log.info('No contact found using improved search, fallback on legacy search')
 
-        contact = { }
+        contact = {}
         if (('email' not in found_contact or not found_contact['email']) and
                 ('phone' not in found_contact or not found_contact['phone'])):
             self.start()
