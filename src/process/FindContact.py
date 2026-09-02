@@ -453,7 +453,7 @@ class FindContact(Thread):
                 tmp_contact = contact
 
             if contact:
-                self.log.info(f"Contact found ({contact['id']} using phone : {found_contact['phone']}")
+                self.log.info(f"Contact found ({contact['id']}) using phone : {found_contact['phone']}")
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
