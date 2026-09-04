@@ -274,8 +274,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                         destination = ia_destination
                         log.info('Destination found using AI : ' + doctype_entity_prediction['destination'].upper())
 
-        if ('sender_ai' in process_config and process_config['sender_ai'].lower() == 'true' and 'sender' in config.cfg['IA']):
-
+        if 'sender_ai' in process_config and process_config['sender_ai'].lower() == 'true' and 'sender' in config.cfg['IA']:
             sender_prediction = {}
             if 'sender_mode' in config.cfg['IA'] and config.cfg['IA']['sender_mode'].lower() == 'remote' and image.img != None:
                 log.info('Search sender with remote AI model')
@@ -290,7 +289,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
                 else:
                     log.info('ERROR : Sender AI model not found')
 
-            if sender_prediction:
+            if sender_prediction and not isinstance(sender_prediction, str):
                 contact_class = FindContact(ocr.text, log, config, web_service, locale)
                 contact = contact_class.find_contact_by_ai(sender_prediction, process_config)
 
