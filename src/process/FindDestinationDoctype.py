@@ -488,11 +488,16 @@ def run_inference_doctype_entity_remote(config, image):
     token = config.get('doctype_entity_remote_token')
     if password and token:
         try:
-            auth = requests.auth.HTTPBasicAuth(config.get('doctype_entity_remote_login'), config.get('doctype_entity_remote_password'))
+            auth = requests.auth.HTTPBasicAuth(
+                config.get('doctype_entity_remote_login'),
+                config.get('doctype_entity_remote_password')
+            )
+
             response = requests.post(
                 config.get('doctype_entity_remote_url'),
+                auth=auth,
                 headers={
-                    'Authorization': 'Bearer ' + config.get('doctype_entity_remote_token'),
+                    'X-Api-Key': config.get('doctype_entity_remote_token'),
                     'Content-Type': 'image/jpeg'
                 },
                 data=img_data,
