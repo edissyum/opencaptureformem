@@ -62,22 +62,29 @@ def run_inference_sender_remote(config, image):
     if config.get('sender_remote_token') and config.get('sender_remote_password'):
         # OLD login method using password/API-KEY
         try:
-            auth = HTTPBasicAuth(config.get('sender_remote_login'), config.get('sender_remote_password'))
+            auth = requests.auth.HTTPBasicAuth(
+                config.get('sender_remote_login'),
+                config.get('sender_remote_password')
+            )
             response = requests.post(
                 config.get('sender_remote_url'),
+                auth=auth,
                 headers={
-                    'Content-Type': 'image/jpeg',
-                    'Authorization': 'Bearer ' + config.get('sender_remote_token')
+                    'X-Api-Key': config.get('sender_remote_token'),
+                    'Content-Type': 'image/jpeg'
                 },
                 data=img_data,
                 timeout=timeout
             )
-        except (Exception,) as e:
+        except Exception as e:
             return False, str(e)
 
         if response.status_code == 200:
-            data = response.json()
-            return True, data
+            try:
+                data = response.json()
+                return True, data
+            except Exception:
+                return False, "Réponse JSON invalide du serveur distant"
         else:
             return False, response.text
     else:
@@ -250,8 +257,10 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
             device_map="auto"
         )
         model.eval()
-
-        processor = AutoProcessor.from_pretrained(model_path, min_pixels=256 * 32 * 32, max_pixels=1024 * 32 * 32)
+        processor = AutoProcessor.from_pretrained(model_path,
+            min_pixels=256 * 32 * 32,
+            max_pixels=1024 * 32 * 32
+        )
         messages = [{
             "role": "user",
             "content": [
