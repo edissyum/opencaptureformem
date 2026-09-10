@@ -178,10 +178,30 @@ class Mail:
                 self.send_notif(error, 'de l\'authentification IMAP')
                 sys.exit()
 
+    def retrieve_recursive_folders(self, folders_url, path='', folders=None):
+        if folders is None:
+            folders = []
+
+        folders_list = graphql_request(folders_url + '?$top=200', 'GET', None, self.graphql_headers)
+        if folders_list.status_code != 200:
+            print(f"Error while trying to get folders list from GraphQL API : {folders_list.text}")
+            sys.exit()
+
+        for folder in folders_list.json()['value']:
+            full_path = path + folder['displayName']
+            folders.append({'displayName': full_path, 'id': folder['id']})
+
+            if folder['childFolderCount'] and folder['childFolderCount'] > 0:
+                subfolders_url = folders_url + '/' + folder['id'] + '/childFolders'
+                self.retrieve_recursive_folders(subfolders_url, full_path + '/', folders)
+
+        return folders
+
     def check_if_folder_exist(self, folder, dest_folder=False):
         """
         Check if a folder exist into the IMAP mailbox
 
+        :param dest_folder: Is folder checked is destination folder
         :param folder: Folder to check
         :return: Boolean
         """
@@ -192,24 +212,8 @@ class Mail:
                     return True
         elif self.auth_method.lower() == 'graphql':
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders'
-            folders = graphql_request(url + '?$top=200', 'GET', None, self.graphql_headers)
-            for fol in folders.json()['value']:
-                if fol['childFolderCount'] and fol['childFolderCount'] > 0:
-                    subfolders_url = url + '/' + fol['id'] + '/childFolders?$top=200'
-                    subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
-                    if subfolders_list.status_code != 200:
-                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(
-                            subfolders_list.text)
-                        print(error)
-                        sys.exit()
-
-                    for subfolder in subfolders_list.json()['value']:
-                        if folder == fol['displayName'] + '/' + subfolder['displayName']:
-                            if dest_folder:
-                                self.graphql['dest_folder_id'] = subfolder['id']
-                            else:
-                                self.graphql['folder_id'] = subfolder['id']
-                            return True
+            folders = self.retrieve_recursive_folders(url)
+            for fol in folders:
                 if folder == fol['displayName']:
                     if dest_folder:
                         self.graphql['dest_folder_id'] = fol['id']
