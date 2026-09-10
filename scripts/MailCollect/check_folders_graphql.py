@@ -42,12 +42,28 @@ def graphql_request(url, method, data, headers):
     if method == 'POST':
         return requests.post(url, data=data, headers=headers, timeout=30)
 
+    return None
+
+
+def retrieve_recursive_folders(folders_url, headers, path=''):
+    folders_list = graphql_request(folders_url + '?$top=200', 'GET', None, headers)
+    if folders_list.status_code != 200:
+        print(f"Error while trying to get folders list from GraphQL API : {folders_list.text}")
+        sys.exit()
+
+    for folder in folders_list.json()['value']:
+        full_path = path + folder['displayName']
+        print(full_path)
+
+        if folder['childFolderCount'] and folder['childFolderCount'] > 0:
+            subfolders_url = folders_url + '/' + folder['id'] + '/childFolders'
+            retrieve_recursive_folders(subfolders_url, headers, full_path + '/')
+
 
 if __name__ == "__main__":
     access_token = generate_graphql_access_token(graphql_args)
     if access_token.status_code != 200:
-        ERROR = 'Error while trying to get access token from GraphQL API : ' + str(access_token.text)
-        print(ERROR)
+        print(f"Error while trying to get access token from GraphQL API : {access_token.text}")
         sys.exit()
 
     graphql_headers = {
@@ -57,30 +73,10 @@ if __name__ == "__main__":
 
     user = graphql_request(graphql_args['users_url'] + '/' + graphql_args['login'], 'GET', None, graphql_headers)
     if user.status_code != 200:
-        ERROR = 'Error while trying to get user from GraphQL API : ' + str(user.text)
-        print(ERROR)
+        print(f"Error while trying to get user from GraphQL API : {user.text}")
         sys.exit()
 
     graphql_user = user.json()
 
     # Now we can list the folders of the user
-    folders_url = graphql_args['users_url'] + '/' + graphql_user['id'] + '/mailFolders'
-    folders_list = graphql_request(folders_url + '?$top=200', 'GET', None, graphql_headers)
-    if folders_list.status_code != 200:
-        ERROR = 'Error while trying to get folders list from GraphQL API : ' + str(folders_list.text)
-        print(ERROR)
-        sys.exit()
-
-    for folder in folders_list.json()['value']:
-        if folder['childFolderCount'] and folder['childFolderCount'] > 0:
-            subfolders_url = folders_url + '/' + folder['id'] + '/childFolders?$top=200'
-            subfolders_list = graphql_request(subfolders_url, 'GET', None, graphql_headers)
-            if subfolders_list.status_code != 200:
-                ERROR = 'Error while trying to get subfolders list from GraphQL API : ' + str(subfolders_list.text)
-                print(ERROR)
-                sys.exit()
-
-            for subfolder in subfolders_list.json()['value']:
-                print(folder['displayName'] + '/' + subfolder['displayName'])
-        else:
-            print(folder['displayName'])
+    retrieve_recursive_folders(graphql_args['users_url'] + '/' + graphql_user['id'] + '/mailFolders', graphql_headers)
