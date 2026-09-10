@@ -57,7 +57,10 @@ if __name__ == '__main__':
 
     if separation_library == 'qreader' and reconciliation_type == 'QRCODE':
         import cv2
+        import logging
         from qreader import QReader
+
+        logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
         qreader = QReader(weights_folder=config['SEPARATOR_QR']['weights_folder'])
         image = cv2.cvtColor(cv2.imread(args['file']), cv2.COLOR_BGR2RGB)
