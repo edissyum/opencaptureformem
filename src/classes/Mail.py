@@ -348,12 +348,8 @@ class Mail:
 
         msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values, email_from = self.get_mail_values(msg)
 
-        if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
-            file_format = 'txt'
-            file = backup_path + '/mail_' + msg_id + '/mail_origin/body.txt'
-        else:
-            file_format = 'html'
-            file = backup_path + '/mail_' + msg_id + '/mail_origin/body.html'
+        file_format = 'html'
+        file = backup_path + '/mail_' + msg_id + '/mail_origin/body.html'
 
         data = {
             'mail': {
@@ -502,10 +498,10 @@ class Mail:
         # Then body
         if (self.auth_method not in ('exchange', 'graphql')) and len(msg['html']) == 0:
             is_html = False
-            file_to_write = primary_mail_path + 'body.txt'
         else:
             is_html = True
-            file_to_write = primary_mail_path + 'body.html'
+
+        file_to_write = primary_mail_path + 'body.html'
 
         with open(file_to_write, 'w', encoding='UTF-8') as fp:
             if add_mail_headers_in_body:
@@ -519,40 +515,29 @@ class Mail:
                 except locale.Error:
                     pass
 
+                fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
+                if to_str:
+                    fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
+                if cc_str:
+                    fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
+
+                if msg['subject'] is None or msg['subject'] == '':
+                    msg['subject'] = '(Sans objet)'
+
+                fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
+                fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
+
+                if force_utf8:
+                    utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
+                    if (not re.search(utf_8_charset.lower(), html_body.lower()) or
+                            re.search(utf_8_charset.lower() + r'\s*-->', html_body.lower()) or
+                            re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
+                        fp.write(utf_8_charset)
+                        fp.write('\n')
                 if is_html:
-                    fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
-                    if to_str:
-                        fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
-                    if cc_str:
-                        fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
-
-                    if msg['subject'] is None or msg['subject'] == '':
-                        msg['subject'] = '(Sans objet)'
-
-                    fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
-                    fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
-
-                    if force_utf8:
-                        utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-                        if (not re.search(utf_8_charset.lower(), html_body.lower()) or
-                                re.search(utf_8_charset.lower() + r'\s*-->', html_body.lower()) or
-                                re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
-                            fp.write(utf_8_charset)
-                            fp.write('\n')
                     fp.write(html_body)
                 else:
-                    fp.write('Expéditeur : ' + from_val + '\n')
-                    if to_str:
-                        fp.write('Destinataire : ' + to_str.rstrip(';') + '\n')
-                    if cc_str:
-                        fp.write('CC : ' + cc_str.rstrip(';') + '\n')
-
-                    fp.write('Sujet : ' + msg['subject'] + '\n')
-                    fp.write('Date : ' + str(document_date) + '\n\n')
-                    if len(msg['text']) != 0:
-                        fp.write(msg['text'])
-                    else:
-                        fp.write(' ')
+                    fp.write(html.escape(msg['text']).replace("\n", "<br>\n"))
             fp.close()
 
         if self.auth_method not in ('exchange', 'graphql'):
