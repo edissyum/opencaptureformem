@@ -534,8 +534,9 @@ class Mail:
                             re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
                         fp.write(utf_8_charset)
                         fp.write('\n')
+
                 if is_html:
-                    fp.write(html_body)
+                    fp.write(html_body.replace("\n", "<br>\n"))
                 else:
                     fp.write(html.escape(msg['text']).replace("\n", "<br>\n"))
             fp.close()
