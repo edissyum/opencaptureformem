@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
-# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Nathan Cheval <nathan.cheval@edissyum.com>
 
 import os
 import re
@@ -178,10 +178,30 @@ class Mail:
                 self.send_notif(error, 'de l\'authentification IMAP')
                 sys.exit()
 
+    def retrieve_recursive_folders(self, folders_url, path='', folders=None):
+        if folders is None:
+            folders = []
+
+        folders_list = graphql_request(folders_url + '?$top=200', 'GET', None, self.graphql_headers)
+        if folders_list.status_code != 200:
+            print(f"Error while trying to get folders list from GraphQL API : {folders_list.text}")
+            sys.exit()
+
+        for folder in folders_list.json()['value']:
+            full_path = path + folder['displayName']
+            folders.append({'displayName': full_path, 'id': folder['id']})
+
+            if folder['childFolderCount'] and folder['childFolderCount'] > 0:
+                subfolders_url = folders_url + '/' + folder['id'] + '/childFolders'
+                self.retrieve_recursive_folders(subfolders_url, full_path + '/', folders)
+
+        return folders
+
     def check_if_folder_exist(self, folder, dest_folder=False):
         """
         Check if a folder exist into the IMAP mailbox
 
+        :param dest_folder: Is folder checked is destination folder
         :param folder: Folder to check
         :return: Boolean
         """
@@ -192,24 +212,8 @@ class Mail:
                     return True
         elif self.auth_method.lower() == 'graphql':
             url = self.graphql['users_url'] + '/' + self.graphql_user['id'] + '/mailFolders'
-            folders = graphql_request(url + '?$top=200', 'GET', None, self.graphql_headers)
-            for fol in folders.json()['value']:
-                if fol['childFolderCount'] and fol['childFolderCount'] > 0:
-                    subfolders_url = url + '/' + fol['id'] + '/childFolders?$top=200'
-                    subfolders_list = graphql_request(subfolders_url, 'GET', None, self.graphql_headers)
-                    if subfolders_list.status_code != 200:
-                        error = 'Error while trying to get subfolders list from GraphQL API : ' + str(
-                            subfolders_list.text)
-                        print(error)
-                        sys.exit()
-
-                    for subfolder in subfolders_list.json()['value']:
-                        if folder == fol['displayName'] + '/' + subfolder['displayName']:
-                            if dest_folder:
-                                self.graphql['dest_folder_id'] = subfolder['id']
-                            else:
-                                self.graphql['folder_id'] = subfolder['id']
-                            return True
+            folders = self.retrieve_recursive_folders(url)
+            for fol in folders:
                 if folder == fol['displayName']:
                     if dest_folder:
                         self.graphql['dest_folder_id'] = fol['id']
@@ -344,12 +348,8 @@ class Mail:
 
         msg_id, document_date, from_val, to_str, cc_str, reply_to, reply_to_values, email_from = self.get_mail_values(msg)
 
-        if self.auth_method not in ('exchange', 'graphql') and len(msg['html']) == 0:
-            file_format = 'txt'
-            file = backup_path + '/mail_' + msg_id + '/mail_origin/body.txt'
-        else:
-            file_format = 'html'
-            file = backup_path + '/mail_' + msg_id + '/mail_origin/body.html'
+        file_format = 'html'
+        file = backup_path + '/mail_' + msg_id + '/mail_origin/body.html'
 
         data = {
             'mail': {
@@ -498,10 +498,10 @@ class Mail:
         # Then body
         if (self.auth_method not in ('exchange', 'graphql')) and len(msg['html']) == 0:
             is_html = False
-            file_to_write = primary_mail_path + 'body.txt'
         else:
             is_html = True
-            file_to_write = primary_mail_path + 'body.html'
+
+        file_to_write = primary_mail_path + 'body.html'
 
         with open(file_to_write, 'w', encoding='UTF-8') as fp:
             if add_mail_headers_in_body:
@@ -515,40 +515,30 @@ class Mail:
                 except locale.Error:
                     pass
 
+                fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
+                if to_str:
+                    fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
+                if cc_str:
+                    fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
+
+                if msg['subject'] is None or msg['subject'] == '':
+                    msg['subject'] = '(Sans objet)'
+
+                fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
+                fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
+
+                if force_utf8:
+                    utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
+                    if (not re.search(utf_8_charset.lower(), html_body.lower()) or
+                            re.search(utf_8_charset.lower() + r'\s*-->', html_body.lower()) or
+                            re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
+                        fp.write(utf_8_charset)
+                        fp.write('\n')
+
                 if is_html:
-                    fp.write('<b>Expéditeur</b> : ' + html.escape(from_val) + '<br>')
-                    if to_str:
-                        fp.write('<b>Destinataire</b> : ' + html.escape(to_str).rstrip(';') + '<br>')
-                    if cc_str:
-                        fp.write('<b>CC</b> : ' + html.escape(cc_str).rstrip(';') + '<br>')
-
-                    if msg['subject'] is None or msg['subject'] == '':
-                        msg['subject'] = '(Sans objet)'
-
-                    fp.write('<b>Sujet</b> : ' + msg['subject'] + '<br>')
-                    fp.write('<b>Date</b> : ' + str(document_date) + '<br><br>')
-
-                    if force_utf8:
-                        utf_8_charset = '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-                        if (not re.search(utf_8_charset.lower(), html_body.lower()) or
-                                re.search(utf_8_charset.lower() + r'\s*-->', html_body.lower()) or
-                                re.search(r'<!--\s*' + utf_8_charset.lower(), html_body.lower())):
-                            fp.write(utf_8_charset)
-                            fp.write('\n')
-                    fp.write(html_body)
+                    fp.write(html_body.replace("\n", "<br>\n"))
                 else:
-                    fp.write('Expéditeur : ' + from_val + '\n')
-                    if to_str:
-                        fp.write('Destinataire : ' + to_str.rstrip(';') + '\n')
-                    if cc_str:
-                        fp.write('CC : ' + cc_str.rstrip(';') + '\n')
-
-                    fp.write('Sujet : ' + msg['subject'] + '\n')
-                    fp.write('Date : ' + str(document_date) + '\n\n')
-                    if len(msg['text']) != 0:
-                        fp.write(msg['text'])
-                    else:
-                        fp.write(' ')
+                    fp.write(html.escape(msg['text']).replace("\n", "<br>\n"))
             fp.close()
 
         if self.auth_method not in ('exchange', 'graphql'):

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
-# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Nathan Cheval <nathan.cheval@edissyum.com>
 
 import sys
 import json
@@ -57,7 +57,10 @@ if __name__ == '__main__':
 
     if separation_library == 'qreader' and reconciliation_type == 'QRCODE':
         import cv2
+        import logging
         from qreader import QReader
+
+        logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
         qreader = QReader(weights_folder=config['SEPARATOR_QR']['weights_folder'])
         image = cv2.cvtColor(cv2.imread(args['file']), cv2.COLOR_BGR2RGB)

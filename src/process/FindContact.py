@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
-# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Nathan Cheval <nathan.cheval@edissyum.com>
 # @dev: Serena tetart <serena.tetart@edissyum.com>
 
 import os
@@ -24,6 +24,7 @@ import requests
 import subprocess
 from thefuzz import fuzz
 from threading import Thread
+from requests.auth import HTTPBasicAuth
 
 from .AuthJWT import (
     build_jwt_headers,
@@ -57,7 +58,7 @@ def run_inference_sender_remote(config, image):
     url = config.get("sender_remote_url")
     if not url:
         return False, "Remote sender inference not configured"
-        
+
     if config.get('sender_remote_token') and config.get('sender_remote_password'):
         # OLD login method using password/API-KEY
         try:
@@ -65,7 +66,6 @@ def run_inference_sender_remote(config, image):
                 config.get('sender_remote_login'),
                 config.get('sender_remote_password')
             )
-
             response = requests.post(
                 config.get('sender_remote_url'),
                 auth=auth,
@@ -76,7 +76,6 @@ def run_inference_sender_remote(config, image):
                 data=img_data,
                 timeout=timeout
             )
-
         except Exception as e:
             return False, str(e)
 
@@ -108,24 +107,22 @@ def run_inference_sender_remote(config, image):
             )
 
             if response.status_code == 401:
-                clear_jwt_cache(config, "sender"
-                )
+                clear_jwt_cache(config, "sender")
                 headers = build_jwt_headers(config, "sender", content_type="image/jpeg", force_refresh=True)
                 response = requests.post(
                     url,
-                    headers=headers,
                     data=img_data,
-                    timeout=timeout,
                     verify=ca_cert,
+                    headers=headers,
+                    timeout=timeout
                 )
-
-        except Exception as e:
+        except (Exception,) as e:
             return False, str(e)
 
         if response.status_code == 200:
             try:
                 return True, response.json()
-            except Exception:
+            except (Exception,):
                 return False, "Réponse JSON invalide du serveur distant"
 
     return False, response.text
@@ -136,8 +133,8 @@ def parse_output(output: str):
     key_dict = ""
     sep_bool = True
     i = 0
-    L = len(output)
-    while i < L:
+    length = len(output)
+    while i < length:
         if output[i] == "<":
             if output.startswith("<SEP>", i):
                 i += 5
@@ -147,13 +144,13 @@ def parse_output(output: str):
                 sep_bool = False
                 i += 1
                 key_dict = ""
-                while i < L and output[i] != ">":
+                while i < length and output[i] != ">":
                     key_dict += output[i]
                     i += 1
         elif output[i] == ">":
             i += 1
             value_dict = ""
-            while i < L and output[i] != "<":
+            while i < length and output[i] != "<":
                 c = output[i]
                 if c not in "\n[]":
                     value_dict += c
@@ -213,6 +210,7 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
         if workdir is not None:
             break
 
+    out = ''
     dtype_map = {
         "float32": torch.float32,
         "bfloat16": torch.bfloat16,
@@ -259,7 +257,6 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
             device_map="auto"
         )
         model.eval()
-
         processor = AutoProcessor.from_pretrained(model_path,
             min_pixels=256 * 32 * 32,
             max_pixels=1024 * 32 * 32
@@ -267,8 +264,8 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
         messages = [{
             "role": "user",
             "content": [
-                {"type": "image", "url": img_path},
-                {"type": "text", "text": "Extract sender's data in a python dictionary"}
+                { "type": "image", "url": img_path },
+                { "type": "text", "text": "Extract sender's data in a python dictionary" }
             ]
         }]
         inputs = processor.apply_chat_template(
@@ -279,8 +276,8 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
             return_dict=True,
         )
         inputs.pop("token_type_ids", None)
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
-        
+        inputs = { k: v.to(model.device) for k, v in inputs.items() }
+
         with torch.inference_mode():
             generated_ids = model.generate(
                 **inputs,
@@ -300,8 +297,6 @@ def run_inference_sender(model_path, img_path, log, dtype_str):
             out = generated_texts[0]
 
     data = parse_output(out)
-    if data and isinstance(data, str):
-        data = json.loads(data)
     return data
 
 
@@ -310,15 +305,15 @@ class FindContact(Thread):
         Thread.__init__(self, name='contactThread')
         self.log = log
         self.text = text
-        self.contact = ''
+        self.contact = {}
         self.min_ratio = 80
         self.locale = locale
         self.config = config
         self.custom_mail = ''
         self.custom_phone = ''
+        self.web_service = web_service
         if 'sender_min_ratio' in config.cfg['IA']:
             self.min_ratio = int(config.cfg['IA']['sender_min_ratio'])
-        self.web_service = web_service
 
     def run(self):
         """
@@ -343,7 +338,7 @@ class FindContact(Thread):
                 self.log.info('Find phone in MEM Courrier, get it : ' + sanitized_phone)
                 break
             else:
-                # Add the phone into a custom value (custom_t10 by default)
+                # Add the phone into a custom value
                 self.custom_phone += sanitized_phone + ';'
                 continue
 
@@ -360,26 +355,25 @@ class FindContact(Thread):
                     self.log.info('Find E-MAIL in MEM Courrier, attach it to the document')
                     break
                 else:
-                    # Add the e-mail into a custom value (custom_t10 by default)
+                    # Add the e-mail into a custom value
                     self.custom_mail += sanitized_mail + ';'
                     continue
 
     def compare_contact(self, contact, ai_contact):
-        match_contact = {}
-        global_ratio = 0
         cpt = 0
+        global_ratio = 0
+        match_contact = {}
 
         for key in ai_contact:
             if ai_contact[key]:
-                if key in contact:
-                    if contact[key]:
-                        match_contact[key] = fuzz.ratio(ai_contact[key].lower(), contact[key].lower())
-                        global_ratio += match_contact[key]
-                        cpt += 1
+                if key in contact and contact[key]:
+                    match_contact[key] = fuzz.ratio(ai_contact[key].lower(), contact[key].lower())
+                    global_ratio += match_contact[key]
+                    cpt += 1
         global_ratio = global_ratio / cpt
 
         if global_ratio >= self.min_ratio:
-            self.log.info(f'Global ratio ({global_ratio}%) above {self.min_ratio}%, keep the original contact')
+            self.log.info(f"Global ratio ({global_ratio}%) above {self.min_ratio}%, keep the original contact")
         return global_ratio >= self.min_ratio
 
     def find_contact_by_ai(self, ai_contact, process):
@@ -401,8 +395,38 @@ class FindContact(Thread):
                 elif key == 'STREET':
                     found_contact[MAPPING[key]] = found_contact[MAPPING[key]].upper()
 
+        if isinstance(found_contact.get('phone'), list):
+            found_contact['phone'] = found_contact['phone'][0]
+
+        res, contact = self.web_service.retrieve_contact_improved(found_contact)
+        if res and contact:
+            self.log.info(f"Contact found ({contact['id']}) using improved search : {contact['matchType']}")
+
+            if contact['status'] == 'TMP':
+                self.log.info(f"Contact found is TMP, do no create duplicate contact")
+                return contact
+
+            if contact['matchType'] in ('name_email', 'name_phone', 'company_email', 'company_phone'):
+                if self.compare_contact(contact, found_contact):
+                    return contact
+
+                has_already_tmp_contact = False
+                if contact['external_id'] and contact['external_id'].get('ia_tmp_contact_id', None):
+                    has_already_tmp_contact = True
+
+                if has_already_tmp_contact:
+                    self.log.info(f"Global ratio under {self.min_ratio}% but existing contact already has a TMP "
+                                  f"contact associated. Do not create duplicate temporary contact")
+                    return contact
+                else:
+                    self.log.info(f"Global ratio under {self.min_ratio}%, create temporary contact")
+                    return self.merge_temporary_contact(contact, found_contact, process)
+            else:
+                return contact
+        else:
+            self.log.info('No contact found using improved search, fallback on legacy search')
+
         contact = {}
-        contact_mail = {}
         if (('email' not in found_contact or not found_contact['email']) and
                 ('phone' not in found_contact or not found_contact['phone'])):
             self.start()
@@ -420,12 +444,12 @@ class FindContact(Thread):
                 contact = self.contact
 
             if contact:
-                self.log.info('Contact found using email : ' + found_contact['email'])
+                self.log.info(f"Contact found ({contact['id']}) using email : {found_contact['email']}")
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
                     return contact
-                self.log.info(f'Global ratio under {self.min_ratio}%, search using phone')
+                self.log.info(f"Global ratio under {self.min_ratio}%, search using phone")
 
         if 'phone' in found_contact and found_contact['phone']:
             if not self.contact:
@@ -437,35 +461,33 @@ class FindContact(Thread):
             if contact:
                 tmp_contact = contact
 
-            if isinstance(found_contact['phone'], list):
-                found_contact['phone'] = found_contact['phone'][0]
-
             if contact:
-                self.log.info('Contact found using phone : ' + found_contact['phone'])
+                self.log.info(f"Contact found ({contact['id']}) using phone : {found_contact['phone']}")
                 contact = self.web_service.retrieve_contact_by_id(contact['id'])
                 match_contact = self.compare_contact(contact, found_contact)
                 if match_contact:
                     return contact
-                self.log.info(f'Global ratio under {self.min_ratio}%, insert temporary contact')
+                self.log.info(f"Global ratio under {self.min_ratio}%, insert temporary contact")
             else:
                 if tmp_contact:
                     contact = tmp_contact
 
+        return self.merge_temporary_contact(contact, found_contact, process)
+
+    def merge_temporary_contact(self, contact, found_contact, process):
         found_contact['status'] = 'TMP'
         if not contact:
-            if contact_mail:
-                self.log.info('No contact found using phone, use contact found using email')
-                contact = contact_mail
-            else:
-                self.log.info('No contact found, create a temporary contact')
+            self.log.info('No contact found, create a temporary contact')
 
         if 'sender_custom_fields' in process and process['sender_custom_fields']:
             found_contact['customFields'] = json.loads(process['sender_custom_fields'])
 
         res, temporary_contact = self.web_service.create_contact(found_contact)
         if res:
-            self.log.info('Temporary contact created with success : ' + str(temporary_contact['id']))
+            self.log.info(f"Temporary contact created with success : {temporary_contact['id']}")
+
             if contact:
+                self.log.info('Add temporary contact to existing contact, ready to merge in MEM Courrier')
                 contact['externalId'] = {
                     'ia_tmp_contact_id': temporary_contact['id']
                 }

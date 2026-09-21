@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Open-Capture For MEM Courrier.  If not, see <https://www.gnu.org/licenses/>.
 
-# @dev : Nathan Cheval <nathan.cheval@outlook.fr>
+# @dev : Nathan Cheval <nathan.cheval@edissyum.com>
 # @dev : Arthur Mondon <arthur@mondon.pro>
 
 defaultPath=/opt/edissyum/opencaptureformem/
