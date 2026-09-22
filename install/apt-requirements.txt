@@ -19,4 +19,3 @@ rabbitmq-server
 libtesseract-dev
 libleptonica-dev
 libapache2-mod-wsgi-py3
-thefuzz
