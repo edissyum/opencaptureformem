@@ -536,7 +536,7 @@ class Mail:
                         fp.write('\n')
 
                 if is_html:
-                    fp.write(html_body.replace("\n", "<br>\n"))
+                    fp.write(html_body)
                 else:
                     fp.write(html.escape(msg['text']).replace("\n", "<br>\n"))
             fp.close()
