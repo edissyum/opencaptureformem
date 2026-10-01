@@ -513,7 +513,14 @@ class Mail:
                 msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
                 if self.auth_method.lower() == 'graphql':
                     document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
+                    document_date = document_date.replace(tzinfo=datetime.timezone.utc)
+
+                try:
+                    if document_date.tzinfo is not None:
+                        document_date = document_date.astimezone()
                     document_date = document_date.strftime('%d/%m/%Y %H:%M:%S')
+                except (Exception, ):
+                    pass
 
                 try:
                     locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
