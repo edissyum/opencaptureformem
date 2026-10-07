@@ -144,7 +144,7 @@ compress_type     = None
 
 ; Artificial Intelligence (AI) settings
 doctype_entity_ai    = False
-sender_ai            = False
+sender_ai            = True
 ; Custom fields to add to the contact created by AI (eg: {"1": "No"})
 sender_custom_fields = {}
 
@@ -181,7 +181,7 @@ compress_type     = None
 
 ; Artificial Intelligence (AI) settings
 doctype_entity_ai    = False
-sender_ai            = False
+sender_ai            = True
 ; Custom fields to add to the contact created by AI (eg: {"1": "No"})
 sender_custom_fields = {}
 
