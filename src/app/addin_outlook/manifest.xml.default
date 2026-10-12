@@ -4,9 +4,9 @@
            xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
            xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
     <Id>§§UNIQUE_ID§§</Id>
-    <Version>1.0.0.1</Version>
-    <ProviderName>Edissyum Consulting</ProviderName>
+    <Version>1.0.0.2</Version>
     <DefaultLocale>fr-FR</DefaultLocale>
+    <ProviderName>Edissyum Consulting</ProviderName>
     <DisplayName DefaultValue="Module MailCollect by Edissyum"/>
     <Description DefaultValue="Envoi de courriel dans MEM Courrier"/>
     <IconUrl DefaultValue="https://§§SERVER_URL§§/opencaptureformem/assets/icon-64.png"/>
@@ -15,6 +15,8 @@
     <AppDomains>
         <AppDomain>https://edissyum.com</AppDomain>
         <AppDomain>https://§§SERVER_URL§§</AppDomain>
+        <AppDomain>https://*.cloud.microsoft</AppDomain>
+        <AppDomain>https://outlook.cloud.microsoft</AppDomain>
     </AppDomains>
     <Hosts>
         <Host Name="Mailbox"/>

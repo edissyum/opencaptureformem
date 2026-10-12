@@ -20,8 +20,24 @@ import os
 import sys
 import json
 from flask import Flask
+from flask_cors import CORS
+
 
 app = Flask(__name__, template_folder='addin_outlook/templates')
+CORS(app, origins=[
+    "https://outlook.cloud.microsoft",
+    r"^https://[a-z0-9-]+\.cloud\.microsoft$",
+])
+
+
+@app.after_request
+def add_headers(response):
+    response.headers['Content-Security-Policy'] = (
+        "frame-ancestors https://outlook.cloud.microsoft "
+        "https://*.cloud.microsoft"
+    )
+    return response
+
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 custom_config_path = os.path.join(base_dir, '../config/custom.json')

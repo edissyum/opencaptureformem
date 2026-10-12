@@ -25,7 +25,7 @@ args = {
     "client_id": "",
     "secret": "",
     "host": "outlook.office365.com",
-    "login": "",
+    "login": ""
 }
 
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     result = app.acquire_token_silent(args['scopes'], account=None)
 
     if not result:
-        print("No suitable token in cache.  Get new one.")
+        print("No suitable token in cache. Get new one.")
         result = app.acquire_token_for_client(scopes=args['scopes'])
 
     if "access_token" in result:

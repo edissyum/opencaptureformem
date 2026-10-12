@@ -496,10 +496,15 @@ class Mail:
                 fp.close()
 
         # Then body
-        if (self.auth_method not in ('exchange', 'graphql')) and len(msg['html']) == 0:
+        if self.auth_method.lower() == 'graphql':
+            is_html = msg['body'].get('contentType', 'html').lower() == 'html'
+            text_body = html_body
+        elif self.auth_method.lower() != 'exchange' and len(msg['html']) == 0:
             is_html = False
+            text_body = msg['text']
         else:
             is_html = True
+            text_body = ''
 
         file_to_write = primary_mail_path + 'body.html'
 
@@ -508,7 +513,14 @@ class Mail:
                 msg_id, document_date, from_val, to_str, cc_str, _, _, _ = self.get_mail_values(msg)
                 if self.auth_method.lower() == 'graphql':
                     document_date = datetime.datetime.strptime(msg['receivedDateTime'], '%Y-%m-%dT%H:%M:%SZ')
+                    document_date = document_date.replace(tzinfo=datetime.timezone.utc)
+
+                try:
+                    if document_date.tzinfo is not None:
+                        document_date = document_date.astimezone()
                     document_date = document_date.strftime('%d/%m/%Y %H:%M:%S')
+                except (Exception, ):
+                    pass
 
                 try:
                     locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
@@ -535,10 +547,10 @@ class Mail:
                         fp.write(utf_8_charset)
                         fp.write('\n')
 
-                if is_html:
-                    fp.write(html_body.replace("\n", "<br>\n"))
-                else:
-                    fp.write(html.escape(msg['text']).replace("\n", "<br>\n"))
+            if is_html:
+                fp.write(html_body)
+            else:
+                fp.write(html.escape(text_body).replace("\n", "<br>\n"))
             fp.close()
 
         if self.auth_method not in ('exchange', 'graphql'):
