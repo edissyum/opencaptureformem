@@ -236,7 +236,7 @@ class WebServices:
             'arrivaldate': str(datetime.now()),
             'customFields': {},
             'diffusionList': _process['diffusion_list'] if 'diffusion_list' in _process else [],
-            'processLimitDate': str(self.calcul_process_limit_date(_process['doctype'])),
+            'processLimitDate': self.calcul_process_limit_date(_process['doctype']),
             'summary_ai': summary_AI,
             'tone_ai': tone_AI
         }
@@ -461,7 +461,7 @@ class WebServices:
             args['encodedFile'] = base64.b64encode(f.read()).decode('UTF-8')
 
         args['arrivalDate'] = str(datetime.now())
-        args['processLimitDate'] = str(self.calcul_process_limit_date(args['doctype']))
+        args['processLimitDate'] = self.calcul_process_limit_date(args['doctype'])
 
         del args['file']
 
@@ -525,18 +525,22 @@ class WebServices:
 
         if len(doctype_info['doctype']) != 0:
             process_delay = doctype_info['doctype']['process_delay']
-            working_days_info = self.retrieve_workings_days()
-            if len(working_days_info['parameter']) != 0:
-                working_days = working_days_info['parameter']['param_value_int']
-                if working_days:
-                    while process_delay > 0:
-                        process_limit_date += timedelta(days=1)
-                        weekday = process_limit_date.weekday()
-                        if weekday >= 5:
-                            continue
-                        process_delay -= 1
-                else:
-                    process_limit_date += timedelta(days=process_delay)
+            if process_delay > 0:
+                working_days_info = self.retrieve_workings_days()
+                if len(working_days_info['parameter']) != 0:
+                    working_days = working_days_info['parameter']['param_value_int']
+                    if working_days:
+                        while process_delay > 0:
+                            process_limit_date += timedelta(days=1)
+                            weekday = process_limit_date.weekday()
+                            if weekday >= 5:
+                                continue
+                            process_delay -= 1
+                    else:
+                        process_limit_date += timedelta(days=process_delay)
+                    process_limit_date = str(process_limit_date)
+            else:
+                process_limit_date = None
         return process_limit_date
 
     def retrieve_entities(self):
