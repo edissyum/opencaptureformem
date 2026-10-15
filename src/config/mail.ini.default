@@ -1,20 +1,20 @@
 [GLOBAL]
 batch_path             = /opt/edissyum/opencaptureformem/data/MailCollect/
-; True or False
+# True or False
 smtp_notif_on_error   = False
 smtp_auth             = True
 smtp_host             = smtp.gmail.com
 smtp_port             = 587
 smtp_login            = test@gmail.com
-; If you have $ in your password, you must double it
+# If you have $ in your password, you must double it
 smtp_pwd              = test
-; True or False
+# True or False
 smtp_ssl              = False
-; True or False
+# True or False
 smtp_starttls         = True
 smtp_from_mail        =
 smtp_dest_admin_mail  =
-; Delay before send another email, in minutes. 0 to disable it
+# Delay before send another email, in minutes. 0 to disable it
 smtp_delay            = 30
 
 [OAUTH]
@@ -25,13 +25,13 @@ client_id   =
 secret      =
 
 [GRAPHQL]
-; DO NOT TOUCH
+# DO NOT TOUCH
 grant_type    = client_credentials
 scope         = https://graph.microsoft.com/.default
 users_url     = https://graph.microsoft.com/v1.0/users
 message_url   = https://graph.microsoft.com/v1.0/me/messages
 get_token_url = https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token
-; END DO NOT TOUCH
+# END DO NOT TOUCH
 client_id     =
 tenant_id     =
 client_secret =
@@ -43,23 +43,23 @@ tenant_id   =
 secret      =
 
 [MAIL_1]
-; Label used to display this process in Office 365 addin
+# Label used to display this process in Office 365 addin
 label = Processus MailCollect par défaut
-; Enable this process in Office 365 addin
+# Enable this process in Office 365 addin
 addin_enabled = False
 
-; basic, oauth, exchange or graphql
+# basic, oauth, exchange or graphql
 auth_method              = basic
 host                     = outlook.office365.com
 port                     = 993
-; SSL or STARTTLS or False
+# SSL or STARTTLS or False
 secured_connection       = SSL
 
 login                    =
-; Only for basic authentication. If you have $ in your password, you must double it
+# Only for basic authentication. If you have $ in your password, you must double it
 password                 =
 
-; True or False
+# True or False
 is_form                  = False
 generate_chrono          = True
 force_utf8               = True
@@ -75,17 +75,17 @@ store_unique_id_already_processed = True
 
 folder_to_crawl          = _MEM
 folder_destination       = _MEM_ARCHIVES
-; move or none
+# move or none
 action_after_process      = move
 
-; True or False
-; import_only_attachments must be True to use this option
+# True or False
+# import_only_attachments must be True to use this option
 e_reconciliation         = False
 
 chrono_regex             = 20(1|2|3)[0-9]{1}A/\d{5}
-; If chrono is found using chronoRegex, use the following status to the linked document
+# If chrono is found using chronoRegex, use the following status to the linked document
 e_link_status = COU
-; True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
+# True or False. Retrieve metadata (doctype, destination, dest_user) from the document if chrono is found.
 retrieve_metadata       = True
 
 model_id                = 1
@@ -95,19 +95,19 @@ doctype                 = 1206
 typist                  = ws_opencapture
 destination             = COU
 
-; True or False
+# True or False
 from_is_reply_to        = False
 custom_mail_from        = 7
 custom_mail_to          = 6
 custom_mail_cc          = 8
 custom_mail_reply_to    = 9
-; Double quote on both side of the json. eg : {"1": "NO"}
+# Double quote on both side of the json. eg : {"1": "NO"}
 custom_fields           = {}
 
-; Artificial Intelligence (AI) settings
-; Works only if import_only_attachments is True
+# Artificial Intelligence (AI) settings
+# Works only if import_only_attachments is True
 doctype_entity_ai       = False
 sender_ai               = False
-; Custom fields to add to the contact created by AI (eg: {"1": "Non"})
+# Custom fields to add to the contact created by AI (eg: {"1": "Non"})
 sender_custom_fields    = {}
 
