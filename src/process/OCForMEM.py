@@ -107,6 +107,7 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     _process = args['process_name']
     log.info('Using the following process : ' + _process)
 
+    typist = ''
     destination = ''
     search_ai_destination = False
 
@@ -184,6 +185,8 @@ def process(args, file, log, separator, config, image, ocr, locale, web_service,
     # Retrieve user_id to use it as typist
     if args.get('isMail') is not None and args.get('isMail') in [True, 'attachments']:
         typist = args['data']['typist']
+    elif args.get('typist') is not None:
+        typist = args['typist']
     else:
         if 'isinternalnote' not in args or not args['isinternalnote']:
             typist = config.cfg[_process]['typist']

@@ -33,7 +33,7 @@ from src.app.controllers.custom import get_custom_config_file_path, get_custom_c
 
 
 def process_files(files, custom_id, process_name, read_destination_from_filename, keep_pdf_debug, destination,
-                  custom_fields):
+                  typist, custom_fields):
     config_file_path, error = get_custom_config_file_path(custom_id)
     if error:
         return {"message": error}, 400
@@ -56,6 +56,7 @@ def process_files(files, custom_id, process_name, read_destination_from_filename
 
         args = {
             'script': 'API',
+            'typist': typist,
             'file': tmp_file_path,
             'process': process_name,
             'config': config_file_path,
